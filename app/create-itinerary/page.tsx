@@ -2,9 +2,11 @@
 import React, { useEffect, useState } from 'react'
 import { AI_PROMPT } from '@/app/constants/Option';
 import { chatSession } from '@/app/service/AIModel';
-import { FcGoogle } from "react-icons/fc";
 import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios'
+import { doc, setDoc } from "firebase/firestore"; 
+import { nanoid } from 'nanoid';
+import { db } from '@/app/service/firebaseConfig';
 
 import {
   Dialog,
@@ -15,6 +17,8 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from '@/components/ui/button';
 
+import { FcGoogle } from "react-icons/fc";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 function Page() {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -23,6 +27,7 @@ function Page() {
   const [selectedTravelWith, setSelectedTravelWith] = useState<string | null>(null);
   const [formData, setFormData] = useState<{ [key: string]: any }>({});
   const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false)
 
   const login=useGoogleLogin({
     onSuccess:(codeResp)=>getUserProfile(codeResp),
@@ -57,8 +62,8 @@ function Page() {
   }
 
   const onGenerateTrip = async () => {
-
     if (selectedCity && selectedDays && selectedBudget && selectedTravelWith) {
+      setLoading(true)
       const newFormData = {
         city: selectedCity,
         days: selectedDays,
@@ -78,10 +83,37 @@ function Page() {
 
       const result = await chatSession.sendMessage(FINAL_PROMPT)
       console.log(result?.response.text())
+      setLoading(false)
+      saveAITrip(result?.response?.text())
     } else {
       console.error('Please complete all fields');
     }
   };
+
+
+  const saveAITrip = async (TripData:any) => {
+    setLoading(true)
+    const userItem = localStorage.getItem('user');
+    const user = userItem ? JSON.parse(userItem) : null;    
+    const nanoFirst = nanoid(3);
+    const nanoLast = nanoid(4);
+    const docId = nanoFirst + Date.now().toString() + nanoLast
+
+    const saveFormData = {
+      city: selectedCity,
+      days: selectedDays,
+      budget: selectedBudget,
+      travelWith: selectedTravelWith
+    };
+
+    await setDoc(doc(db, "AiTrips", docId), {
+      userSelection:saveFormData,
+      tripData: JSON.parse(TripData),
+      userEmail:user?.email,
+      id:docId,
+    });
+    setLoading(false)
+  }
 
   useEffect(() => {
     console.log("Updated formData: ", formData);
@@ -109,9 +141,15 @@ function Page() {
       <div className="mt-12">
         <button
           onClick={handleSubmit}
+          disabled={loading}
           className="bg-gray-800 rounded-xl px-4 py-3 text-white hover:rounded-full hover:scale-95"
         >
-          Generate by AI
+          {loading ? 
+            <AiOutlineLoading3Quarters className="h-6 w-6 animate-spin" />:
+            <>
+              Generate Trip by AI
+            </>
+          }
         </button>
       </div>
       <Dialog open={openDialog}>
@@ -122,10 +160,16 @@ function Page() {
               <h2 className="font-bold  text-lg mt-7">Sign In With Google</h2>
               <p className=" mt-1">Sign In dengan aman menggunakan google authentication</p>
               <Button 
+                disabled={loading}
                 className="w-full mt-5"
                 onClick={() => login()}
                 >
-                <FcGoogle className="mr-3 h-6 w-6" /> Sign In With Google
+                {loading ?
+                  <AiOutlineLoading3Quarters className="h-6 w-6 animate-spin" />:
+                  <>
+                    <FcGoogle className="mr-3 h-6 w-6" /> Sign In With Google
+                  </>
+                }
               </Button>
             </DialogDescription>
           </DialogHeader>

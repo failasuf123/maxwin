@@ -1,37 +1,46 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-## Getting Started
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDqYRI5mXRqGxR6cIwHQbJeF3ZOdVaeW2c",
+  authDomain: "tripio-ef511.firebaseapp.com",
+  projectId: "tripio-ef511",
+  storageBucket: "tripio-ef511.appspot.com",
+  messagingSenderId: "981426667033",
+  appId: "1:981426667033:web:1f2fc7d82745632d40f488",
+  measurementId: "G-D03D87NGGL"
+};
 
-First, run the development server:
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+3. To host your site with Firebase Hosting, you need the Firebase CLI (a command line tool).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Run the following npm command to install the CLI or update to the latest CLI version.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+npm install -g firebase-tools
+Doesn't work? Take a look at the Firebase CLI reference or change your npm permissions
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
-## Learn More
+4. Deploy to Firebase Hosting
+You can deploy now or later. To deploy now, open a terminal window, then navigate to or create a root directory for your web app.
 
-To learn more about Next.js, take a look at the following resources:
+Sign in to Google
+firebase login
+Initiate your project
+Run this command from your app's root directory:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+firebase init
+When you're ready, deploy your web app
+Put your static files (e.g., HTML, CSS, JS) in your app's deploy directory (the default is "public"). Then, run this command from your app's root directory:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+firebase deploy
+After deploying, view your app at tripio-ef511.web.app
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
-"# maxwin" 
+Need help? Check out the Hosting docs
