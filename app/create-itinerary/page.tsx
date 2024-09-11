@@ -1,7 +1,21 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { AI_PROMPT } from '@/app/constants/Option';
-import { chatSession } from '../service/AIModel';
+import { chatSession } from '@/app/service/AIModel';
+import { FcGoogle } from "react-icons/fc";
+import { useGoogleLogin } from '@react-oauth/google';
+import axios from 'axios'
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Button } from '@/components/ui/button';
+
 
 function Page() {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -9,8 +23,34 @@ function Page() {
   const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
   const [selectedTravelWith, setSelectedTravelWith] = useState<string | null>(null);
   const [formData, setFormData] = useState<{ [key: string]: any }>({});
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+
+  const login=useGoogleLogin({
+    onSuccess:(codeResp)=>getUserProfile(codeResp),
+    onError:(error)=>console.log(error),
+  })
+
+  const getUserProfile = (tokenInfo:any) => {
+    axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenInfo?.access_token}`,{
+      headers:{
+        Authorization:`Bearer ${tokenInfo?.access_token}`,
+        Accept:'Application/json'
+      }
+    }).then((response)=>{
+      console.log(response)
+      localStorage.setItem('user', JSON.stringify(response.data))
+    })
+  }
 
   const handleSubmit = async () => {
+    const user = localStorage.getItem('user')
+    console.log("user is:", user)
+
+    if (!user){
+      setOpenDialog(true)
+      return
+    }
+
     if (selectedCity && selectedDays && selectedBudget && selectedTravelWith) {
       const newFormData = {
         city: selectedCity,
@@ -67,6 +107,23 @@ function Page() {
           Generate by AI
         </button>
       </div>
+      <Dialog open={openDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogDescription>
+              <h2 className="font-bold  text-lg mt-7">Sign In With Google</h2>
+              <p className=" mt-1">Sign In dengan aman menggunakan google authentication</p>
+              <Button 
+                className="w-full mt-5"
+                onClick={() => login()}
+                >
+                <FcGoogle className="mr-3 h-6 w-6" /> Sign In With Google
+              </Button>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+
     </div>
 
   );

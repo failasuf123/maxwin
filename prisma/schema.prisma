@@ -14,21 +14,50 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  posts     Post[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int         @id @default(autoincrement())
+  email      String      @unique
+  name       String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  itineraries Itinerary[]
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  author    User     @relation(fields: [authorId], references: [id])
-  authorId  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Itinerary {
+  id         Int      @id @default(autoincrement())
+  name       String
+  userId     Int
+  user       User      @relation(fields: [userId], references: [id])
+  dayPlans   DayPlan[]
+}
+
+model DayPlan {
+  id         Int      @id @default(autoincrement())
+  name       String
+  itineraryId Int
+  itinerary  Itinerary @relation(fields: [itineraryId], references: [id])
+  places     Place[]
+}
+
+model Place {
+  id         Int      @id @default(autoincrement())
+  name       String
+  details    String
+  imageUrl   String
+  geoCoordinates String
+  ticketPricing String
+  rating     Float
+  timeTravel String
+  dayPlanId  Int
+  dayPlan    DayPlan  @relation(fields: [dayPlanId], references: [id])
+}
+
+model Hotel {
+  id            Int      @id @default(autoincrement())
+  hotelName     String
+  hotelAddress  String
+  price         String
+  hotelImageUrl String
+  geoCoordinates String
+  rating        Float
+  description   String
 }
