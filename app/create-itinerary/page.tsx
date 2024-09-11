@@ -12,7 +12,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from '@/components/ui/button';
 
@@ -39,6 +38,8 @@ function Page() {
     }).then((response)=>{
       console.log(response)
       localStorage.setItem('user', JSON.stringify(response.data))
+      setOpenDialog(false)
+      onGenerateTrip()
     })
   }
 
@@ -50,6 +51,12 @@ function Page() {
       setOpenDialog(true)
       return
     }
+    else{
+      onGenerateTrip();
+    }
+  }
+
+  const onGenerateTrip = async () => {
 
     if (selectedCity && selectedDays && selectedBudget && selectedTravelWith) {
       const newFormData = {
@@ -110,6 +117,7 @@ function Page() {
       <Dialog open={openDialog}>
         <DialogContent>
           <DialogHeader>
+            <DialogTitle></DialogTitle>
             <DialogDescription>
               <h2 className="font-bold  text-lg mt-7">Sign In With Google</h2>
               <p className=" mt-1">Sign In dengan aman menggunakan google authentication</p>
