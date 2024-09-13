@@ -7,6 +7,8 @@ import axios from 'axios'
 import { doc, setDoc } from "firebase/firestore"; 
 import { nanoid } from 'nanoid';
 import { db } from '@/app/service/firebaseConfig';
+import { ToastContainer, toast, Bounce} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import {
   Dialog,
@@ -19,6 +21,7 @@ import { Button } from '@/components/ui/button';
 
 import { FcGoogle } from "react-icons/fc";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { useRouter } from 'next/navigation';
 
 function Page() {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -28,6 +31,7 @@ function Page() {
   const [formData, setFormData] = useState<{ [key: string]: any }>({});
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false)
+  const router = useRouter();
 
   const login=useGoogleLogin({
     onSuccess:(codeResp)=>getUserProfile(codeResp),
@@ -62,6 +66,7 @@ function Page() {
   }
 
   const onGenerateTrip = async () => {
+
     if (selectedCity && selectedDays && selectedBudget && selectedTravelWith) {
       setLoading(true)
       const newFormData = {
@@ -85,7 +90,63 @@ function Page() {
       console.log(result?.response.text())
       setLoading(false)
       saveAITrip(result?.response?.text())
-    } else {
+    } 
+    else if (!selectedCity){
+      toast('Upss! Anda belum memilih kota tujuan', {
+        position: "top-center",
+        autoClose: 6000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Bounce,
+        });
+    }
+    else if (!selectedDays){
+      toast('Upss! Anda belum menentukan berapa hari anda berlibur', {
+        position: "top-center",
+        autoClose: 6000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Bounce,
+        })
+    }
+    else if (!selectedBudget){
+      toast('Upss! Anda belum menentukan budget', {
+        position: "top-center",
+        autoClose: 6000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Bounce,
+        })
+
+    }
+    else if (!selectedTravelWith){
+      toast('Upss! Anda belum menentukan dengan siapa anda berlibur', {
+        position: "top-center",
+        autoClose: 6000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Bounce,
+        })
+ 
+    }
+    
+    else {
       console.error('Please complete all fields');
     }
   };
@@ -113,6 +174,7 @@ function Page() {
       id:docId,
     });
     setLoading(false)
+    router.push(`/view-trip/${docId}`)
   }
 
   useEffect(() => {
@@ -176,6 +238,19 @@ function Page() {
         </DialogContent>
       </Dialog>
 
+      <ToastContainer
+          position="top-center"
+          autoClose={6000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="dark"
+          />
+
     </div>
 
   );
@@ -238,12 +313,12 @@ const SelectBudget: React.FC<SelectBudgetProps> = ({ selectedBudget, setSelected
             key={option.value}
             onClick={() => setSelectedBudget(option.value)}
             className={`flex flex-col group gap-1 cursor-pointer justify-center px-5 py-3 border-2 rounded-lg h-32 w-44 ${
-              selectedBudget === option.value ? 'bg-cyan-500 text-white' : 'hover:bg-cyan-500 hover:scale-105'
+              selectedBudget === option.value ? 'border-4 border-gray-600 text-cyan-600 ' : 'hover:border-4 border-gray-600 hover:scale-105'
             }`}
           >
             <h2 className="text-4xl">{option.icon}</h2>
-            <h2 className="text-md font-bold group-hover:text-white">{option.label}</h2>
-            <p className="text-xs text-gray-500 group-hover:text-gray-200">{option.description}</p>
+            <h2 className="text-md font-bold ">{option.label}</h2>
+            <p className="text-xs text-gray-500 ">{option.description}</p>
           </div>
         ))}
       </div>
@@ -274,12 +349,12 @@ const SelectTravelWith: React.FC<SelectTravelWithProps> = ({ selectedTravelWith,
             key={option.value}
             onClick={() => setSelectedTravelWith(option.value)}
             className={`flex flex-col group gap-1 cursor-pointer justify-center px-5 py-3 border-2 rounded-lg h-32 w-44 ${
-              selectedTravelWith === option.value ? 'bg-cyan-500 text-white' : 'hover:bg-cyan-500 hover:scale-105'
+              selectedTravelWith === option.value ? 'border-4 border-gray-600 text-cyan-600' : 'hover:border-4 border-gray-600 hover:scale-105'
             }`}
           >
             <h2 className="text-4xl">{option.icon}</h2>
-            <h2 className="text-md font-bold group-hover:text-white">{option.label}</h2>
-            <p className="text-xs text-gray-500 group-hover:text-gray-200">{option.description}</p>
+            <h2 className="text-md font-bold ">{option.label}</h2>
+            <p className="text-xs text-gray-500 ">{option.description}</p>
           </div>
         ))}
       </div>
@@ -288,4 +363,7 @@ const SelectTravelWith: React.FC<SelectTravelWithProps> = ({ selectedTravelWith,
   );
 }
 
+
+
 export default Page;
+
