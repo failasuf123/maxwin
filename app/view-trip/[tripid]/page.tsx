@@ -4,7 +4,9 @@ import { db } from '@/app/service/firebaseConfig';
 import { doc, getDoc } from '@firebase/firestore';
 import { ToastContainer, toast, Bounce} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import InfoSection from './components/infoSection';
+import InfoSection from '@/components/view-trip/InfoSection';
+import Hotels from '@/components/view-trip/Hotels';
+import PlaceToVisit from '@/components/view-trip/PlaceToVisit';
 
 interface PageProps {
   params: {
@@ -14,7 +16,6 @@ interface PageProps {
 
 const Page: React.FC<PageProps> = ({ params }) => {
   const { tripid } = params; 
-//   const [trip, setTrip] = useState([]);
   const [trip, setTrip] = useState<{ [key: string]: any } | null>(null);
 
   
@@ -45,8 +46,10 @@ const Page: React.FC<PageProps> = ({ params }) => {
     }}
 
   return (
-    <div>
+    <div className="p-10 md:px-20 lg:px-44 xl:px-56">
       <InfoSection trip={trip} />
+      <Hotels trip={trip} />
+      <PlaceToVisit trip={trip} />
 
       <ToastContainer
           position="top-center"
