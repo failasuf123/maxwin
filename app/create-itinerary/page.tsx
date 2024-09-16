@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { AI_PROMPT } from '@/app/constants/Option';
+import { AI_PROMPT } from '@/app/constants/option';
 import { chatSession } from '@/app/service/AIModel';
 import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios'
