@@ -1,4 +1,5 @@
 import React from 'react';
+import PlaceCardItem from './PlaceCardItem';
 
 interface Place {
   geoCoordinates: string;
@@ -38,19 +39,7 @@ function PlaceToVisit({ trip }: { trip: TripData | null }) {
 
           <div className="grid grid-cols-2 md:grid-cols-1 ">
             {day.plan.map((place: Place, index: number) => (
-                <div key={index} className="p-4 ">
-                <p className="text-base font-semibold mt-1 text-cyan-600 mb-1 ml-1">{place.timeTravel}</p>
-                <div className="border rounded-xl p-3  flex-row md:flex  gap-4 items-center">
-                    <div>
-                        <img src="/placeholder.png" className="rounded-lg w-[130px] h-[130px]"/>    
-                    </div>
-                    <div >
-                        <h2 className="text-md:text-lg font-semibold">{place.placeName}</h2>
-                        <p className="text-xs text-gray-500 md:text-sm mt-1">{place.placeDetails}</p>
-                        <p className="text-xs md:text-sm mt-1 font-semibold text-green-600">{place.ticketPricing} (estimasi)</p>
-                    </div>        
-                </div>
-                </div>
+                <PlaceCardItem item={place} index={index} />
             ))}
           </div>
         </div>

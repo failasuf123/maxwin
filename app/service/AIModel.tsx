@@ -1,10 +1,13 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
   
-  // const apiKey = process.env.GOOGLE_GEMINI_AI_API_KEY;
-  const apiKey = "AIzaSyB-xfdrRzcIf3CXCJptsKMz1z6Q0qyYccM";
-  const genAI = new GoogleGenerativeAI(apiKey);
-  
+const apiKey = process.env.NEXT_PUBLIC_GOOGLE_GEMINI_AI_API_KEY;
+
+if (!apiKey) {
+  throw new Error("API key is missing. Please check your environment variables.");
+}
+
+const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
     model: "gemini-1.5-flash",
   });
