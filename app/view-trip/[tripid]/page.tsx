@@ -4,9 +4,9 @@ import { db } from '@/app/service/firebaseConfig';
 import { doc, getDoc } from '@firebase/firestore';
 import { ToastContainer, toast, Bounce} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import InfoSection from '@/components/view-trip/InfoSection';
-import Hotels from '@/components/view-trip/Hotels';
-import PlaceToVisit from '@/components/view-trip/PlaceToVisit';
+import InfoSection from '@/components/create-itinerary/InfoSection';
+import Hotels from '@/components/create-itinerary/Hotels';
+import PlaceToVisit from '@/components/create-itinerary/PlaceToVisit';
 
 interface PageProps {
   params: {

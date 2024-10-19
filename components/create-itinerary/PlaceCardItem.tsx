@@ -26,7 +26,6 @@ function PlaceCardItem({ item, index }: { item: Place, index:number }) {
       try {
         const response = await GetPlacesDetails(data);
         const PhotoUrl = PHOTO_REF_URL.replace('{NAME}',response.data.places[0].photos[3].name)
-        console.log(response)
         setPhotoUrl(PhotoUrl)
       } catch (error: any) {
         console.error('Error:', error.response ? error.response.data : error.message);
