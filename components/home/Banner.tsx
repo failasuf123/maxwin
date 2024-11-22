@@ -29,7 +29,7 @@ function Banner() {
   return (
     <div className="flex items-center flex-col gap-5">
       <h2 className="text-2xl md:text-4xl font-semibold text-center">
-        Buat Rencana Berwisata, Booking Hotel, dan Lihat Pengalaman Wisata Orang Lain
+        Buat Rencana Berwisata, Booking Hotel, dan <span className="text-red-400">Lihat Pengalaman Wisata Orang Lain</span>
       </h2>
 
       {isLoading ? (

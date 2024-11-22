@@ -37,7 +37,7 @@ function InfoSection({ trip }: { trip: TripData | null }) {
         <h2 className="bg-gray-200 cursor-default text-sm md:text-base px-3 py-2 border rounded-full">💰 {trip?.userSelection?.budget} Budget</h2>
         <h2 className="bg-gray-200 cursor-default text-sm md:text-base px-3 py-2 border rounded-full">🗓️ {trip?.userSelection?.days} Days</h2>
         <h2 className="bg-gray-200 cursor-default text-sm md:text-base px-3 py-2 border rounded-full">🏝️ {trip?.userSelection?.travelWith}</h2>
-     </div>
+      </div>
 
     </div>
   );
