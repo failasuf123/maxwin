@@ -12,12 +12,13 @@
   "dependencies": {
     "@google/generative-ai": "^0.17.1",
     "@radix-ui/react-dialog": "^1.1.1",
-    "@radix-ui/react-dropdown-menu": "^2.1.1",
+    "@radix-ui/react-dropdown-menu": "^2.1.2",
     "@radix-ui/react-icons": "^1.3.0",
     "@radix-ui/react-popover": "^1.1.1",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.1",
     "@react-oauth/google": "^0.12.1",
+    "@uploadthing/react": "^7.1.1",
     "axios": "^1.7.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -25,14 +26,16 @@
     "lucide-react": "^0.437.0",
     "nanoid": "^5.0.7",
     "next": "14.2.7",
+    "next-auth": "^4.24.10",
     "next-themes": "^0.3.0",
     "react": "^18",
     "react-dom": "^18",
     "react-icons": "^5.3.0",
-    "react-toastify": "^10.0.5",
+    "react-toastify": "^10.0.6",
     "shadcn-ui": "^0.9.0",
     "tailwind-merge": "^2.5.2",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "uploadthing": "^7.3.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.5.0",
@@ -42,8 +45,8 @@
     "@types/react-dom": "^18",
     "jest": "^29.7.0",
     "postcss": "^8",
-    "prisma": "^5.19.1",
+    "prisma": "^5.22.0",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5.5.4"
+    "typescript": "^5.7.2"
   }
 }

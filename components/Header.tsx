@@ -6,7 +6,6 @@ import { googleLogout, useGoogleLogin } from '@react-oauth/google';
 import { useRouter } from 'next/navigation';
 import axios from 'axios'
 
-
 import {
     Popover,
     PopoverContent,
@@ -65,7 +64,7 @@ function Header() {
                 <div className=" ">
                     {users ?
                         <div className="flex items-center gap-2 md:gap-4 ">
-                            <Link href="/mytrip">
+                            <Link href="/mytrip-ai">
                             <Button variant="outline" className="border-2 px-4 py-2 rounded-xl cursor-pointer hover:scale-95" >My Trip</Button>
                             </Link>
                             <Popover>
