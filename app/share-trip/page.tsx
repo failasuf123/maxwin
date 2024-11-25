@@ -1,7 +1,7 @@
 "use client";
 
 import HomeUpper from "@/components/share-trip/HomeUpper";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ContentWisata from "@/components/share-trip/container/ContentWisata";
 import ContentUlasan from "@/components/share-trip/container/ContentUlasan";
 import WisataForm from "@/components/share-trip/form/FormWisata";
@@ -124,11 +124,15 @@ const Page: React.FC = () => {
   const [description, setDescription] = useState("");
   const [totalDays, setTotalDays] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
-  const userItem = localStorage.getItem('user');
-  const user = userItem ? JSON.parse(userItem) : null;    
+  // const userItem = localStorage.getItem('user');
+  const [user, setUser] = useState<{ name?: string; picture?: string; id?: string; email?:string } | null>(null);
+  // const user = userItem ? JSON.parse(userItem) : null;    
   const username = user?.name || "no name";
   const userpicture = user?.picture || "/default-picture.png";
   const userid = user?.id || "noid";
+  const nanoFirst = nanoid(3);
+  const nanoLast = nanoid(4);
+  const docId = nanoFirst + Date.now().toString() + nanoLast
   const [imageUrlCover,setImageUrlCover] = useState("/placeholder.png")
   const [imageKeyCover,setImageKeyCover] = useState("")
   const [todos, setTodos] = useState<
@@ -156,6 +160,13 @@ const Page: React.FC = () => {
   const [todoType, setTodoType] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+
+  useEffect(() => {
+    const userItem = localStorage.getItem("user");
+    if (userItem) {
+      setUser(JSON.parse(userItem));
+    }
+  }, []);
 
 
   const handleAddTodo = (type: string, date: Date) => {
@@ -260,11 +271,7 @@ const Page: React.FC = () => {
 
   const submitExperiance = async (e: React.FormEvent) => {
     e.preventDefault();
-    const userItem = localStorage.getItem('user');
-    const user = userItem ? JSON.parse(userItem) : null;    
-    const nanoFirst = nanoid(3);
-    const nanoLast = nanoid(4);
-    const docId = nanoFirst + Date.now().toString() + nanoLast
+
 
     const cleanedTodos = Object.keys(todos).reduce((acc, date) => {
       const uniqueTasks = Array.from(
