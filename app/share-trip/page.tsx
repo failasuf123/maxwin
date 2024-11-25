@@ -1,7 +1,16 @@
 "use client";
+
 import HomeUpper from "@/components/share-trip/HomeUpper";
 import React, { useState } from "react";
-
+import ContentWisata from "@/components/share-trip/container/ContentWisata";
+import ContentUlasan from "@/components/share-trip/container/ContentUlasan";
+import WisataForm from "@/components/share-trip/form/FormWisata";
+import ContentTransportasi from "@/components/share-trip/container/ContentTransportasi";
+import { doc, setDoc } from "firebase/firestore"; 
+import { nanoid } from 'nanoid';
+import { db } from '@/app/service/firebaseConfig';
+import { useGoogleLogin } from '@react-oauth/google';
+import axios from 'axios'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,10 +18,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import ContentWisata from "@/components/share-trip/container/ContentWisata";
-import ContentUlasan from "@/components/share-trip/container/ContentUlasan";
-import WisataForm from "@/components/share-trip/form/FormWisata";
-import ContentTransportasi from "@/components/share-trip/container/ContentTransportasi";
+import { UploadDropzone } from "@/app/utils/uploadthing";
+import UlasanForm from "@/components/share-trip/form/FormUlasan";
 
 interface VacationPlan {
   title: string;
@@ -106,6 +113,8 @@ const categories = [
   "Explore",
 ];
 
+
+
 const Page: React.FC = () => {
   const [title, setTitle] = useState("");
   const [city, setCity] = useState("");
@@ -115,7 +124,13 @@ const Page: React.FC = () => {
   const [description, setDescription] = useState("");
   const [totalDays, setTotalDays] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
-  const username = "I Made Vivaldi";
+  const userItem = localStorage.getItem('user');
+  const user = userItem ? JSON.parse(userItem) : null;    
+  const username = user?.name || "no name";
+  const userpicture = user?.picture || "/default-picture.png";
+  const userid = user?.id || "noid";
+  const [imageUrlCover,setImageUrlCover] = useState("/placeholder.png")
+  const [imageKeyCover,setImageKeyCover] = useState("")
   const [todos, setTodos] = useState<
     Record<
       string,
@@ -135,12 +150,13 @@ const Page: React.FC = () => {
 
   const [showInitialModal, setShowInitialModal] = useState(true);
   const [showTodoModal, setShowTodoModal] = useState(false);
-  // const [todo, setTodo] = useState<typeof initialTodoState[]>([]);
   const [todo, setTodo] = useState<Todo[]>([]);
-
   const [newTodo, setNewTodo] = useState<Todo | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [todoType, setTodoType] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+
 
   const handleAddTodo = (type: string, date: Date) => {
     const formattedDate = date.toISOString().split("T")[0];
@@ -150,7 +166,6 @@ const Page: React.FC = () => {
       name: "",
       description: "",
       cost: 0,
-      // time: new Date().toISOString().substr(11, 5),
       timeStart: new Date().toISOString().substr(11, 5),
       timeEnd: "",
       tag: [],
@@ -169,12 +184,10 @@ const Page: React.FC = () => {
         const updatedTodos = { ...prevTodos };
         const date = newTodo.date;
 
-        // Pastikan tidak ada duplikasi
         if (!updatedTodos[date]) {
           updatedTodos[date] = [];
         }
 
-        // Cek apakah todo dengan detail yang sama sudah ada
         const isDuplicate = updatedTodos[date].some(
           (todo) =>
             todo.name === newTodo.name &&
@@ -245,8 +258,13 @@ const Page: React.FC = () => {
     });
   };
 
-  const submitExperiance = (e: React.FormEvent) => {
+  const submitExperiance = async (e: React.FormEvent) => {
     e.preventDefault();
+    const userItem = localStorage.getItem('user');
+    const user = userItem ? JSON.parse(userItem) : null;    
+    const nanoFirst = nanoid(3);
+    const nanoLast = nanoid(4);
+    const docId = nanoFirst + Date.now().toString() + nanoLast
 
     const cleanedTodos = Object.keys(todos).reduce((acc, date) => {
       const uniqueTasks = Array.from(
@@ -269,9 +287,11 @@ const Page: React.FC = () => {
       acc[date] = uniqueTasks;
       return acc;
     }, {} as typeof todos);
+    const imageCover = imageUrlCover
 
     const response = {
       title,
+      imageCover,
       city,
       dateStart,
       dateEnd,
@@ -284,6 +304,13 @@ const Page: React.FC = () => {
     };
 
     console.log("Response: ", response);
+    await setDoc(doc(db, "ShareTrips", docId), {
+      tripData: response,
+      userPicture: userpicture,
+      userEmail:user?.email,
+      userId: user?.id,
+      id:docId,
+    });
   };
 
   const renderTodoForm = () => {
@@ -306,28 +333,11 @@ const Page: React.FC = () => {
         return <WisataForm newTodo={newTodo} setNewTodo={setNewTodo} />;
       case "belanjasewa":
         return <WisataForm newTodo={newTodo} setNewTodo={setNewTodo} />;
-      case "ulasan":
-        return (
-          <>
-            <input
-              type="text"
-              placeholder="Judul"
-              value={newTodo.name}
-              onChange={(e) => setNewTodo({ ...newTodo, name: e.target.value })}
-              required
-              className="w-full p-2 border rounded"
-            />
-            <textarea
-              placeholder="Deskripsi"
-              value={newTodo.description}
-              onChange={(e) =>
-                setNewTodo({ ...newTodo, description: e.target.value })
-              }
-              required
-              className="w-full p-2 border rounded"
-            />
-          </>
-        );
+        case "ulasan":
+         
+          return <UlasanForm newTodo={newTodo} setNewTodo={setNewTodo} />;
+
+        
       case "hotel":
         return <p className="text-center text-gray-500">Coming Soon!</p>;
     }
@@ -348,74 +358,98 @@ const Page: React.FC = () => {
             <h2 className="text-xl font-semibold text-center">
               Isi Itinerary Anda
             </h2>
-            <div className="text-sm text-gray-500 mt-5">Judul</div>
-            <input
-              type="text"
-              placeholder="Judul"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              className="w-full p-2 border rounded"
-            />
-            <div className="text-sm text-gray-500 mt-1">Pilih Kota</div>
-            <input
-              type="text"
-              placeholder="City"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              required
-              className="w-full p-2 border rounded"
-            />
-            <div className="flex flex-row items-center gap-2 w-full">
-              <div className="flex flex-col items-start gap-1">
-                <div className="text-sm text-gray-500">Memulai Trip</div>
+            <div className="flex flex-row items-center gap-2 px-2">
+              <div>
+                <div className="text-sm text-gray-500 mt-5">Judul</div>
                 <input
-                  type="date"
-                  value={dateStart}
-                  onChange={(e) => setDateStart(e.target.value)}
+                  type="text"
+                  placeholder="Judul"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
                   required
                   className="w-full p-2 border rounded"
                 />
-              </div>
-
-              <div className="flex flex-col items-start gap-1">
-                <div className="text-sm text-gray-500">Trip Berakhir</div>
+                <div className="text-sm text-gray-500 mt-1">Pilih Kota</div>
                 <input
-                  type="date"
-                  value={dateEnd}
-                  onChange={(e) => setDateEnd(e.target.value)}
+                  type="text"
+                  placeholder="City"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
                   required
                   className="w-full p-2 border rounded"
+                />
+                <div className="flex flex-row items-center gap-2 w-full">
+                  <div className="flex flex-col items-start gap-1">
+                    <div className="text-sm text-gray-500">Memulai Trip</div>
+                    <input
+                      type="date"
+                      value={dateStart}
+                      onChange={(e) => setDateStart(e.target.value)}
+                      required
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+
+                  <div className="flex flex-col items-start gap-1">
+                    <div className="text-sm text-gray-500">Trip Berakhir</div>
+                    <input
+                      type="date"
+                      value={dateEnd}
+                      onChange={(e) => setDateEnd(e.target.value)}
+                      required
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                </div>
+
+                <div className="text-sm text-gray-500 mt-5">Pilih Kategori</div>
+
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  required
+                  className="w-full p-2 border rounded bg-white"
+                >
+                  <option value="" disabled>
+                    Select Category
+                  </option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center flex-col justify-center">
+                <div className="text-sm text-gray-500 mt-1">Deskripsikan Trip</div>
+                <textarea
+                  placeholder="Deskripsi"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                  className="w-full p-2 border rounded"
+                />
+
+                <UploadDropzone
+                  className="border-gray-600 "
+                  endpoint="imageUploader"
+                  onClientUploadComplete={async (res) => {
+                    console.log(res[0].url)
+                    console.log(res[0].key)
+
+                    setImageUrlCover(res[0].url);
+                    setImageKeyCover(res[0].key);
+                    console.log("Files: ", res);
+    
+                  }}
+                  onUploadError={(error: Error) => {
+                      console.error("Upload error:", error.message);
+                  }}
                 />
               </div>
             </div>
-
-            <div className="text-sm text-gray-500 mt-5">Pilih Kategori</div>
-
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              required
-              className="w-full p-2 border rounded bg-white"
-            >
-              <option value="" disabled>
-                Select Category
-              </option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-
-            <div className="text-sm text-gray-500 mt-1">Deskripsikan Trip</div>
-            <textarea
-              placeholder="Deskripsi"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-              className="w-full p-2 border rounded"
-            />
+ 
 
             <button
               type="submit"
@@ -438,6 +472,7 @@ const Page: React.FC = () => {
             category={category}
             cost={totalPrice}
             author={username}
+            image={imageUrlCover}
           />
 
           {/* Display Dates */}
@@ -587,6 +622,7 @@ const Page: React.FC = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };

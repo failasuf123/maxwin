@@ -31,6 +31,16 @@ const UlasanForm: React.FC<UlasanFormProps> = ({ newTodo, setNewTodo }) => {
       required
       className="w-full p-2 border rounded"
     />
+          <input
+        type="time"
+        placeholder="Waktu Mulai"
+        value={newTodo.timeStart || ""}
+        onChange={(e) =>
+          setNewTodo({ ...newTodo, timeStart: e.target.value })
+        }
+        required
+        className="w-full p-2 border rounded"
+      />
     </>
   );
 };

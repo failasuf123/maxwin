@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { GetPlacesDetails, PHOTO_REF_URL } from '@/app/service/GlobalApi';
 
 
-function HomeUpper({ title, description, city, days, category, cost, author}: { title:string, description:string, city: string, days: number, category: string, cost:number, author:string}) {
+function HomeUpper({ title, description, city, days, category, cost, author, image}: { title:string, description:string, city: string, days: number, category: string, cost:number, author:string, image:string}) {
 
   const [photoUrl, setPhotoUrl] = useState("/placeholder.png");
   useEffect(() => {
@@ -25,10 +25,11 @@ function HomeUpper({ title, description, city, days, category, cost, author}: { 
   return (
     <div >
       <div>
-        <img src={photoUrl} alt="Trip Image"  className="h-[340px] w-full object-cover rounded"/>
+        {/* <img src={photoUrl} alt="Trip Image"  className="h-[340px] w-full object-cover rounded"/> */}
+        <img src={image} alt="Trip Image"  className="h-[340px] w-full object-cover rounded"/>
 
           <h2 className="font-bold text-2xl md:text-3xl mt-3">{title}</h2>
-          <p className="text-base text-gray-400 mt-2">- {author} -</p>
+          <p className="text-base text-gray-400 mt-2">- dibuat oleh: {author} -</p>
         <div className="flex flex-row flex-wrap gap-2 mt-3">
           <h2 className="bg-gray-200 cursor-default text-sm md:text-base px-3 py-2 border rounded-full">💰 {cost.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</h2>
           <h2 className="bg-gray-200 cursor-default text-sm md:text-base px-3 py-2 border rounded-full">🗓️ {days} Hari</h2>
