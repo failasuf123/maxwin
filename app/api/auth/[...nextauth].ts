@@ -1,7 +1,6 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-
 const clientId = process.env.NEXT_PUBLIC_GOOGLE_AUTH_CLIENT_ID;
 const clientSecret = process.env.NEXT_PUBLIC_GOOGLE_AUTH_CLIENT_SECRET;
 
@@ -19,10 +18,9 @@ export default NextAuth({
   callbacks: {
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.sub; // Menambahkan `id` ke objek sesi
+        session.user.id = token.sub; // Sekarang tidak ada error
       }
       return session;
     },
   },
 });
-
