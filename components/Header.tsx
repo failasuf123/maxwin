@@ -55,51 +55,16 @@ function Header() {
 
     return (
         <div>
-            <nav className="flex justify-between items-center border-b border-border h-[60px] px-4 py-2">
+            <nav className="flex justify-center items-center border-b border-border h-[60px] px-4 py-2">
+                <div>
+                    
+                </div>
                 <div>
                     <Link href={"/"} className="font-bold text-xl bg-gradient-to-r from-red-400 to-blue-400 text-transparent bg-clip-text hover:cursor-pointer">
                         <img src="/tripio-logo.png" height={40} width={120} alt="Tripio Logo"/>
                     </Link>
                 </div>
-                <div className=" ">
-                    {users ?
-                        <div className="flex items-center gap-2 md:gap-4 ">
-                            <Link href="/mytrip-ai">
-                            <Button variant="outline" className="border-2 px-4 py-2 rounded-xl cursor-pointer hover:scale-95" >My Trip</Button>
-                            </Link>
-                            <Popover>
-                                <PopoverTrigger>
-                                    <img src={users?.picture} alt="" className="h-[35px] w-[35px] rounded-full"/>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-40 items-center flex justify-center">
-                                    <Button 
-                                        className="bg-red-500 hover:bg-red-600"
-                                        onClick={() => {
-                                            googleLogout();
-                                            localStorage.clear();
-                                            window.location.reload();
-                                            // navigation.push("/")
-                                        }}
-                                        >
-                                        Logout
-                                    </Button>
-                                </PopoverContent>
-                            </Popover>
 
-                        </div>
-                        :
-                        <div>
-                            <Button 
-                                onClick={() => {
-                                    setOpenDialog(true);
-                                }}
-                                className="text-white bg-gray-800 px-4 py-2 rounded-xl cursor-pointer hover:scale-95"
-                                >
-                                Sign In
-                            </Button>
-                        </div>
-                    }
-                </div>
             </nav>
             <Dialog open={openDialog}>
                 <DialogContent>

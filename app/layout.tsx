@@ -4,6 +4,22 @@ import "./globals.css";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import React from "react";
 import Header from "@/components/Header";
+import  Sidebar from "@/components/sidebar";
+import { AppSidebar } from "@/components/sidebar/app-sidebar"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -24,8 +40,15 @@ export default function RootLayout({
     <html lang="en">
       <GoogleOAuthProvider clientId={clientId || ""}>
         <body className={inter.className}>
-          <Header />
-          {children}
+        <SidebarProvider>
+
+          <Sidebar />
+          <div>
+            <Header />
+            
+            {children}
+          </div>
+          </SidebarProvider>
         </body>
       </GoogleOAuthProvider>
     </html>
