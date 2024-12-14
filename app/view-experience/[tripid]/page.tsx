@@ -58,7 +58,7 @@ const Page: React.FC<PageProps> = ({ params }) => {
   };
 
   return (
-    <div className="p-10 md:px-20 lg:px-44 xl:px-56">
+    <div className="p-10 md:px-28">
       <HeaderUpper trip={trip} />
       {/* {trip ? <ContentItinerary trip={trip} /> : <p>Loading or no data available</p>} */}
       <ContentItinerary trip={trip as any} />
