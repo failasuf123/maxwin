@@ -35,7 +35,7 @@ interface UserTrip {
 console.log("PhotoURL",photoUrl)
 
     return (
-    <Link href={`view-trip/${trip?.id}`}>
+    <Link href={`/view-trip/${trip?.id}`}>
       <div>
         <img
           src={photoUrl}

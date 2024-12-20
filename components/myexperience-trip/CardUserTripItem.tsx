@@ -34,7 +34,7 @@ import Link from 'next/link'
       
 
     return (
-    <Link href={`view-trip/${trip?.id}`}>
+    <Link href={`/view-experience/${trip?.id}`}>
       <div>
         <img
           src={trip?.tripData?.imageCover || '/placeholder.png'}
