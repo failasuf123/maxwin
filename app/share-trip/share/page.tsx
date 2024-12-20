@@ -154,8 +154,11 @@ const Page: React.FC = () => {
 
   const [showInitialModal, setShowInitialModal] = useState(true);
   const [showTodoModal, setShowTodoModal] = useState(false);
+  const [todo, setTodo] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState<Todo | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [todoType, setTodoType] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
 
   useEffect(() => {

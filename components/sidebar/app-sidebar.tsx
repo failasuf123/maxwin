@@ -38,16 +38,16 @@ const data = {
     list:[
     {
       title: "👣 Perjalanan Orang Lain",
-      url: "#",
+      url: "/",
 
     },
     {
       title: "🛏️ Hotel",
-      url: "#",
+      url: "/hotel",
     },
     {
       title: "🏖️ Tempat Wisata",
-      url: "#",
+      url: "/activites",
     },
   ]
   },
@@ -78,15 +78,15 @@ const data = {
     list:[
     {
       title: "🪄 Buat Menggunakan AI",
-      url: "#",
+      url: "/create-itinerary",
     },
     {
       title: "✨ Buat Secara Manual",
-      url: "#",
+      url: "",
     },
     {
       title: "🗺️ Bagikan Pengalaman Kamu",
-      url: "#",
+      url: "/share-trip",
 
     },
   ]
