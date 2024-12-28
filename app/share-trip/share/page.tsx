@@ -3,14 +3,12 @@
 import HomeUpper from "@/components/share-trip/HomeUpper";
 import React, { useEffect, useState } from "react";
 import ContentWisata from "@/components/share-trip/container/ContentWisata";
-import ContentUlasan from "@/components/share-trip/container/ContentUlasan";
+import ContentUlasan from "@/components/share-trip/container/ContentCatatan";
 import WisataForm from "@/components/share-trip/form/FormWisata";
 import ContentTransportasi from "@/components/share-trip/container/ContentTransportasi";
-import { doc, setDoc } from "firebase/firestore"; 
-import { nanoid } from 'nanoid';
-import { db } from '@/app/service/firebaseConfig';
-import { useGoogleLogin } from '@react-oauth/google';
-import axios from 'axios'
+import { doc, setDoc } from "firebase/firestore";
+import { nanoid } from "nanoid";
+import { db } from "@/app/service/firebaseConfig";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,25 +16,23 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button"
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
 import { UploadDropzone } from "@/app/utils/uploadthing";
 import UlasanForm from "@/components/share-trip/form/FormUlasan";
-
-interface VacationPlan {
-  title: string;
-  city: string;
-  category: string;
-  startDate: string;
-  endDate: string;
-  description: string;
-  cost: number;
-  days: number;
-  listTodo: ListTodo[];
-}
-
-interface ListTodo {
-  day: string;
-  tasks: Todo[];
-}
+import { GetPlacesDetails, PHOTO_REF_URL } from "@/app/service/GlobalApi";
+import { FaPen } from "react-icons/fa";
+import { CiCalendarDate } from "react-icons/ci";
+import { BsStars } from "react-icons/bs";
 
 type Todo = {
   type: string;
@@ -71,18 +67,6 @@ const generateDateList = (start: string, end: string): Date[] => {
   return dates;
 };
 
-const initialTodoState = {
-  type: "",
-  name: "",
-  description: "",
-  cost: 0,
-  // timeStart: new Date().toISOString().substr(11, 5),
-  timeStart: "",
-  timeEnd:"",
-  tag: [] as string[],
-  image: "",
-  imageList: [] as string[],
-};
 const getTodoStyling = (type: string) => {
   switch (type) {
     case "wisata":
@@ -93,7 +77,7 @@ const getTodoStyling = (type: string) => {
       return "bg-green-50";
     case "pengalaman":
       return "bg-purple-50";
-    case "ulasan":
+    case "catatan":
       return "bg-gray-50";
     default:
       return "bg-white";
@@ -113,28 +97,31 @@ const categories = [
   "Explore",
 ];
 
-
-
 const Page: React.FC = () => {
   const [title, setTitle] = useState("");
   const [city, setCity] = useState("");
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
   const [category, setCategory] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(
+    "Deskripsi akan menarik perhatian orang lain terhadap pengalaman liburan anda, Deskripsikan perjalanan anda disini"
+  );
   const [totalDays, setTotalDays] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
-  // const userItem = localStorage.getItem('user');
-  const [user, setUser] = useState<{ name?: string; picture?: string; id?: string; email?:string } | null>(null);
-  // const user = userItem ? JSON.parse(userItem) : null;    
+  const [user, setUser] = useState<{
+    name?: string;
+    picture?: string;
+    id?: string;
+    email?: string;
+  } | null>(null);
   const username = user?.name || "no name";
   const userpicture = user?.picture || "/default-picture.png";
   const userid = user?.id || "noid";
   const nanoFirst = nanoid(3);
   const nanoLast = nanoid(4);
-  const docId = nanoFirst + Date.now().toString() + nanoLast
-  const [imageUrlCover,setImageUrlCover] = useState("/placeholder.png")
-  const [imageKeyCover,setImageKeyCover] = useState("")
+  const docId = nanoFirst + Date.now().toString() + nanoLast;
+  const [imageUrlCover, setImageUrlCover] = useState("");
+  const [imageKeyCover, setImageKeyCover] = useState("");
   const [todos, setTodos] = useState<
     Record<
       string,
@@ -144,22 +131,18 @@ const Page: React.FC = () => {
         description: string;
         cost: number;
         timeStart: string;
-        timeEnd:string;
-        tag:string[];
+        timeEnd: string;
+        tag: string[];
         image: string;
         imageList: string[];
       }>
     >
   >({});
 
-  const [showInitialModal, setShowInitialModal] = useState(true);
   const [showTodoModal, setShowTodoModal] = useState(false);
-  const [todo, setTodo] = useState<Todo[]>([]);
+  const [showDateModal, setShowDateModal] = useState(false)
   const [newTodo, setNewTodo] = useState<Todo | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [todoType, setTodoType] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
 
   useEffect(() => {
     const userItem = localStorage.getItem("user");
@@ -168,6 +151,13 @@ const Page: React.FC = () => {
     }
   }, []);
 
+  const dateList =
+  dateStart && dateEnd ? generateDateList(dateStart, dateEnd) : [];
+
+  useEffect(() => {
+    const days = calculateTotalDays(dateStart, dateEnd);
+    setTotalDays(days);
+  }, [dateList])
 
   const handleAddTodo = (type: string, date: Date) => {
     const formattedDate = date.toISOString().split("T")[0];
@@ -184,7 +174,7 @@ const Page: React.FC = () => {
       imageList: [],
       date: formattedDate,
     });
-    setTodoType(type); // Perbarui todoType
+    setTodoType(type); 
     setShowTodoModal(true);
   };
 
@@ -225,34 +215,23 @@ const Page: React.FC = () => {
     }
   };
 
-  const handleInitialSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const days = calculateTotalDays(dateStart, dateEnd);
-    setTotalDays(days);
-    setShowInitialModal(false);
-  };
 
   const handleDeleteTodo = (dateKey: string, index: number) => {
     let costToReduce = 0;
 
     setTodos((prevTodos) => {
       const updatedTodos = { ...prevTodos };
-
-      // Ambil todo yang akan dihapus
       const todoToDelete = updatedTodos[dateKey][index];
 
-      // Hitung costToReduce
       costToReduce =
         typeof todoToDelete.cost === "string"
           ? parseFloat(todoToDelete.cost) || 0
           : todoToDelete.cost;
 
-      // Hapus todo berdasarkan indeks
       updatedTodos[dateKey] = updatedTodos[dateKey].filter(
         (_, i) => i !== index
       );
 
-      // Hapus key jika tidak ada todo lagi pada tanggal tersebut
       if (updatedTodos[dateKey].length === 0) {
         delete updatedTodos[dateKey];
       }
@@ -272,7 +251,6 @@ const Page: React.FC = () => {
   const submitExperiance = async (e: React.FormEvent) => {
     e.preventDefault();
 
-
     const cleanedTodos = Object.keys(todos).reduce((acc, date) => {
       const uniqueTasks = Array.from(
         new Set(
@@ -284,7 +262,7 @@ const Page: React.FC = () => {
               cost: todo.cost,
               image: todo.image,
               imageList: todo.imageList,
-              tag:todo.tag,
+              tag: todo.tag,
               timeStart: todo.timeStart,
               timeEnd: todo.timeEnd,
             })
@@ -294,7 +272,7 @@ const Page: React.FC = () => {
       acc[date] = uniqueTasks;
       return acc;
     }, {} as typeof todos);
-    const imageCover = imageUrlCover
+    const imageCover = imageUrlCover;
 
     const response = {
       title,
@@ -314,9 +292,9 @@ const Page: React.FC = () => {
     await setDoc(doc(db, "ShareTrips", docId), {
       tripData: response,
       userPicture: userpicture,
-      userEmail:user?.email,
+      userEmail: user?.email,
       userId: user?.id,
-      id:docId,
+      id: docId,
     });
   };
 
@@ -331,7 +309,7 @@ const Page: React.FC = () => {
             <WisataForm newTodo={newTodo} setNewTodo={setNewTodo} />
           </>
         );
-      
+
       case "transportasi":
         return <WisataForm newTodo={newTodo} setNewTodo={setNewTodo} />;
       case "kuliner":
@@ -340,156 +318,147 @@ const Page: React.FC = () => {
         return <WisataForm newTodo={newTodo} setNewTodo={setNewTodo} />;
       case "belanjasewa":
         return <WisataForm newTodo={newTodo} setNewTodo={setNewTodo} />;
-        case "ulasan":
-         
-          return <UlasanForm newTodo={newTodo} setNewTodo={setNewTodo} />;
+      case "catatan":
+        return <UlasanForm newTodo={newTodo} setNewTodo={setNewTodo} />;
 
-        
       case "hotel":
         return <p className="text-center text-gray-500">Coming Soon!</p>;
     }
   };
 
-  const dateList =
-    dateStart && dateEnd ? generateDateList(dateStart, dateEnd) : [];
+ 
+
+
 
   return (
-    <div className="p-4">
-      {/* Initial Modal */}
-      {showInitialModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75">
-          <form
-            onSubmit={handleInitialSubmit}
-            className="bg-white p-6 rounded-md shadow-lg space-y-4"
-          >
-            <h2 className="text-xl font-semibold text-center">
-              Isi Itinerary Anda
-            </h2>
-            <div className="flex flex-row items-center gap-2 px-2">
-              <div>
-                <div className="text-sm text-gray-500 mt-5">Judul</div>
+    <div className="flex min-h-screen w-full flex-col items-center justify-between p-5 px-5 md:px-20 lg:px-32">
+
+
+      {/* Display itinerary details */}
+        <div className="flex flex-col w-full items-center py-8 px-5">
+          {/* Header Upper */}
+          <div className="w-full">
+            <div>
+              {imageUrlCover ? (
+                <img
+                  src={imageUrlCover}
+                  alt="Trip Image"
+                  className="h-[340px] w-full object-cover rounded"
+                />
+              ) : (
+                <UploadDropzone
+                  className="border-4 border-dashed border-blue-400 h-[340px] w-full"
+                  endpoint="imageUploader"
+                  onClientUploadComplete={async (res) => {
+                    console.log(res[0].url);
+                    console.log(res[0].key);
+
+                    setImageUrlCover(res[0].url);
+                    setImageKeyCover(res[0].key);
+                    console.log("Files: ", res);
+                  }}
+                  onUploadError={(error: Error) => {
+                    console.error("Upload error:", error.message);
+                  }}
+                />
+              )}
+
+              {/* <h2 className="font-bold text-2xl md:text-3xl mt-3">{title}</h2> */}
+              <div className="flex flex-row items-center gap-2">
+                <div className="flex justify-center items-center text-center text-gray-400 text-xl">
+                  <FaPen className="text-xl text-center mt-3" />
+                </div>
                 <input
                   type="text"
                   placeholder="Judul"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
-                  className="w-full p-2 border rounded"
+                  className="w-full mt-5 font-bold text-xl md:text-3xl outline-none focus:outline-none "
                 />
-                <div className="text-sm text-gray-500 mt-1">Pilih Kota</div>
-                <input
-                  type="text"
-                  placeholder="City"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  required
-                  className="w-full p-2 border rounded"
-                />
-                <div className="flex flex-row items-center gap-2 w-full">
-                  <div className="flex flex-col items-start gap-1">
-                    <div className="text-sm text-gray-500">Memulai Trip</div>
-                    <input
-                      type="date"
-                      value={dateStart}
-                      onChange={(e) => setDateStart(e.target.value)}
-                      required
-                      className="w-full p-2 border rounded"
-                    />
-                  </div>
+              </div>
 
-                  <div className="flex flex-col items-start gap-1">
-                    <div className="text-sm text-gray-500">Trip Berakhir</div>
-                    <input
-                      type="date"
-                      value={dateEnd}
-                      onChange={(e) => setDateEnd(e.target.value)}
-                      required
-                      className="w-full p-2 border rounded"
-                    />
-                  </div>
+              <p className="text-base text-gray-400 mt-2 ">
+                - dibuat oleh: {username} -
+              </p>
+  
+              <div className="flex flex-row flex-wrap gap-2 mt-3">
+                {/* Total Price Input */}
+                <h2 className="bg-gray-200 cursor-default items-center text-center text-sm md:text-base px-3 py-2 border rounded-full">
+                  💰{" "}
+                  {totalPrice.toLocaleString("id-ID", {
+                    style: "currency",
+                    currency: "IDR",
+                  })}
+                </h2>
+
+                {/* Total Days Input */}
+                <div onClick={() => setShowDateModal(true)}>
+                  <h2 className="bg-gray-200 cursor-pointer items-center text-center text-sm md:text-base px-3 py-2 border rounded-full">
+                    {totalDays > 0 ? `🗓️ ${totalDays} Hari` : "🗓️ Pilih Tanggal"}
+                  </h2>
                 </div>
 
-                <div className="text-sm text-gray-500 mt-5">Pilih Kategori</div>
-
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  required
-                  className="w-full p-2 border rounded bg-white"
-                >
-                  <option value="" disabled>
-                    Select Category
-                  </option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
+                {/* Category Input */}
+                <div className="flex items-center bg-gray-200 text-sm md:text-base  px-2 border rounded-full">
+                  🏝️
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    required
+                    className="w-full p-2 border rounded bg-gray-200 cursor-pointer"
+                  >
+                    <option value="" disabled>
+                      Pilih Kategori
                     </option>
-                  ))}
-                </select>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="flex flex-col mt-3">
+                <div className="font-semibold text-lg md:text-xl mt-3 text-gray-700 flex flex-row  justify-start items-center">
+                  <h2>🏙️ Kota</h2>
+                  <input
+                    type="text"
+                    placeholder="Pilih Kota"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    required
+                    className="w-44 px-1 outline-none focus:outline-none"
+                  />
+
+                  <FaPen className="text-gray-400" />
+                </div>
+                <div className="bg-gray-100 relative px-3 py-2 md:px-5 rounded-2xl mt-3 flex flex-col gap-3 ">
+                  {/* <p>{description}</p> */}
+                  <BsStars className="absolute top-5 left-3 text-gray-400" />
+                  <textarea
+                    placeholder=" Deskripsikan Perjalanan Kamu..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    required
+                    className="w-full p-2 px-3 rounded bg-gray-100 outline-none focus:outline-none"
+                  />
+                </div>
               </div>
 
-              <div className="flex items-center flex-col justify-center">
-                <div className="text-sm text-gray-500 mt-1">Deskripsikan Trip</div>
-                <textarea
-                  placeholder="Deskripsi"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
-                  className="w-full p-2 border rounded"
-                />
 
-                <UploadDropzone
-                  className="border-gray-600 "
-                  endpoint="imageUploader"
-                  onClientUploadComplete={async (res) => {
-                    console.log(res[0].url)
-                    console.log(res[0].key)
-
-                    setImageUrlCover(res[0].url);
-                    setImageKeyCover(res[0].key);
-                    console.log("Files: ", res);
-    
-                  }}
-                  onUploadError={(error: Error) => {
-                      console.error("Upload error:", error.message);
-                  }}
-                />
-              </div>
             </div>
- 
-
-            <button
-              type="submit"
-              className="w-full p-2 bg-cyan-500 text-white rounded-2xl mt-5 cursor-pointer hover:bg-black "
-            >
-              Buat Pengalaman Trip
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* Display itinerary details */}
-      {!showInitialModal && (
-        <div className="p-10 md:px-20 lg:px-44 xl:px-56">
-          <HomeUpper
-            title = {title}
-            description = {description}
-            city={city}
-            days={totalDays}
-            category={category}
-            cost={totalPrice}
-            author={username}
-            image={imageUrlCover}
-          />
+          </div>
+          {/* End Header Upper */}
 
           {/* Display Dates */}
-          <div className="space-y-4 mt-10">
+          <div className="space-y-4 mt-10 w-full">
             {dateList.map((date, index) => {
               const dateKey = date.toISOString().split("T")[0];
 
               return (
-                <div key={index} className="flex flex-col pt-2 mt-5 border-t-2">
-                  <div className="flex justify-between items-center">
+                <div key={index} className="flex flex-col pt-2 mt-5 border-t-2 w-full">
+                  <div className="flex justify-between items-center w-full">
                     {/* Tanggal */}
                     <div>
                       <h3 className="text-gray-500 text-base text-start">
@@ -516,7 +485,7 @@ const Page: React.FC = () => {
                           { label: "🍗 Kuliner", value: "kuliner" },
                           { label: "🚕 Transportasi", value: "transportasi" },
                           { label: "🛍️ Belanja/Sewa", value: "belanjasewa" },
-                          { label: "🖋️ Ulasan", value: "ulasan" },
+                          { label: "🖋️ Catatan", value: "catatan" },
                         ].map((option) => (
                           <DropdownMenuItem
                             key={option.value}
@@ -544,7 +513,7 @@ const Page: React.FC = () => {
                               onDelete={() => handleDeleteTodo(dateKey, i)}
                             />
                           );
-                        } else if (todo.type === "ulasan") {
+                        } else if (todo.type === "catatan") {
                           return (
                             <ContentUlasan
                               date={""}
@@ -553,16 +522,15 @@ const Page: React.FC = () => {
                               {...todo} // Mengirim seluruh `todo` sebagai props
                             />
                           );
-                        } else if(todo.type === "transportasi"){
-                          return(
-                              <ContentTransportasi 
-                                date={""}
-                                key={i}
-                                onDelete={() => handleDeleteTodo(dateKey, i)}
-                                {...todo} // Mengirim seluruh `todo` sebagai props
-                              />
-                          )
-
+                        } else if (todo.type === "transportasi") {
+                          return (
+                            <ContentTransportasi
+                              date={""}
+                              key={i}
+                              onDelete={() => handleDeleteTodo(dateKey, i)}
+                              {...todo} // Mengirim seluruh `todo` sebagai props
+                            />
+                          );
                         } else {
                           return (
                             <div
@@ -579,7 +547,9 @@ const Page: React.FC = () => {
                                   {todo.description || "No description"}
                                 </p>
                                 <p className="text-sm">Biaya: {todo.cost}</p>
-                                <p className="text-sm">Waktu: {todo.timeStart}</p>
+                                <p className="text-sm">
+                                  Waktu: {todo.timeStart}
+                                </p>
                               </div>
 
                               <div
@@ -598,7 +568,7 @@ const Page: React.FC = () => {
             })}
           </div>
 
-          {/* Tombol Submit */}
+          {/*Submit Button*/}
           <div className="mt-10">
             <button
               onClick={submitExperiance}
@@ -607,8 +577,8 @@ const Page: React.FC = () => {
               Submit dan Lihat Console
             </button>
           </div>
+          {/* End Submit Button */}
         </div>
-      )}
 
       {/* Todo Form Modal */}
       {showTodoModal && (
@@ -630,6 +600,45 @@ const Page: React.FC = () => {
         </div>
       )}
 
+
+      {/* Description Form Modal */}
+      {showDateModal && (
+        <div className="fixed inset-0 px-5 py-5 flex items-center justify-center bg-gray-800 bg-opacity-75">
+          <div className="relative bg-white p-6 rounded-md shadow-lg space-y-4 w-full max-w-md">
+            <button
+              onClick={() => setShowDateModal(false)}
+              className="absolute top-2 right-5 text-4xl text-gray-500 hover:text-gray-800"
+              aria-label="Close modal"
+            >
+              &times;
+            </button>
+            <div className="text-sm text-gray-500 mt-1">Deskripsikan Trip</div>
+            <div className="flex flex-row items-center gap-2 w-full">
+                  <div className="flex flex-col items-start gap-1">
+                    <div className="text-sm text-gray-500">Memulai Trip</div>
+                    <input
+                      type="date"
+                      value={dateStart}
+                      onChange={(e) => setDateStart(e.target.value)}
+                      required
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+
+                  <div className="flex flex-col items-start gap-1">
+                    <div className="text-sm text-gray-500">Trip Berakhir</div>
+                    <input
+                      type="date"
+                      value={dateEnd}
+                      onChange={(e) => setDateEnd(e.target.value)}
+                      required
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

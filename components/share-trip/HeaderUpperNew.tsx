@@ -6,6 +6,7 @@ import { GetPlacesDetails, PHOTO_REF_URL } from '@/app/service/GlobalApi';
 function HomeUpper({ title, description, city, days, category, cost, author, image}: { title:string, description:string, city: string, days: number, category: string, cost:number, author:string, image:string}) {
 
   const [photoUrl, setPhotoUrl] = useState("/placeholder.png");
+  const [date, setDate] = useState("")
   useEffect(() => {
     city&&GetPlacePhoto();
   },[city])

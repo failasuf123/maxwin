@@ -25,7 +25,7 @@ const ContentUlasan = ({ name, description, onDelete }: ContentWisataProps) => {
 
   return (
     <div
-      className="bg-rose-50 px-5 py-5 rounded-3xl ml-10 relative cursor-pointer"
+      className="bg-rose-50 px-5 py-5 rounded-3xl  relative cursor-pointer"
       onClick={toggleDescription}
     >
       <div>

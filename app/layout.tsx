@@ -1,26 +1,16 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { GoogleOAuthProvider } from '@react-oauth/google';
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import React from "react";
 import Header from "@/components/Header";
-import  Sidebar from "@/components/sidebar";
-import { AppSidebar } from "@/components/sidebar/app-sidebar"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
+import Sidebar from "@/components/sidebar";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
-
+} from "@/components/ui/sidebar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -40,14 +30,14 @@ export default function RootLayout({
     <html lang="en">
       <GoogleOAuthProvider clientId={clientId || ""}>
         <body className={inter.className}>
-        <SidebarProvider>
-
-          <Sidebar />
-          <div>
-            <Header />
-            
-            {children}
-          </div>
+          <SidebarProvider>
+              <AppSidebar />
+              <div className="overflow-x-hidden w-screen">
+                <SidebarInset>
+                    <Header />
+                    {children}
+                </SidebarInset>
+              </div>
           </SidebarProvider>
         </body>
       </GoogleOAuthProvider>

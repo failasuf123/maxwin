@@ -22,8 +22,10 @@ function HomeUpper({ title, description, city, days, category, cost, author, ima
       console.error('Error:', error.response ? error.response.data : error.message);
     }
   };
+
+
   return (
-    <div >
+    <div className="w-full" >
       <div>
         {/* <img src={photoUrl} alt="Trip Image"  className="h-[340px] w-full object-cover rounded"/> */}
         <img src={image} alt="Trip Image"  className="h-[340px] w-full object-cover rounded"/>
