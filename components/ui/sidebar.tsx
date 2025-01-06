@@ -19,6 +19,8 @@ import {
 import { ViewVerticalIcon } from "@radix-ui/react-icons"
 import { BsBoxArrowInLeft } from "react-icons/bs";
 import { BsBoxArrowInRight } from "react-icons/bs";
+import { AiOutlineBars } from "react-icons/ai";
+
 import { useState } from "react"
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state"
@@ -274,7 +276,7 @@ const SidebarTrigger = React.forwardRef<
       data-sidebar="trigger"
       variant="ghost"
       size="nav"
-      className={cn("h-12 w-12", className)}
+      className={cn("h-12 w-12 text-2xl", className)}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
@@ -283,7 +285,9 @@ const SidebarTrigger = React.forwardRef<
       {...props}
     >
       
-      {fullNav ? <BsBoxArrowInLeft className="h-16 w-16" /> : <BsBoxArrowInRight className="h-16 w-16" />}
+      {/* {fullNav ? <BsBoxArrowInLeft className="h-16 w-16" /> : <BsBoxArrowInRight className="h-16 w-16" />} */}
+      <AiOutlineBars className="h-full text-4xl" />
+
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )

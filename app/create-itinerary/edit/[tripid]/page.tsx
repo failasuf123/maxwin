@@ -2,24 +2,13 @@
 
 import HomeUpper from "@/components/share-trip/HomeUpper";
 import React, { useEffect, useState } from "react";
-import { doc, setDoc } from "firebase/firestore";
-import { nanoid } from "nanoid";
-import { db } from "@/app/service/firebaseConfig";
-import { UploadDropzone } from "@/app/utils/uploadthing";
-import UlasanForm from "@/components/share-trip/form/FormUlasan";
-import { GetPlacesDetails, PHOTO_REF_URL } from "@/app/service/GlobalApi";
-import { FaPen } from "react-icons/fa";
-import { CiCalendarDate } from "react-icons/ci";
-import { BsStars } from "react-icons/bs";
-
 import ContentWisata from "@/components/share-trip/container/ContentWisata";
 import ContentUlasan from "@/components/share-trip/container/ContentCatatan";
 import WisataForm from "@/components/share-trip/form/FormWisata";
 import ContentTransportasi from "@/components/share-trip/container/ContentTransportasi";
-import { calculateTotalDays } from "@/components/service/calculateTotalDays";
-import { generateDateList } from "@/components/service/generateDateList";
-import { Todo, getTodoStyling, categories } from "@/components/create/utils/utility";
-
+import { doc, setDoc } from "firebase/firestore";
+import { nanoid } from "nanoid";
+import { db } from "@/app/service/firebaseConfig";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,6 +27,15 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer"
+import { UploadDropzone } from "@/app/utils/uploadthing";
+import UlasanForm from "@/components/share-trip/form/FormUlasan";
+import { GetPlacesDetails, PHOTO_REF_URL } from "@/app/service/GlobalApi";
+import { FaPen } from "react-icons/fa";
+import { CiCalendarDate } from "react-icons/ci";
+import { BsStars } from "react-icons/bs";
+import { calculateTotalDays } from "@/components/service/calculateTotalDays";
+import { generateDateList } from "@/components/service/generateDateList";
+import { Todo, getTodoStyling, categories } from "@/components/create/utils/utility";
 
 
 const Page: React.FC = () => {
