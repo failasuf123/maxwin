@@ -19,6 +19,11 @@ import {
     DialogTitle,
   } from "@/components/ui/dialog"
 import { FcGoogle } from 'react-icons/fc';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
 
 function Header() {
     const [users, setUsers] = useState<any>(null);
@@ -55,13 +60,13 @@ function Header() {
 
     return (
         <div>
-            <nav className="flex justify-center items-center border-b border-border h-[60px] px-4 py-2">
+            <nav className="flex justify-between items-center border-b border-border h-[60px] px-4 py-2 ">
                 <div>
-                    
+                <SidebarTrigger className="-ml-1" />
                 </div>
                 <div>
                     <Link href={"/"} className="font-bold text-xl bg-gradient-to-r from-red-400 to-blue-400 text-transparent bg-clip-text hover:cursor-pointer">
-                        <img src="/tripio-logo.png" height={40} width={120} alt="Tripio Logo"/>
+                        <img src="/malib-logo-long.png" height={60} width={140} alt="Tripio Logo"/>
                     </Link>
                 </div>
 

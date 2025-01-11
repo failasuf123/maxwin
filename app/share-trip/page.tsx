@@ -3,7 +3,7 @@
 import HomeUpper from "@/components/share-trip/HomeUpper";
 import React, { useEffect, useState } from "react";
 import ContentWisata from "@/components/share-trip/container/ContentWisata";
-import ContentUlasan from "@/components/share-trip/container/ContentUlasan";
+import ContentUlasan from "@/components/share-trip/container/ContentCatatan";
 import WisataForm from "@/components/share-trip/form/FormWisata";
 import ContentTransportasi from "@/components/share-trip/container/ContentTransportasi";
 import { doc, setDoc } from "firebase/firestore"; 

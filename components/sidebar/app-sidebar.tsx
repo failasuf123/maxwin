@@ -54,23 +54,27 @@ const data = {
   rencanaPerjalanan: {
     content:"Rencana Perjalanan Kamu",
     list:[
-    {
-      title: "🤖 Buatan AI",
-      url: `/dashboard/mytrip-ai`,
+      {
+        title:"🌏 Trip Saya",
+        url:"/dashboard",
+      },
+    // {
+    //   title: "🤖 Buatan AI",
+    //   url: `/dashboard/mytrip-ai`,
 
-    },
-    {
-      title: "✍🏻 Dibuat Manual",
-      url: `/dashboard/myexperience-trip`,
-    },
-    {
-      title: "📬 Perjalanan yang Dibagikan",
-      url: "#",
-    },
-    {
-      title: "📖 Bookmark",
-      url: "#",
-    },
+    // },
+    // {
+    //   title: "✍🏻 Dibuat Manual",
+    //   url: `/dashboard/myexperience-trip`,
+    // },
+    // {
+    //   title: "📬 Perjalanan yang Dibagikan",
+    //   url: "#",
+    // },
+    // {
+    //   title: "📖 Bookmark",
+    //   url: "#",
+    // },
     ]
   },
   buatPerjalanan: {
@@ -120,7 +124,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain content={data.referensiBerwisata.content} items={data.referensiBerwisata.list} />
         <NavMain content={data.rencanaPerjalanan.content} items={data.rencanaPerjalanan.list} />
-        <NavMain content={data.buatPerjalanan.content} items={data.buatPerjalanan.list} />
+        {/* <NavMain content={data.buatPerjalanan.content} items={data.buatPerjalanan.list} /> */}
         {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarRail />

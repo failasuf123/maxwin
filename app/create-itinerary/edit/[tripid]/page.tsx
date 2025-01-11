@@ -2,16 +2,16 @@
 
 import HomeUpper from "@/components/share-trip/HomeUpper";
 import React, { useEffect, useState } from "react";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { nanoid } from "nanoid";
 import { db } from "@/app/service/firebaseConfig";
 import { UploadDropzone } from "@/app/utils/uploadthing";
 import UlasanForm from "@/components/share-trip/form/FormUlasan";
 import { GetPlacesDetails, PHOTO_REF_URL } from "@/app/service/GlobalApi";
 import { FaPen } from "react-icons/fa";
-import { CiCalendarDate } from "react-icons/ci";
 import { BsStars } from "react-icons/bs";
-
+import { ToastContainer, toast, Bounce } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import ContentWisata from "@/components/share-trip/container/ContentWisata";
 import ContentUlasan from "@/components/share-trip/container/ContentCatatan";
 import WisataForm from "@/components/share-trip/form/FormWisata";
@@ -23,7 +23,7 @@ import {
   getTodoStyling,
   categories,
 } from "@/components/create/utils/utility";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { FaMagic } from "react-icons/fa";
 
 import {
   DropdownMenu,
@@ -43,14 +43,27 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import convertTo24HourFormat from "@/components/service/convertTo24HourFormat";
 import { useRouter } from "next/navigation";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
-const Page: React.FC = () => {
+
+interface PageProps {
+  params: {
+    tripid: string;
+  };
+}
+
+const Page: React.FC<PageProps> = ({ params }) => {
+  const { tripid } = params;
+  const [trip, setTrip] = useState<{ [key: string]: any } | null>(null);
   const [title, setTitle] = useState("");
   const [city, setCity] = useState("");
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
   const [category, setCategory] = useState("");
+  const [publicState, setPublicState] = useState(false);
+  const [publishState, setPublishState] = useState(false);
   const [description, setDescription] = useState(
     "Deskripsi akan menarik perhatian orang lain terhadap pengalaman liburan anda, Deskripsikan perjalanan anda disini"
   );
@@ -65,9 +78,10 @@ const Page: React.FC = () => {
   const username = user?.name || "no name";
   const userpicture = user?.picture || "/default-picture.png";
   const userid = user?.id || "noid";
-  const nanoFirst = nanoid(3);
-  const nanoLast = nanoid(4);
-  const docId = nanoFirst + Date.now().toString() + nanoLast;
+  const nanoFirst = nanoid(6);
+  const nanoLast = nanoid(6);
+  const generateDocId = nanoFirst + Date.now().toString() + nanoLast;
+  const [docId, setDocId] = useState(generateDocId);
   const [imageUrlCover, setImageUrlCover] = useState("");
   const [imageKeyCover, setImageKeyCover] = useState("");
   const [todos, setTodos] = useState<
@@ -89,10 +103,11 @@ const Page: React.FC = () => {
 
   const [showTodoModal, setShowTodoModal] = useState(false);
   const [showDateModal, setShowDateModal] = useState(false);
+  const [showStateModal, setShowStateModal] = useState(false);
   const [newTodo, setNewTodo] = useState<Todo | null>(null);
   const [todoType, setTodoType] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter(); // Import dari next/navigation
+  const router = useRouter();
 
   useEffect(() => {
     const userItem = localStorage.getItem("user");
@@ -100,6 +115,84 @@ const Page: React.FC = () => {
       setUser(JSON.parse(userItem));
     }
   }, []);
+
+  useEffect(() => {
+    tripid && getTripData();
+  }, [tripid]);
+
+  const getTripData = async () => {
+    const docRef = doc(db, "Trips", tripid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      console.log("Document:", docSnap.data());
+      setTrip(docSnap.data());
+    } else {
+      console.log("No Document");
+      toast.error("Upss! Trip tidak ditemukan", {
+        position: "top-center",
+        autoClose: 6000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Bounce,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (trip && trip.tripData) {
+      const tripData = trip.tripData;
+
+      // Set the simple states
+      setDocId(trip.id || generateDocId);
+      setTitle(tripData.title || "");
+      setImageUrlCover(tripData.imageCover);
+      setCity(tripData.city || "");
+      setDateStart(tripData.dateStart || "");
+      setDateEnd(tripData.dateEnd || "");
+      setCategory(tripData.category || "");
+      setDescription(tripData.description || description);
+      setTotalDays(tripData.totalDays || 0);
+
+      let totalCost = 0; // Variable to store the sum of all costs
+
+      const mappedTodos = Object.fromEntries(
+        Object.entries(tripData.todos || {}).map(([date, activities]) => [
+          date,
+          (activities as Array<any>).map((activity: any) => {
+            const cost =
+              typeof activity.cost === "number"
+                ? activity.cost
+                : Number(String(activity.cost || "").replace(/[^0-9.]/g, "")) ||
+                  0;
+
+            totalCost += cost; // Add the current activity cost to totalCost
+
+            return {
+              type: activity.type,
+              name: activity.name,
+              description: activity.description,
+              cost,
+              timeStart: convertTo24HourFormat(activity.timeStart),
+              timeEnd: convertTo24HourFormat(activity.timeEnd),
+              tag: activity.tag || [],
+              image: "",
+              imageList: activity.imageList || [],
+            };
+          }),
+        ])
+      );
+
+      setTodos(mappedTodos);
+
+      // Set the total price
+      setTotalPrice(totalCost);
+    }
+  }, [trip]);
 
   const dateList =
     dateStart && dateEnd ? generateDateList(dateStart, dateEnd) : [];
@@ -246,8 +339,8 @@ const Page: React.FC = () => {
     await setDoc(doc(db, "Trips", docId), {
       id: docId,
       lastUpdate: Date.now(),
-      public: false,
-      publish: false,
+      public: publicState,
+      publish: publishState,
       contributor: [],
       userId: user?.id,
       userPicture: userpicture,
@@ -256,6 +349,7 @@ const Page: React.FC = () => {
     });
     router.push("/dashboard");
   };
+
 
   const renderTodoForm = () => {
     console.log("todoType:", todoType, "newTodo:", newTodo);
@@ -327,7 +421,7 @@ const Page: React.FC = () => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="w-full mt-5 font-bold text-xl md:text-3xl outline-none focus:outline-none "
+                className="w-full mt-5 font-bold text-lg md:text-2xl outline-none focus:outline-none "
               />
             </div>
 
@@ -370,6 +464,20 @@ const Page: React.FC = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Type Itinerary */}
+              <div onClick={() => setShowStateModal(true)}>
+                <h2 className="bg-cyan-500 hover:bg-gray-900 text-white flex flex-row gap-2 cursor-pointer items-center text-center text-sm md:text-base px-3 py-2 border rounded-full">
+                  <FaMagic />
+                  <div>
+                    {publicState
+                      ? publishState
+                        ? "Publish"
+                        : "Public"
+                      : "Private"}
+                  </div>
+                </h2>
               </div>
             </div>
             <div className="flex flex-col mt-3">
@@ -557,7 +665,7 @@ const Page: React.FC = () => {
         </div>
       )}
 
-      {/* Description Form Modal */}
+      {/* Date Form Modal */}
       {showDateModal && (
         <div className="fixed inset-0 px-5 py-5 flex items-center justify-center bg-gray-800 bg-opacity-75">
           <div className="relative bg-white p-6 rounded-md shadow-lg space-y-4 w-full max-w-md">
@@ -591,6 +699,67 @@ const Page: React.FC = () => {
                   className="w-full p-2 border rounded"
                 />
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Set State Form Modal */}
+      {showStateModal && (
+        <div className="fixed inset-0 px-5 py-5 flex items-center justify-center bg-gray-800 bg-opacity-75">
+          <div className="relative bg-white p-6 rounded-md shadow-lg space-y-4 w-full max-w-md">
+            {/* Tombol untuk menutup modal */}
+            <button
+              onClick={() => setShowStateModal(false)}
+              className="absolute top-2 right-5 text-4xl text-gray-500 hover:text-gray-800"
+              aria-label="Close modal"
+            >
+              &times;
+            </button>
+
+            {/* Header Modal */}
+            <h3 className="text-lg font-bold">Set State</h3>
+            <div className="text-sm text-gray-500 mt-1">
+              Atur status untuk trip Anda:
+            </div>
+
+            {/* Menu untuk mengganti state */}
+            <div className="flex flex-row gap-1">
+              {/* Tombol untuk "Private" */}
+              <button
+                onClick={() => {
+                  setPublicState(false);
+                  setPublishState(false);
+                  setShowStateModal(false);
+                }}
+                className="w-full bg-gray-200 hover:bg-cyan-400 text-gray-800 hover:text-white py-2 px-4 rounded"
+              >
+                Private
+              </button>
+
+              {/* Tombol untuk "Public" */}
+              {/* <button
+              onClick={() => {
+                setPublicState(true);
+                setPublishState(false);
+                setShowStateModal(false);
+              }}
+              className="w-full bg-gray-200 hover:bg-cyan-400 text-gray-800 hover:text-white py-2 px-4 rounded"
+            >
+              Public
+            </button> */}
+
+              {/* Tombol untuk "Publish" */}
+              <button
+                onClick={() => {
+                  setPublicState(true);
+                  setPublishState(true);
+                  setShowStateModal(false);
+                }}
+                className="w-full bg-gray-200 hover:bg-cyan-400 text-gray-800 hover:text-white py-2 px-4 rounded"
+              >
+                Publish
+              </button>
             </div>
           </div>
         </div>
