@@ -26,8 +26,8 @@ function Privat() {
       const q = query(
         collection(db, "Trips"),
         where("userEmail", "==", `${user?.email}`), // Kondisi userEmail
-        where("public", "==", false), // Kondisi public
-        where("publish", "==", false) // Kondisi publish
+        where("public", "==", true), // Kondisi public
+        where("publish", "==", true) // Kondisi publish
       );
       const querySnapshot = await getDocs(q);
 

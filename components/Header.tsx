@@ -66,7 +66,7 @@ function Header() {
                 </div>
                 <div>
                     <Link href={"/"} className="font-bold text-xl bg-gradient-to-r from-red-400 to-blue-400 text-transparent bg-clip-text hover:cursor-pointer">
-                        <img src="/tripio-logo.png" height={40} width={120} alt="Tripio Logo"/>
+                        <img src="/malib-logo-long.png" height={60} width={140} alt="Tripio Logo"/>
                     </Link>
                 </div>
 

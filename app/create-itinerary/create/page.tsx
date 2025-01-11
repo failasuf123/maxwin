@@ -234,9 +234,10 @@ function Page() {
     const tripData = {
       ...JSON.parse(TripData),
       category: saveFormData.travelWith,
+      activitiesOptions: [],
       city: saveFormData.city,
-      dateStart: selectedStartDate,
       dateEnd: selectedEndDate,
+      dateStart: selectedStartDate,
       description: "",
       imageCover: "",
       title: selectedTitle,
@@ -246,7 +247,6 @@ function Page() {
       totalActivitiesPricePayAble: 0,
       totalPayAblePrice: 0,
       username: user?.name,
-      activitiesOptions: [],
       todos: transformedTodos,
     };
     delete tripData.itinerary;
@@ -518,25 +518,25 @@ const SelectTravelWith: React.FC<SelectTravelWithProps> = ({
   const options = [
     {
       label: "Solo Trip",
-      value: "solo",
+      value: "Solo Trip",
       icon: "🏄🏻‍♂️",
       description: "Dengan memperhatikan biaya",
     },
     {
       label: "Pasangan",
-      value: "couple",
+      value: "Date",
       icon: "👩🏻‍🤝‍👨🏽",
       description: "Memastikan biaya rata-rata",
     },
     {
       label: "Keluarga",
-      value: "family",
+      value: "Family",
       icon: "👨🏻‍👩🏻‍👧🏻‍👧🏻",
       description: "Tidak mengkhawatirkan biaya",
     },
     {
       label: "Sahabat",
-      value: "friends",
+      value: "Friends",
       icon: "💯",
       description: "Tidak mengkhawatirkan biaya",
     },

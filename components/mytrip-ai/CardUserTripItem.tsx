@@ -14,7 +14,7 @@ interface UserTrip {
   
   function CardUserTripItem({ trip }: { trip: UserTrip }) {
       
-    const [photoUrl, setPhotoUrl] = useState("/placeholder.png");
+    const [photoUrl, setPhotoUrl] = useState("/placeholder.webp");
     useEffect(() => {
       trip&&GetPlacePhoto();
     },[trip])

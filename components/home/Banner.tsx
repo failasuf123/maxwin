@@ -21,9 +21,9 @@ function Banner() {
     setIsLoading(true);
 
     setTimeout(() => {
-      router.push('/create-itinerary');
+      router.push('/create-itinerary/create');
       setIsLoading(false); 
-    }, 1000); // Jeda 1 detik
+    }, 100); // Jeda 1 detik
   };
 
   return (
@@ -43,7 +43,7 @@ function Banner() {
           <div>
             <div
               onClick={handleGenerateByAI}
-              className="flex items-center justify-center rounded-lg px-8 py-1 md:py-2 bg-black text-white cursor-pointer hover:scale-95"
+              className="flex items-center justify-center text-xs md:text-sm md:text-base rounded-lg px-3 md:px-8 py-2 md:py-2 bg-black text-white cursor-pointer hover:scale-95"
             >
               Generate by AI
             </div>
@@ -51,7 +51,7 @@ function Banner() {
           <div>
             <div
               onClick={handleOpenModal}
-              className="flex items-center justify-center rounded-lg px-8 py-1 md:py-2 border-2 text-gray-700 cursor-pointer hover:scale-95"
+              className="flex items-center justify-center text-xs md:text-sm md:text-base rounded-lg px-3 md:px-8 py-2 md:py-2 border-2 text-gray-700 cursor-pointer hover:scale-95"
             >
               Buat Manual
             </div>

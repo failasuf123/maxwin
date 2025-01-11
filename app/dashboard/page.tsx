@@ -25,6 +25,7 @@ import { FcGoogle } from "react-icons/fc";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Privat from "@/components/dashboard/Privat";
 import Link from "next/link";
+import Publish from "@/components/dashboard/Publish";
 
 function page() {
   const [modalCreateTrip, setModalCreateTrip] = useState(false);
@@ -69,24 +70,25 @@ function page() {
   return (
     <div className="p-10 md:px-20 lg:px-32 flex flex-col items-center">
       {/* Upper Content */}
-      <div className="w-full flex flex-row items-center justify-between">
+      <div className="w-full flex flex-col md:flex-row md:items-center justify-start md:justify-between gap-3 md:gap-0">
         <h2 className="text-2xl font-semibold">Rencana Perjalanan</h2>
         <div
           onClick={() => setModalCreateTrip(true)}
-          className="flex flex-row gap-2 px-3 py-2 items-center bg-black text-white cursor-pointer hover:bg-gray-700 rounded-lg"
+          className="flex flex-row gap-2 px-3 py-2 items-center justify-center bg-black text-white cursor-pointer hover:bg-gray-700 rounded-lg"
         >
-          <IoAddCircleSharp /> Buat Trip
+          <IoAddCircleSharp />   Buat Trip
         </div>
       </div>
       {/* End Upper Content */}
 
+
       {/* Switch Button */}
-      <div className="flex flex-col items-start w-full gap-2 mt-2">
-        <div className="flex flex-row gap-2">
+      <div className="flex flex-col w-full items-center md:items-start w-full gap-2 mt-8 md:mt-2">
+        <div className="flex flex-row w-full gap-2">
           {/* Button Privat */}
           <div
             onClick={() => setSwitchMenu("Privat")}
-            className={`px-3 py-1 rounded-lg cursor-pointer ${
+            className={`md:px-2 md:py-1 px-4 py-2 w-full md:w-auto rounded-lg cursor-pointer text-center ${
               switchMenu === "Privat"
                 ? "bg-gray-700 text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-700 hover:text-white"
@@ -94,16 +96,16 @@ function page() {
           >
             Privat
           </div>
-          {/* Button Publik */}
+          {/* Button Publish */}
           <div
-            onClick={() => setSwitchMenu("Publik")}
-            className={`px-3 py-1 rounded-lg cursor-pointer ${
-              switchMenu === "Publik"
+            onClick={() => setSwitchMenu("Publish")}
+            className={`md:px-2 md:py-1 px-4 py-2 w-full md:w-auto rounded-lg cursor-pointer text-center ${
+              switchMenu === "Publish"
                 ? "bg-gray-700 text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-700 hover:text-white"
             }`}
           >
-            Publik
+            Publish
           </div>
         </div>
 
@@ -128,8 +130,8 @@ function page() {
 
       {/* Main Content */}
       <div className="mt-2 md:mt-4 w-full">
-        {switchMenu === "Publik" ? (
-          <div></div>
+        {switchMenu === "Publish" ? (
+          <Publish/>
         ) : (
           <Privat/>
         )}
@@ -161,7 +163,7 @@ function page() {
                   <div>Buat Langsung</div>
                 </div>
               </Link>
-              <Link  href="/create-itinerary">
+              <Link  href="/create-itinerary/create">
                 <div className="flex flex-col items-center justify-center gap-4 cursor-pointer group">
                   <div className="text-7xl transform transition-transform duration-300 group-hover:animate-pulse group-hover:scale-105">
                     <BsStars />
