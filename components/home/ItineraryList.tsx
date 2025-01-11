@@ -17,15 +17,10 @@ function ItineraryList() {
   }, []);
 
   const GetUserTrips = async () => {
-    setLoading(true); // Set loading menjadi true sebelum mulai fetch
+    setLoading(true); 
     try {
       const userLocalStorage = localStorage.getItem("user");
-      if (!userLocalStorage) {
-        router.push("/");
-        return;
-      }
 
-      const user = JSON.parse(userLocalStorage);
       const q = query(
         collection(db, "Trips"),
         where("public", "==", true),
