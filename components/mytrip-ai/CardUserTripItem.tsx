@@ -14,7 +14,7 @@ interface UserTrip {
   
   function CardUserTripItem({ trip }: { trip: UserTrip }) {
       
-    const [photoUrl, setPhotoUrl] = useState("/placeholder.png");
+    const [photoUrl, setPhotoUrl] = useState("/placeholder.webp");
     useEffect(() => {
       trip&&GetPlacePhoto();
     },[trip])
@@ -35,7 +35,7 @@ interface UserTrip {
 console.log("PhotoURL",photoUrl)
 
     return (
-    <Link href={`view-trip/${trip?.id}`}>
+    <Link href={`/view-trip/${trip?.id}`}>
       <div>
         <img
           src={photoUrl}

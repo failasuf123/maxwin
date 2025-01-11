@@ -3,7 +3,7 @@
 import HomeUpper from "@/components/share-trip/HomeUpper";
 import React, { useEffect, useState } from "react";
 import ContentWisata from "@/components/share-trip/container/ContentWisata";
-import ContentUlasan from "@/components/share-trip/container/ContentUlasan";
+import ContentUlasan from "@/components/share-trip/container/ContentCatatan";
 import WisataForm from "@/components/share-trip/form/FormWisata";
 import ContentTransportasi from "@/components/share-trip/container/ContentTransportasi";
 import { doc, setDoc } from "firebase/firestore"; 
@@ -154,11 +154,8 @@ const Page: React.FC = () => {
 
   const [showInitialModal, setShowInitialModal] = useState(true);
   const [showTodoModal, setShowTodoModal] = useState(false);
-  const [todo, setTodo] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState<Todo | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [todoType, setTodoType] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
 
   useEffect(() => {

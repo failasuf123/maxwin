@@ -76,7 +76,7 @@ const ContentTransportasi = ({
 
   return (
     <div
-      className="flex flex-col bg-yellow-50 rounded-3xl ml-10 cursor-pointer"
+      className="flex flex-col bg-yellow-50 rounded-3xl  cursor-pointer"
       onClick={() => setDescriptionVisible(!isDescriptionVisible)} // Toggle description visibility
     >
       <div className="p-3 rounded-lg flex flex-row items-start gap-4 relative">

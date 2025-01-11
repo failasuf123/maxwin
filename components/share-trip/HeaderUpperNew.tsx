@@ -6,6 +6,7 @@ import { GetPlacesDetails, PHOTO_REF_URL } from '@/app/service/GlobalApi';
 function HomeUpper({ title, description, city, days, category, cost, author, image}: { title:string, description:string, city: string, days: number, category: string, cost:number, author:string, image:string}) {
 
   const [photoUrl, setPhotoUrl] = useState("/placeholder.png");
+  const [date, setDate] = useState("")
   useEffect(() => {
     city&&GetPlacePhoto();
   },[city])
@@ -22,10 +23,8 @@ function HomeUpper({ title, description, city, days, category, cost, author, ima
       console.error('Error:', error.response ? error.response.data : error.message);
     }
   };
-
-
   return (
-    <div className="w-full" >
+    <div >
       <div>
         {/* <img src={photoUrl} alt="Trip Image"  className="h-[340px] w-full object-cover rounded"/> */}
         <img src={image} alt="Trip Image"  className="h-[340px] w-full object-cover rounded"/>
