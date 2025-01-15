@@ -355,7 +355,7 @@ function Page() {
           {loading ? (
             <AiOutlineLoading3Quarters className="h-6 w-6 animate-spin" />
           ) : (
-            <>Generate Trip by AI</>
+            <>Buat Trip</>
           )}
         </button>
       </div>
@@ -520,25 +520,25 @@ const SelectTravelWith: React.FC<SelectTravelWithProps> = ({
       label: "Solo Trip",
       value: "Solo Trip",
       icon: "🏄🏻‍♂️",
-      description: "Dengan memperhatikan biaya",
+      description: "Eksplorasi diri dan kebebasan",
     },
     {
       label: "Pasangan",
       value: "Date",
       icon: "👩🏻‍🤝‍👨🏽",
-      description: "Memastikan biaya rata-rata",
+      description: "Romantis untuk mempererat hubungan",
     },
     {
       label: "Keluarga",
       value: "Family",
       icon: "👨🏻‍👩🏻‍👧🏻‍👧🏻",
-      description: "Tidak mengkhawatirkan biaya",
+      description: "Quality time dan ramah anak",
     },
     {
       label: "Sahabat",
       value: "Friends",
       icon: "💯",
-      description: "Tidak mengkhawatirkan biaya",
+      description: "Bersenang-senang dan menciptakan kenangan",
     },
   ];
 

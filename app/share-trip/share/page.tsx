@@ -46,6 +46,10 @@ import {
 import { useRouter } from "next/navigation";
 
 const Page: React.FC = () => {
+  const [showPopup, setShowPopup] = useState(false);
+
+
+
   const [title, setTitle] = useState("");
   const [city, setCity] = useState("");
   const [dateStart, setDateStart] = useState("");
@@ -299,21 +303,27 @@ const Page: React.FC = () => {
                 className="h-[340px] w-full object-cover rounded"
               />
             ) : (
-              <UploadDropzone
-                className="border-4 border-dashed border-blue-400 h-[340px] w-full"
-                endpoint="imageUploader"
-                onClientUploadComplete={async (res) => {
-                  console.log(res[0].url);
-                  console.log(res[0].key);
+              <div className="w-full">
+                {/* Note above the upload drop zone */}
+                <p className="text-xl text-gray-500 font-bold text-center mb-2">
+                  Drag and drop atau klick disini untuk menambahkan gambar
+                </p>
+                <UploadDropzone
+                  className="border-4 border-dashed border-blue-400 h-[210px] w-full"
+                  endpoint="imageUploader"
+                  onClientUploadComplete={async (res) => {
+                    console.log(res[0].url);
+                    console.log(res[0].key);
 
-                  setImageUrlCover(res[0].url);
-                  setImageKeyCover(res[0].key);
-                  console.log("Files: ", res);
-                }}
-                onUploadError={(error: Error) => {
-                  console.error("Upload error:", error.message);
-                }}
-              />
+                    setImageUrlCover(res[0].url);
+                    setImageKeyCover(res[0].key);
+                    console.log("Files: ", res);
+                  }}
+                  onUploadError={(error: Error) => {
+                    console.error("Upload error:", error.message);
+                  }}
+                />
+            </div>
             )}
 
             {/* <h2 className="font-bold text-2xl md:text-3xl mt-3">{title}</h2> */}
@@ -337,7 +347,13 @@ const Page: React.FC = () => {
 
             <div className="flex flex-row flex-wrap gap-2 mt-3">
               {/* Total Price Input */}
-              <h2 className="bg-gray-200 cursor-default items-center text-center text-sm md:text-base px-3 py-2 border rounded-full">
+             
+
+
+              <h2
+                className="bg-gray-200 cursor-pointer items-center text-center text-sm md:text-base px-3 py-2 border rounded-full"
+                onClick={() => setShowPopup(true)}
+              >
                 💰{" "}
                 {totalPrice.toLocaleString("id-ID", {
                   style: "currency",
@@ -345,21 +361,22 @@ const Page: React.FC = () => {
                 })}
               </h2>
 
+
               {/* Total Days Input */}
               <div onClick={() => setShowDateModal(true)}>
-                <h2 className="bg-gray-200 cursor-pointer items-center text-center text-sm md:text-base px-3 py-2 border rounded-full">
+                <h2 className="bg-cyan-400 hover:bg-cyan-600 cursor-pointer items-center text-center text-sm md:text-base px-3 py-2 border rounded-full">
                   {totalDays > 0 ? `🗓️ ${totalDays} Hari` : "🗓️ Pilih Tanggal"}
                 </h2>
               </div>
 
               {/* Category Input */}
-              <div className="flex items-center bg-gray-200 text-sm md:text-base  px-2 border rounded-full">
+              <div className="flex items-center bg-cyan-400 hover:bg-cyan-600 text-sm md:text-base  px-2 border rounded-full">
                 🏝️
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   required
-                  className="w-full p-2 border rounded bg-gray-200 cursor-pointer"
+                  className="w-full p-2 rounded bg-cyan-400 hover:bg-cyan-600 cursor-pointer"
                 >
                   <option value="" disabled>
                     Pilih Kategori
@@ -592,6 +609,24 @@ const Page: React.FC = () => {
                 />
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* Modal untuk informasi harga */}
+      {showPopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
+            <p className="text-gray-700">
+              Harga akan terhitung otomatis setelah Anda memasukkan aktivitas Anda
+            </p>
+            <button
+              className="mt-4 px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600"
+              onClick={() => setShowPopup(false)}
+            >
+              OK
+            </button>
           </div>
         </div>
       )}
