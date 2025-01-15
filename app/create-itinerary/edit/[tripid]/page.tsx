@@ -18,6 +18,7 @@ import WisataForm from "@/components/share-trip/form/FormWisata";
 import ContentTransportasi from "@/components/share-trip/container/ContentTransportasi";
 import { calculateTotalDays } from "@/components/service/calculateTotalDays";
 import { generateDateList } from "@/components/service/generateDateList";
+import GooglePlacesAutocomplete from "react-google-places-autocomplete";
 import {
   Todo,
   getTodoStyling,
@@ -55,10 +56,53 @@ interface PageProps {
 }
 
 const Page: React.FC<PageProps> = ({ params }) => {
+  // State untuk judul dan status editing
+  const [title, setTitle] = useState("Judul Statis"); // Judul default
+  const [isEditing, setIsEditing] = useState(false); // Status pop-up edit
+  const [tempTitle, setTempTitle] = useState(""); // Judul sementara di pop-up
+
+  // Fungsi untuk membuka pop-up edit
+  const handleEdit = () => {
+    setTempTitle(title); // Set tempTitle dengan judul saat ini
+    setIsEditing(true); // Tampilkan pop-up
+  };
+
+  // Fungsi untuk menyimpan perubahan
+  const handleSave = () => {
+    setTitle(tempTitle); // Simpan judul baru
+    setIsEditing(false); // Tutup pop-up
+  };
+
+  // Fungsi untuk membatalkan perubahan
+  const handleCancel = () => {
+    setIsEditing(false); // Tutup pop-up tanpa menyimpan
+  };
+
+
+
+  // KOTA
+  const [selectedCity, setSelectedCity] = useState<string | null>(null); // Kota yang dipilih
+  const [city, setCity] = useState<string>("Pilih Kota"); // Kota statis
+  const [isEditingCity, setIsEditingCity] = useState(false); // Status pop-up kota
+
+  // Fungsi untuk menyimpan kota
+  const handleSaveCity = () => {
+    if (selectedCity) {
+      setCity(selectedCity); // Simpan kota yang dipilih
+    }
+    setIsEditingCity(false);
+  };
+
+
+
+
+
+  const [showPopup, setShowPopup] = useState(false);
+
   const { tripid } = params;
   const [trip, setTrip] = useState<{ [key: string]: any } | null>(null);
-  const [title, setTitle] = useState("");
-  const [city, setCity] = useState("");
+  
+  
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
   const [category, setCategory] = useState("");
@@ -393,37 +437,68 @@ const Page: React.FC<PageProps> = ({ params }) => {
                 className="h-[340px] w-full object-cover rounded"
               />
             ) : (
-              <UploadDropzone
-                className="border-4 border-dashed border-blue-400 h-[340px] w-full"
-                endpoint="imageUploader"
-                onClientUploadComplete={async (res) => {
-                  console.log(res[0].url);
-                  console.log(res[0].key);
+              <div className="w-full">
+                {/* Note above the upload drop zone */}
+                <p className="text-xl text-gray-500 font-bold text-center mb-2">
+                  Drag and drop atau klick disini untuk menambahkan gambar
+                </p>
+                <UploadDropzone
+                  className="border-4 border-dashed border-blue-400 h-[210px] w-full"
+                  endpoint="imageUploader"
+                  onClientUploadComplete={async (res) => {
+                    console.log(res[0].url);
+                    console.log(res[0].key);
 
-                  setImageUrlCover(res[0].url);
-                  setImageKeyCover(res[0].key);
-                  console.log("Files: ", res);
-                }}
-                onUploadError={(error: Error) => {
-                  console.error("Upload error:", error.message);
-                }}
-              />
+                    setImageUrlCover(res[0].url);
+                    setImageKeyCover(res[0].key);
+                    console.log("Files: ", res);
+                  }}
+                  onUploadError={(error: Error) => {
+                    console.error("Upload error:", error.message);
+                  }}
+                />
+            </div>
             )}
 
-            {/* <h2 className="font-bold text-2xl md:text-3xl mt-3">{title}</h2> */}
-            <div className="flex flex-row items-center gap-2">
-              <div className="flex justify-center items-center text-center text-gray-400 text-xl">
-                <FaPen className="text-xl text-center mt-3" />
-              </div>
-              <input
-                type="text"
-                placeholder="Judul"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                className="w-full mt-5 font-bold text-lg md:text-2xl outline-none focus:outline-none "
-              />
+            {/* Judul Statis dengan Tombol Edit */}
+            <div className="flex items-center gap-2">
+              <h1 className="font-bold text-lg md:text-2xl">{title}</h1>
+              <button
+                className="flex items-center text-gray-500 hover:text-gray-700"
+                onClick={handleEdit}
+              >
+                <FaPen className="text-xl" />
+              </button>
             </div>
+
+            {/* Pop-up Edit */}
+            {isEditing && (
+              <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+                <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+                  <h2 className="text-lg font-bold mb-4">Edit Judul</h2>
+                  <input
+                    type="text"
+                    value={tempTitle}
+                    onChange={(e) => setTempTitle(e.target.value)}
+                    className="w-full border border-gray-300 rounded px-3 py-2 outline-none focus:ring focus:ring-blue-500"
+                  />
+                  <div className="flex justify-end gap-3 mt-4">
+                    <button
+                      onClick={handleCancel}
+                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      Simpan
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <p className="text-base text-gray-400 mt-2 ">
               - dibuat oleh: {username} -
@@ -431,7 +506,11 @@ const Page: React.FC<PageProps> = ({ params }) => {
 
             <div className="flex flex-row flex-wrap gap-2 mt-3">
               {/* Total Price Input */}
-              <h2 className="bg-gray-200 cursor-default items-center text-center text-sm md:text-base px-3 py-2 border rounded-full">
+              {/* Total Price Input */}
+              <h2
+                className="bg-gray-200 cursor-pointer items-center text-center text-sm md:text-base px-3 py-2 border rounded-full"
+                onClick={() => setShowPopup(true)}
+              >
                 💰{" "}
                 {totalPrice.toLocaleString("id-ID", {
                   style: "currency",
@@ -441,19 +520,19 @@ const Page: React.FC<PageProps> = ({ params }) => {
 
               {/* Total Days Input */}
               <div onClick={() => setShowDateModal(true)}>
-                <h2 className="bg-gray-200 cursor-pointer items-center text-center text-sm md:text-base px-3 py-2 border rounded-full">
+                <h2 className="bg-cyan-400 hover:bg-cyan-600 cursor-pointer items-center text-center text-sm md:text-base px-3 py-2 border rounded-full">
                   {totalDays > 0 ? `🗓️ ${totalDays} Hari` : "🗓️ Pilih Tanggal"}
                 </h2>
               </div>
 
               {/* Category Input */}
-              <div className="flex items-center bg-gray-200 text-sm md:text-base  px-2 border rounded-full">
+              <div className="flex items-center bg-cyan-400 hover:bg-cyan-600 text-sm md:text-base  px-2 border rounded-full">
                 🏝️
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   required
-                  className="w-full p-2 border rounded bg-gray-200 cursor-pointer"
+                  className="w-full p-2 rounded bg-cyan-400 hover:bg-cyan-600 cursor-pointer"
                 >
                   <option value="" disabled>
                     Pilih Kategori
@@ -482,18 +561,61 @@ const Page: React.FC<PageProps> = ({ params }) => {
             </div>
             <div className="flex flex-col mt-3">
               <div className="font-semibold text-lg md:text-xl mt-3 text-gray-700 flex flex-row  justify-start items-center">
-                <h2>🏙️ Kota</h2>
-                <input
-                  type="text"
-                  placeholder="Pilih Kota"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  required
-                  className="w-44 px-1 outline-none focus:outline-none"
-                />
-
-                <FaPen className="text-gray-400" />
+              <h2 className="font-semibold text-lg md:text-xl">🏙️ {city}</h2>
+              <button
+                className="flex items-center text-gray-500 hover:text-gray-700"
+                onClick={() => setIsEditingCity(true)}
+              >
+                <FaPen className="text-xl" />
+              </button>
               </div>
+
+
+
+
+              {/* Pop-up Edit Kota */}
+              {/* Pop-up Edit Kota */}
+              {isEditingCity && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+                  <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+                    <h2 className="text-lg font-bold mb-4">Pilih Kota</h2>
+                    <GooglePlacesAutocomplete
+                      apiKey={process.env.NEXT_PUBLIC_GOOGLE_PLACE_API_KEY}
+                      selectProps={{
+                        onChange: (value: any) => setSelectedCity(value?.label || null),
+                        placeholder: "Pilih kota tujuan...",
+                      }}
+                      autocompletionRequest={{
+                        componentRestrictions: { country: ["ID", "SG", "MY", "TH", "VN", "PH"] },
+                        types: ["(cities)"],
+                      }}
+                    />
+                    <div className="flex justify-end gap-3 mt-4">
+                      <button
+                        onClick={() => setIsEditingCity(false)}
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        onClick={handleSaveCity}
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      >
+                        Simpan
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+
+
+
+
+
+
+
+
               <div className="bg-gray-100 relative px-3 py-2 md:px-5 rounded-2xl mt-3 flex flex-col gap-3 ">
                 {/* <p>{description}</p> */}
                 <BsStars className="absolute top-5 left-3 text-gray-400" />
@@ -761,6 +883,23 @@ const Page: React.FC<PageProps> = ({ params }) => {
                 Publish
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal untuk informasi harga */}
+      {showPopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
+            <p className="text-gray-700">
+              Harga akan terhitung otomatis setelah Anda memasukkan aktivitas Anda
+            </p>
+            <button
+              className="mt-4 px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600"
+              onClick={() => setShowPopup(false)}
+            >
+              OK
+            </button>
           </div>
         </div>
       )}

@@ -46,11 +46,36 @@ import {
 import { useRouter } from "next/navigation";
 
 const Page: React.FC = () => {
+  // State untuk judul dan status editing
+  const [title, setTitle] = useState("Judul Statis"); // Judul default
+  const [isEditing, setIsEditing] = useState(false); // Status pop-up edit
+  const [tempTitle, setTempTitle] = useState(""); // Judul sementara di pop-up
+
+  // Fungsi untuk membuka pop-up edit
+  const handleEdit = () => {
+    setTempTitle(title); // Set tempTitle dengan judul saat ini
+    setIsEditing(true); // Tampilkan pop-up
+  };
+
+  // Fungsi untuk menyimpan perubahan
+  const handleSave = () => {
+    setTitle(tempTitle); // Simpan judul baru
+    setIsEditing(false); // Tutup pop-up
+  };
+
+  // Fungsi untuk membatalkan perubahan
+  const handleCancel = () => {
+    setIsEditing(false); // Tutup pop-up tanpa menyimpan
+  };
+
+
+
+
   const [showPopup, setShowPopup] = useState(false);
 
 
 
-  const [title, setTitle] = useState("");
+  
   const [city, setCity] = useState("");
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
@@ -326,30 +351,53 @@ const Page: React.FC = () => {
             </div>
             )}
 
-            {/* <h2 className="font-bold text-2xl md:text-3xl mt-3">{title}</h2> */}
-            <div className="flex flex-row items-center gap-2">
-              <div className="flex justify-center items-center text-center text-gray-400 text-xl">
-                <FaPen className="text-xl text-center mt-3" />
-              </div>
-              <input
-                type="text"
-                placeholder="Judul"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                className="w-full mt-5 font-bold text-xl md:text-3xl outline-none focus:outline-none "
-              />
+            {/* Judul Statis dengan Tombol Edit */}
+            <div className="flex items-center gap-2">
+              <h1 className="font-bold text-lg md:text-2xl">{title}</h1>
+              <button
+                className="flex items-center text-gray-500 hover:text-gray-700"
+                onClick={handleEdit}
+              >
+                <FaPen className="text-xl" />
+              </button>
             </div>
+
+            {/* Pop-up Edit */}
+            {isEditing && (
+              <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+                <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+                  <h2 className="text-lg font-bold mb-4">Edit Judul</h2>
+                  <input
+                    type="text"
+                    value={tempTitle}
+                    onChange={(e) => setTempTitle(e.target.value)}
+                    className="w-full border border-gray-300 rounded px-3 py-2 outline-none focus:ring focus:ring-blue-500"
+                  />
+                  <div className="flex justify-end gap-3 mt-4">
+                    <button
+                      onClick={handleCancel}
+                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      Simpan
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <p className="text-base text-gray-400 mt-2 ">
               - dibuat oleh: {username} -
             </p>
 
             <div className="flex flex-row flex-wrap gap-2 mt-3">
+              
               {/* Total Price Input */}
-             
-
-
               <h2
                 className="bg-gray-200 cursor-pointer items-center text-center text-sm md:text-base px-3 py-2 border rounded-full"
                 onClick={() => setShowPopup(true)}
@@ -388,6 +436,8 @@ const Page: React.FC = () => {
                   ))}
                 </select>
               </div>
+
+
             </div>
             <div className="flex flex-col mt-3">
               <div className="font-semibold text-lg md:text-xl mt-3 text-gray-700 flex flex-row  justify-start items-center">
