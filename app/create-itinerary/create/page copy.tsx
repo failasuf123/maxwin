@@ -241,19 +241,14 @@ function Page() {
     // transformedTodos[dateKey] is an array of "todo" items
     for (let i = 0; i < plans.length; i++) {
       const item = plans[i];
-        // We always fetch a new Unsplash photo (force override).
-        const searchQuery = item.name || saveFormData.city || "travel";
-        try {
-          const photoUrl = await fetchUnsplashPhoto(searchQuery);
-          if (photoUrl) {
-            item.image = photoUrl;
-          } else {
-            item.image = "/placeholder.png";
-          }
-        } catch (err) {
-          console.error("Unsplash fetch error for:", searchQuery, err);
-          item.image = "/placeholder.png";
-        }
+
+      // If there's no place image, or you want to override
+      // We'll search with place name or city name
+      if (!item.image || item.image.trim() === "") {
+        const searchQuery = item.name || saveFormData.city || "travel"; 
+        const photoUrl = await fetchUnsplashPhoto(searchQuery);
+        item.image = photoUrl || "/placeholder.png";
+      }
     }
   }
   // ================ End Unsplash Code ================
