@@ -9,6 +9,7 @@ import Sidebar from "@/components/sidebar";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,16 +35,17 @@ export default function RootLayout({
 
       <GoogleOAuthProvider clientId={clientId || ""}>
         <body className={inter.className}>
-          <SidebarProvider>
-            <AppSidebar />
+          {/* <SidebarProvider> */}
+            {/* <AppSidebar /> */}
             <div className="overflow-x-hidden w-screen">
               
-              <SidebarInset>
-                <Header />
+              {/* <SidebarInset> */}
+                {/* <Header /> */}
                 {children}
-              </SidebarInset>
+              {/* </SidebarInset> */}
             </div>
-          </SidebarProvider>
+            <Toaster  />
+          {/* </SidebarProvider> */}
         </body>
       </GoogleOAuthProvider>
     </html>
