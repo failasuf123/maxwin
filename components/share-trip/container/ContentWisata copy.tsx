@@ -1,5 +1,4 @@
 import React from "react";
-import { FaPen, FaTrash } from "react-icons/fa";
 
 type Todo = {
   type: string;
@@ -14,11 +13,10 @@ type Todo = {
 };
 
 type ContentWisataProps = Todo & {
-  onDelete: () => void;
-  onEdit: () => void; // New: triggers edit in the parent
+  onDelete: () => void; // Fungsi untuk handle delete
 };
 
-export default function ContentWisata({
+const ContentWisata = ({
   name,
   description,
   cost,
@@ -26,21 +24,21 @@ export default function ContentWisata({
   timeEnd,
   image,
   onDelete,
-  onEdit,
-}: ContentWisataProps) {
+}: ContentWisataProps) => {
   return (
-    <div className="flex flex-col">
-      <div className="p-3 rounded-lg flex flex-row items-center gap-4 relative bg-white shadow-sm">
-        {/* Time + Thumbnail */}
-        <div className="flex flex-col items-center justify-start gap-2">
+    <div className="flex flex-col ">
+      <div className="p-3 rounded-lg flex flex-row items-center gap-4 relative ">
+        {/* Thumbnail */}
+        <div className="flex flex-col items-center justify-start gap-2 relative">
           <div className="inline-flex items-center bg-black text-white text-xs font-medium px-3 py-1 rounded-full">
-            🕒 {timeStart} - {timeEnd || "??"}
+            🕒 {timeStart} - {timeEnd}
           </div>
-          <div className="w-24 h-24 md:w-28 md:h-28 rounded-lg overflow-hidden shadow-sm">
+
+          <div className="w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32  rounded-lg overflow-hidden shadow-sm">
             <img
               src={image || "/placeholder.png"}
               alt={name || "No Title"}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover mt-3"
             />
           </div>
         </div>
@@ -59,38 +57,29 @@ export default function ContentWisata({
                 currency: "IDR",
               })}
             </span>
+            {/* Time */}
           </div>
           <p className="text-xs md:text-sm text-gray-600 mt-3 hidden md:block">
             {description || "No description available."}
           </p>
         </div>
 
-        {/* Action Buttons */}
-        <div className="absolute top-2 right-2 flex flex-col items-end gap-2">
-          {/* Edit */}
-          <button
-            className="text-white bg-yellow-400 text-sm px-2 py-1 rounded-full hover:bg-yellow-500 flex items-center gap-1"
-            onClick={onEdit}
-          >
-            <FaPen />
-          </button>
-
-          {/* Delete */}
-          <button
-            className="text-white bg-red-500 text-sm px-2 py-1 rounded-full hover:bg-red-600 flex items-center gap-1"
-            onClick={onDelete}
-          >
-            <FaTrash />
-          </button>
+        {/* Delete Button */}
+        <div
+          className="absolute top-2 right-2 text-white bg-red-500 text-sm px-3 py-1 h-[28px] rounded-full cursor-pointer hover:bg-black"
+          onClick={onDelete}
+        >
+          x
         </div>
       </div>
 
-      {/* Description on small screens */}
-      <div className="block md:hidden ml-8 mt-1">
-        <p className="text-xs text-gray-600">
+      <div className="block md:hidden ml-8">
+        <p className="text-xs text-gray-600 mt-1">
           {description || "No description available."}
         </p>
       </div>
     </div>
   );
-}
+};
+
+export default ContentWisata;

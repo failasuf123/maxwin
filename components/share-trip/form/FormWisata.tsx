@@ -1,17 +1,34 @@
 import React from "react";
+import { Todo } from "@/components/create/utils/utility"; // or wherever it's defined
+
+// interface Todo {
+//   name: string;
+//   cost: number;
+//   description?: string;
+//   timeStart?: string;
+//   timeEnd?: string;
+//   // You can add other fields if needed (e.g. image, tag, etc.)
+// }
 
 interface WisataFormProps {
-  newTodo: {
-    name: string;
-    cost: number;
-    description?: string;
-    timeStart?: string;
-    timeEnd?: string;
-  };
-  setNewTodo: (todo: any) => void; // Sesuaikan tipe `todo` sesuai dengan kebutuhan
+  // ALLOW `null` here:
+  newTodo: Todo | null;
+  // If you prefer a stricter type, do:
+  // setNewTodo: React.Dispatch<React.SetStateAction<Todo | null>>;
+  setNewTodo: React.Dispatch<React.SetStateAction<Todo | null>>;
 }
 
 const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
+  // 1) Handle the `null` case. If newTodo is null, show a placeholder or return null.
+  if (!newTodo) {
+    return (
+      <p className="text-red-500">
+        Tidak ada data untuk di-edit. (newTodo is null)
+      </p>
+    );
+  }
+
+  // 2) If newTodo is non-null, render the form.
   return (
     <>
       <input
@@ -22,6 +39,7 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
         required
         className="w-full p-2 border rounded"
       />
+
       <input
         type="number"
         placeholder="Biaya"
@@ -35,6 +53,7 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
         required
         className="w-full p-2 border rounded"
       />
+
       <textarea
         placeholder="Deskripsi (Opsional)"
         value={newTodo.description}
@@ -43,6 +62,7 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
         }
         className="w-full p-2 border rounded"
       />
+
       <input
         type="time"
         placeholder="Waktu Mulai"
@@ -53,6 +73,7 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
         required
         className="w-full p-2 border rounded"
       />
+
       <input
         type="time"
         placeholder="Waktu Selesai"

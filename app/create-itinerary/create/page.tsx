@@ -150,7 +150,7 @@ function Page() {
         transition: Bounce,
       });
     } else {
-      console.error("Please complete all fields");
+      console.error("Silahkan isi lengkap form terlebih dahulu");
     }
   };
 
@@ -327,7 +327,7 @@ function Page() {
             Kapan Anda Ingin Berlibur?
           </label>
           <p className="pb-1 text-xs text-gray-400">
-            *pilih rentang tanggal dengan maksimal 5 hari
+            *pilih rentang tanggal dengan <b>maksimal 5 hari</b>
           </p>
 
           <div className="flex flex-row gap-2 items-center">
