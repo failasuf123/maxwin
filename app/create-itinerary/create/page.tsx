@@ -256,6 +256,17 @@ function Page() {
         }
     }
   }
+
+  // === UNSPLASH CODE: imageCover ===
+  let coverUrl = "/placeholder.png";
+  try {
+    // for better results, you can do e.g. `${saveFormData.city} tourist destination`
+    coverUrl = (await fetchUnsplashPhoto(saveFormData.city || "travel")) || "/placeholder.png";
+  } catch (err) {
+    console.error("Unsplash fetch error for cover:", err);
+  }
+
+
   // ================ End Unsplash Code ================
 
   // Build final tripData object
@@ -267,7 +278,7 @@ function Page() {
     dateEnd: selectedEndDate,
     dateStart: selectedStartDate,
     description: "",
-    imageCover: "", // you might do a separate unsplash fetch for a "cover" too
+    imageCover: coverUrl, 
     title: selectedTitle,
     totalDays: saveFormData.days,
     totalPrice: 0,

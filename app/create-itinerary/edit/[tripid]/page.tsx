@@ -202,7 +202,7 @@ const Page: React.FC<PageProps> = ({ params }) => {
               timeStart: convertTo24HourFormat(activity.timeStart),
               timeEnd: convertTo24HourFormat(activity.timeEnd),
               tag: activity.tag || [],
-              image: "",
+              image: activity.image,
               imageList: activity.imageList || [],
             };
           }),
