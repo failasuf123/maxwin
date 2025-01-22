@@ -1,12 +1,12 @@
+// CariAktivitas.tsx
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/app/service/firebaseConfig";
 import Link from "next/link";
-import { FaSearchLocation } from "react-icons/fa";
 
-function ItineraryList() {
+function ActivityList() {
 const [searchTerm, setSearchTerm] = useState("");
 const [userTrips, setUserTrips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,29 +52,15 @@ const [userTrips, setUserTrips] = useState<any[]>([]);
   );
 
   return (
-  <div className="mt-10  md:mx-20">
-    {/* Input pencarian */}
-    {/* <div className="mb-6 flex flex-col gap-2">
-      <div className="text-black text-lg md:text-2xl font-bold">
-        Pengalaman Wisata Orang Lain
-      </div>
-      <div
-        className="w-full md:w-96 h-10 flex flex-row justify-start items-center border-2 border-gray-500 rounded-lg gap-2 px-3 ">
-        <FaSearchLocation className="text-xl text-gray-500" />
-        <input className="w-full h-full px-2 outline-none" type="text" placeholder="Cari kota, judul, atau kategori..."
-          value={searchTerm} onChange={(e)=> setSearchTerm(e.target.value)}
-        />
-      </div>
-    </div> */}
-
-    {/* Itinerary List */}
+  <div className="mb-20  md:mx-20">
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-lg md:text-2xl font-bold">Inspirasi Liburan</h2>
+      <h2 className="text-lg md:text-2xl font-bold">Cari Aktivitas</h2>
       <a href="#" className="text-blue-500">
         Selengkapnya &rarr;
       </a>
     </div>
     <p className="text-gray-600 mb-3">Pesan aktivitas agar tidak kehabisan</p>
+
     <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2  md:gap-5">
       {filteredItineraries.length > 0 ? (
       filteredItineraries.map((itinerary: any, index: number) => (
@@ -138,4 +124,4 @@ const [userTrips, setUserTrips] = useState<any[]>([]);
   );
   }
 
-  export default ItineraryList;
+  export default ActivityList;

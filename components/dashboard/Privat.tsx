@@ -39,7 +39,7 @@ function Privat() {
       setUserTrips(trips);
       setLoading(false); // Set loading menjadi false setelah fetch selesai
     } else {
-      router.push("/");
+      // router.push("/");
     }
   };
 

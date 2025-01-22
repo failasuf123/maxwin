@@ -153,8 +153,7 @@ export function NavUser({
                   }}
                 >
                   <div className="h-8 wi-8 rounded-lg flex items-center">
-
-                      <FcGoogle className="h-6 w-6" />
+                    <FcGoogle className="h-6 w-6" />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">Sign In</span>
@@ -165,7 +164,32 @@ export function NavUser({
           </div>
         )}
       </SidebarMenuItem>
-      <Dialog open={openDialog}>
+      {openDialog && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="relative bg-white w-96 p-6 rounded-lg shadow-lg">
+            {/* Tombol X di pojok kanan atas */}
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              onClick={() => setOpenDialog(false)}
+            >
+              ✕
+            </button>
+            <h2 className="text-lg font-bold mb-2">Sign In With Google</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Sign In dengan aman menggunakan Google Authentication.
+            </p>
+            <button
+              className="flex items-center justify-center w-full px-4 py-2 text-white bg-gray-900 rounded hover:bg-blue-600"
+              onClick={() => login()}
+            >
+              <FcGoogle className="mr-3 h-6 w-6" />
+              Sign In With Google
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* <Dialog open={openDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle></DialogTitle>
@@ -185,7 +209,7 @@ export function NavUser({
             </DialogDescription>
           </DialogHeader>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </SidebarMenu>
   );
 }
