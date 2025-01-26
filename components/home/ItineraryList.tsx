@@ -10,9 +10,12 @@ import ListCategory from "../explore/ListCategory";
 import { IoMdEye } from "react-icons/io";
 import { IoMdEyeOff } from "react-icons/io";
 import { motion, AnimatePresence } from "framer-motion";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+
 
 interface Props {
-  searchParams: string;
+  // searchParams: string;
   typeParams: string;
 }
 
@@ -22,19 +25,28 @@ interface Props {
 // - "dashboard"          |
 // =======================|
 
-function ItineraryList({ searchParams, typeParams }: Props) {
+// function ItineraryList({ searchParams, typeParams }: Props) {
+function ItineraryList({ typeParams }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
   const [userTrips, setUserTrips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCategories, setShowCategories] = useState(false);
   const [isLoadingNavigate, setIsLoadingNavigate] = useState(false);
 
-  const router = useRouter();
+  const [cityParam, setCityParam] = useState<string>("");
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    setSearchTerm(searchParams);
-    GetUserTrips();
-  }, []);
+    const cityFromURL = searchParams.get("city") || ""; // Ambil dari URL
+    setCityParam(cityFromURL); // Simpan ke state lokal
+    setSearchTerm(cityFromURL)
+    GetUserTrips()
+  }, [searchParams]); // Triggered saat `searchParams` berubah
+  
+  // useEffect(() => {
+  //   setSearchTerm(cityFromURL);
+  //   GetUserTrips();
+  // }, []);
 
   const GetUserTrips = async () => {
     setLoading(true);

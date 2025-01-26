@@ -1,7 +1,7 @@
 "use client";
 
 import EditMain from "@/components/edit/EditMain";
-import React from "react";
+import React,{Suspense} from "react";
 
 
 
@@ -10,7 +10,10 @@ function Page() {
   const tripid = "manualTrip"
 
   return (
-    <EditMain tripidProps={tripid} typeProps={"manualTrip"}  />
+    <Suspense>
+
+      <EditMain tripidProps={tripid} typeProps={"manualTrip"}  />
+    </Suspense>
   );
 };
 
