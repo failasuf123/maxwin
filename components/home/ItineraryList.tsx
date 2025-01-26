@@ -58,17 +58,15 @@ function ItineraryList({ searchParams, typeParams }: Props) {
     }
   };
 
-  const filteredItineraries = userTrips.filter(
-    (itinerary) =>
-      itinerary.tripData.title
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      itinerary.tripData.city.toLowerCase().includes(searchTerm.toLowerCase())
-    //   ||
-    // itinerary.tripData.category
-    //   .toLowerCase()
-    //   .includes(searchTerm.toLowerCase())
-  );
+  const filteredItineraries = userTrips.filter((itinerary) =>
+  (itinerary.tripData.title?.toLowerCase() || "").includes(
+    searchTerm?.toLowerCase() || ""
+  ) ||
+  (itinerary.tripData.city?.toLowerCase() || "").includes(
+    searchTerm?.toLowerCase() || ""
+  )
+);
+
 
   return (
     <div className="mt-10  md:mx-20">
@@ -143,7 +141,7 @@ function ItineraryList({ searchParams, typeParams }: Props) {
                 onClick={() => setIsLoadingNavigate(true)}
               >
                 <div className="flex flex-col h-[300px] w-full overflow-hidden cursor-pointer group">
-                  <div className="relative h-3/5 w-full">
+                  <div className="relative h-3/5 w-full justify-evently">
                     <img
                       src={itinerary.tripData.imageCover || "/placeholder.webp"}
                       className="h-full w-full object-cover rounded-lg"
@@ -170,7 +168,7 @@ function ItineraryList({ searchParams, typeParams }: Props) {
                     </div>
                   </div>
                   <div className="flex flex-col items-center p-2 overflow-hidden text-sm text-gray-500">
-                    <div className="flex flex-row items-center gap-2">
+                    <div className="flex flex-row justify-between items-center gap-2">
                       <img
                         src={itinerary?.userPicture || "/placeholder.webp"}
                         className="h-9 w-9 rounded-full hidden md:block"
@@ -189,8 +187,9 @@ function ItineraryList({ searchParams, typeParams }: Props) {
                           <span>{itinerary.tripData.category}</span>
                           <span>|</span>
                           <span className="text-green-600 font-normal">
-                            Rp.{itinerary.tripData.totalPrice}
+                            Rp.{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(itinerary.tripData.totalPrice).replace(",00", "")}
                           </span>
+
                         </div>
                         <div className="text-xs font-light">
                           {itinerary.tripData.highlights}
