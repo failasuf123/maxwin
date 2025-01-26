@@ -5,6 +5,7 @@ import Link from "next/link";
 interface UserTripCreated {
   id: string;
   userPicture: string;
+  lastUpdate: string;
   tripData: {
     title: string;
     city: string;
@@ -31,9 +32,21 @@ interface UserTripCreated {
     };
   };
 }
+const formatRupiah = (value: number | string): string  => {
+  const numberValue = Number(value); // Pastikan nilai menjadi angka
+  if (isNaN(numberValue)) {
+    return "Rp.0"; // Tampilkan Rp.0 jika bukan angka
+  }
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+  }).format(numberValue);
+}
+
+
 function CardUserTripItem({ trip }: { trip: UserTripCreated }) {
   return (
-    <Link href={`/create-itinerary/edit/${trip?.id}`}>
+    <Link href={`/my-trip/${trip?.id}`}>
       <div className="flex flex-col h-[300px] w-full overflow-hidden cursor-pointer group">
         <div className="relative h-3/5 w-full">
           <img
@@ -47,9 +60,9 @@ function CardUserTripItem({ trip }: { trip: UserTripCreated }) {
           </div>
         </div>
 
+
         <div className="flex flex-col items-center p-2 overflow-hidden text-ellipsis text-sm md:text-sm text-gray-500 w-96">
           <div className="flex flex-row items-center gap-3 md:gap-2">
-
             <div className="flex flex-col gap-0.5 leading-tight w-96 ">
               <h2 className="text-gray-700 font-semibold w-full text-ellipsis overflow-hidden line-clamp-2">
                 {trip?.tripData.title}
@@ -58,13 +71,23 @@ function CardUserTripItem({ trip }: { trip: UserTripCreated }) {
                 <span>Oleh: {trip?.tripData.username}</span>
               </div>
               <div className="flex flex-row gap-1 text-xs font-normal">
-                <span>{trip?.tripData.totalDays}</span>
+                <span>{trip?.tripData.totalDays} hari</span>
                 <span>|</span>
                 <span>{trip?.tripData.category}</span>
                 <span>|</span>
                 <span className="text-green-600 font-normal">
-                  Rp.{trip?.tripData.totalPrice}
+                {formatRupiah(trip?.tripData.totalPrice || 0)}
                 </span>
+              </div>
+              <div className="text-xs text-gray-300">
+                {trip?.lastUpdate
+                  ? new Date(Number(trip.lastUpdate)).toLocaleString("id-ID", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                      // hour: "2-digit",
+                    })
+                  : "Tanggal tidak tersedia"}
               </div>
               <div className="flex items-center text-xs font-light">
                 {/* {trip?.tripData.highlights} */}

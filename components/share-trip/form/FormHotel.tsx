@@ -7,30 +7,23 @@ import {
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import GooglePlacesAutocomplete from "react-google-places-autocomplete";
-import { UploadDropzone } from "@/app/utils/uploadthing";
 
-interface WisataFormProps {
+interface HotelFormProps {
   newTodo: {
-    type: string;
     name: string;
-    description?: string;
     cost: number;
+    description?: string;
     timeStart?: string;
     timeEnd?: string;
-    tag?: string[];
-    image?: string;
-    imageList?: string[];
-    date?: string;
   };
   setNewTodo: (todo: any) => void; // Sesuaikan tipe `todo` sesuai dengan kebutuhan
 }
 
-const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
+const HotelForm: React.FC<HotelFormProps> = ({ newTodo, setNewTodo }) => {
   const [isManual, setIsManual] = useState(false); // State untuk switch manual input
   const [costInputType, setCostInputType] = useState<"slider" | "manual">(
     "slider"
   ); // State untuk menentukan jenis input biaya
-  const [imageUrlCover, setImageUrlCover] = useState("");
 
   // Fungsi untuk menghitung nilai step berdasarkan cost
   const getStepValue = (cost: number) => {
@@ -52,19 +45,16 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
   return (
     <div className="w-full">
       <DrawerHeader>
-        <DrawerTitle>Tempat Wisata</DrawerTitle>
-        <DrawerDescription>
-          Masukan tempat wisata secara manual
-        </DrawerDescription>
+        <DrawerTitle>Hotel</DrawerTitle>
+        <DrawerDescription>Masukan Hotel secara manual</DrawerDescription>
       </DrawerHeader>
 
       <ScrollArea className="h-[300px]  rounded-md border p-4">
         <div className="flex flex-col items-center w-full gap-4">
-          {/* Baris untuk input nama tempat wisata dan tombol switch */}
           <div className="w-full flex flex-col md:flex-row items-start md:items-center gap-4">
             <div className="flex-1">
               <label htmlFor="name" className="block mb-1 text-sm font-medium">
-                Nama Tempat Wisata
+                Nama Hotel
               </label>
               {isManual ? (
                 <input
@@ -74,7 +64,7 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
                   onChange={(e) =>
                     setNewTodo({ ...newTodo, name: e.target.value })
                   }
-                  placeholder="Masukkan nama tempat wisata"
+                  placeholder="Masukkan nama penginapan "
                   className="w-full p-2 border rounded-md"
                 />
               ) : (
@@ -86,7 +76,7 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
                       : null,
                     onChange: (location: any) =>
                       setNewTodo({ ...newTodo, name: location.label }),
-                    placeholder: "Pilih tempat wisata...",
+                    placeholder: "Pilih penginapan...",
                     noOptionsMessage: () =>
                       "Ketik sesuatu untuk mencari lokasi...",
                     styles: {
@@ -105,7 +95,8 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
                   }}
                   autocompletionRequest={{
                     componentRestrictions: { country: ["ID"] },
-                    types: ["establishment"],
+                    types: ["lodging"],
+
                   }}
                 />
               )}
@@ -249,40 +240,10 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
               className="w-full p-2 border rounded-md"
             />
           </div>
-
-          {/* Upload Gambar */}
-          <div className="flex flex-start">
-            <label  className="block mb-1 text-sm text-start font-medium">
-                Upload Gambar Tempat Wisata
-            </label>
-          </div>
-          {imageUrlCover ? (
-            <img
-              src={imageUrlCover}
-              alt="Trip Image"
-              className="h-[340px] w-full object-cover rounded"
-            />
-          ) : (
-            <UploadDropzone
-              className="border-4 border-dashed border-blue-400 h-[340px] w-full"
-              endpoint="imageUploader"
-              onClientUploadComplete={async (res) => {
-                setNewTodo({ ...newTodo, image: res[0].url });
-                setImageUrlCover(res[0].url);
-                // setImageKeyCover(res[0].key);
-                // if (res && res.length > 0) {
-                //     handleImageChange({ url: res[0].url, key: res[0].key });
-                //   }
-              }}
-              onUploadError={(error: Error) => {
-                console.error("Upload error:", error.message);
-              }}
-            />
-          )}
         </div>
       </ScrollArea>
     </div>
   );
 };
 
-export default WisataForm;
+export default HotelForm;

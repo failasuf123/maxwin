@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { db } from "@/app/service/firebaseConfig";
 import { doc, getDoc } from "@firebase/firestore";
-import HeaderUpper from "@/components/myexperience-trip/HeaderUpper";
+import HeaderUpper from "@/components/my-trip/HeaderUpper";
 import ContentItinerary from "@/components/myexperience-trip/ContentItinerary";
 import FooterButton from "@/components/myexperience-trip/FooterButton";
 import { useToast } from "@/hooks/use-toast";
@@ -21,9 +21,8 @@ interface PageProps {
     tripid: string;
   }>;
 }
-
-
 const Page: React.FC<PageProps> = ({ params }) => {
+  // const { tripid } = params;
   const { tripid } = React.use(params);
   const [trip, setTrip] = useState<TripData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true); 
@@ -81,7 +80,6 @@ const Page: React.FC<PageProps> = ({ params }) => {
         </div>
       )}
       <HeaderUpper trip={trip} />
-      <FooterButton id={tripid} trip={trip} />
       {!isLoading && <ContentItinerary trip={trip as any} />}
     </div>
   );

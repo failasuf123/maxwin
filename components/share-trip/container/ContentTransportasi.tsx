@@ -1,8 +1,31 @@
 import React, { useState } from "react";
-import { FaMotorcycle, FaCarSide, FaTrain, FaBusAlt, FaShuttleVan } from "react-icons/fa";
+import { FaMotorcycle, FaCarSide, FaTrain, FaBusAlt, FaShuttleVan, FaPlaneDeparture } from "react-icons/fa";
 import { BsFillTaxiFrontFill, BsPersonWalking } from "react-icons/bs";
 import { RiTaxiWifiFill } from "react-icons/ri";
 import { MdPlace } from "react-icons/md";
+import { IoIosBicycle } from "react-icons/io";
+import { FaFerry } from "react-icons/fa6";
+import { SiGojek } from "react-icons/si";
+import { FaPen, FaTrash } from "react-icons/fa";
+import { HiDotsVertical } from "react-icons/hi";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog"
+
+
+
 
 type Todo = {
   type: string;
@@ -18,28 +41,43 @@ type Todo = {
 
 type ContentTransportasiProps = Todo & {
   onDelete: () => void;
+  onEdit: () => void;
+
 };
 
 const getIconByName = (name: string) => {
   switch (name.toLowerCase()) {
-    case "ojek motor online":
+    case "motor":
+    case "motor sewa":
+    case "ojek motor":
       return <FaMotorcycle className="text-4xl text-white" />;
-    case "ojek mobile online":
+    case "ojek motor online":
+      return <SiGojek className="text-4xl text-white" />
+    case "taksi":
       return <BsFillTaxiFrontFill className="text-4xl text-white" />;
-    case "ojek wifi online":
+    case "ojek mobil online":
       return <RiTaxiWifiFill className="text-4xl text-white" />;
     case "mobil":
     case "mobil sewa":
       return <FaCarSide className="text-4xl text-white" />;
     case "kereta":
-    case "krl":
+    case "kerta-mrt":
+    case "kereta-lrt":
+    case "kereta-krl":
       return <FaTrain className="text-4xl text-white" />;
     case "bus":
+    case "bus kota":
       return <FaBusAlt className="text-4xl text-white" />;
     case "trevel":
       return <FaShuttleVan className="text-4xl text-white" />;
     case "jalan kaki":
       return <BsPersonWalking className="text-4xl text-white" />;
+    case "sepeda":
+      return <IoIosBicycle  className="text-4xl text-white" />;
+    case "pesawat":
+      return <FaPlaneDeparture className="text-4xl text-white" />;
+    case "ferry":
+      return <FaFerry className="text-4xl text-white" />
     default:
       return <MdPlace className="text-4xl text-white" />;
   }
@@ -70,6 +108,7 @@ const ContentTransportasi = ({
   timeStart,
   timeEnd,
   onDelete,
+  onEdit,
 }: ContentTransportasiProps) => {
   const [isDescriptionVisible, setDescriptionVisible] = useState(false);
   const duration = calculateDuration(timeStart, timeEnd);
@@ -115,16 +154,57 @@ const ContentTransportasi = ({
           )}
         </div>
 
-        {/* Delete Button */}
-        <div
+        {/* <div
           className="absolute top-2 right-2 text-white bg-red-500 text-sm px-3 py-1 h-[28px] rounded-full cursor-pointer hover:bg-black"
           onClick={(e) => {
-            e.stopPropagation(); // Prevent click from toggling the accordion
+            e.stopPropagation(); 
             onDelete();
           }}
         >
           x
-        </div>
+        </div> */}
+                <Popover>
+          <PopoverTrigger asChild>
+            <div className="absolute top-2 right-2 text-black text-xl bg-gray-100 text-sm px-3 py-3  rounded-full cursor-pointer hover:bg-gray-200">
+              <HiDotsVertical />
+            </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-40">
+            <div className="flex flex-col ">
+              <div onClick={onEdit} className="hover:bg-gray-200 rounded-xl cursor-pointer px-2 py-2 flex flex-row text-gray-700 items-center gap-4 text-lg">
+                <FaPen className="text-sm"/> Edit
+              </div>
+
+              <hr className="w-full text-gray-300 my-1" />
+
+              {/* <div className="hover:bg-gray-200 rounded-xl cursor-pointer px-2 py-2 flex flex-row text-gray-700 items-center gap-4 text-lg text-red-400">
+                <FaTrash className="text-sm "/> Hapus
+              </div> */}
+              <Dialog>
+                <DialogTrigger className="border-none outline-none focus:outline-none">
+                <div className="hover:bg-gray-200 rounded-xl cursor-pointer px-2 py-2 flex flex-row text-gray-700 items-center gap-4 text-lg text-red-400 border-none">
+                <FaTrash className="text-sm "/> Hapus
+              </div>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Apakah Anda Yakin Menghapus Aktivitas Ini ?</DialogTitle>
+                    <DialogDescription>
+                      Perhatian! Anda akan menghapus lokasi "{name}" dari rencana perjalanan anda.
+                    </DialogDescription>
+                  </DialogHeader>
+                <DialogFooter>
+                <DialogClose asChild>
+                  <button className="bg-red-500 rounded text-white border-none px-2 py-2 cursor-pointer hover:bg-red-600" onClick={onDelete}>Hapus Aktivitas</button>
+                </DialogClose>
+                </DialogFooter>
+                </DialogContent>
+
+              </Dialog>
+
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
     </div>
   );

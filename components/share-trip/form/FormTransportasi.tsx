@@ -6,33 +6,36 @@ import {
   DrawerDescription,
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import GooglePlacesAutocomplete from "react-google-places-autocomplete";
-import { UploadDropzone } from "@/app/utils/uploadthing";
 
-interface WisataFormProps {
+interface TransportasiFormProps {
   newTodo: {
-    type: string;
     name: string;
-    description?: string;
     cost: number;
+    description?: string;
     timeStart?: string;
     timeEnd?: string;
-    tag?: string[];
-    image?: string;
-    imageList?: string[];
-    date?: string;
   };
   setNewTodo: (todo: any) => void; // Sesuaikan tipe `todo` sesuai dengan kebutuhan
 }
 
-const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
+const transportOptions = [
+  "Bus",
+  "Kereta",
+  "Pesawat",
+  "Kapal Laut",
+  "Ojek Online",
+  "Angkot",
+  "Mobil Pribadi",
+  "Sepeda",
+  "Motor",
+];
+
+const TransportasiForm: React.FC<TransportasiFormProps> = ({ newTodo, setNewTodo }) => {
   const [isManual, setIsManual] = useState(false); // State untuk switch manual input
   const [costInputType, setCostInputType] = useState<"slider" | "manual">(
     "slider"
   ); // State untuk menentukan jenis input biaya
-  const [imageUrlCover, setImageUrlCover] = useState("");
 
-  // Fungsi untuk menghitung nilai step berdasarkan cost
   const getStepValue = (cost: number) => {
     if (cost <= 100000) return 5000;
     if (cost <= 200000) return 10000;
@@ -52,19 +55,18 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
   return (
     <div className="w-full">
       <DrawerHeader>
-        <DrawerTitle>Tempat Wisata</DrawerTitle>
-        <DrawerDescription>
-          Masukan tempat wisata secara manual
-        </DrawerDescription>
+        <DrawerTitle>Transportasi</DrawerTitle>
+        <DrawerDescription>Pilih atau masukkan alat transportasi</DrawerDescription>
       </DrawerHeader>
 
-      <ScrollArea className="h-[300px]  rounded-md border p-4">
+      <ScrollArea className="h-[300px] rounded-md border p-4">
         <div className="flex flex-col items-center w-full gap-4">
-          {/* Baris untuk input nama tempat wisata dan tombol switch */}
+          <img width={300} height={200} src="https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&iiprop=url&generator=search&gsrsearch=Eiffel+Tower" alt="" />
+          {/* Baris untuk input nama transportasi dan tombol switch */}
           <div className="w-full flex flex-col md:flex-row items-start md:items-center gap-4">
             <div className="flex-1">
               <label htmlFor="name" className="block mb-1 text-sm font-medium">
-                Nama Tempat Wisata
+                Nama Transportasi
               </label>
               {isManual ? (
                 <input
@@ -74,40 +76,25 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
                   onChange={(e) =>
                     setNewTodo({ ...newTodo, name: e.target.value })
                   }
-                  placeholder="Masukkan nama tempat wisata"
+                  placeholder="Masukkan nama transportasi"
                   className="w-full p-2 border rounded-md"
                 />
               ) : (
-                <GooglePlacesAutocomplete
-                  apiKey={process.env.NEXT_PUBLIC_GOOGLE_PLACE_API_KEY}
-                  selectProps={{
-                    value: newTodo.name
-                      ? { label: newTodo.name, value: newTodo.name }
-                      : null,
-                    onChange: (location: any) =>
-                      setNewTodo({ ...newTodo, name: location.label }),
-                    placeholder: "Pilih tempat wisata...",
-                    noOptionsMessage: () =>
-                      "Ketik sesuatu untuk mencari lokasi...",
-                    styles: {
-                      control: (base) => ({
-                        ...base,
-                        width: "100%",
-                        border: "1px solid #d1d5db",
-                        borderRadius: "0.375rem",
-                        padding: "0.175rem",
-                      }),
-                      valueContainer: (base) => ({
-                        ...base,
-                        padding: "0 0.5rem",
-                      }),
-                    },
-                  }}
-                  autocompletionRequest={{
-                    componentRestrictions: { country: ["ID"] },
-                    types: ["establishment"],
-                  }}
-                />
+                <select
+                  id="name"
+                  value={newTodo.name || ""}
+                  onChange={(e) =>
+                    setNewTodo({ ...newTodo, name: e.target.value })
+                  }
+                  className="w-full p-2 border rounded-md"
+                >
+                  <option value="">Pilih transportasi...</option>
+                  {transportOptions.map((option, index) => (
+                    <option key={index} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
               )}
             </div>
 
@@ -117,7 +104,7 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
               onClick={() => setIsManual((prev) => !prev)}
               className="p-2 bg-black text-xs md:text-base text-white rounded-md w-32 md:w-40 h-7 md:h-10 flex items-center justify-center"
             >
-              {isManual ? "Bantuan Google" : "Input Manual"}
+              {isManual ? "Pilih dari List" : "Input Manual"}
             </button>
           </div>
 
@@ -126,9 +113,6 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
             <label htmlFor="cost" className="block mb-1 text-sm font-medium">
               Biaya
             </label>
-
-            {/* Input manual atau slider */}
-
             {costInputType === "manual" ? (
               <div>
                 <input
@@ -140,7 +124,6 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
                   required
                   className="w-full p-2 border rounded-md"
                 />
-
                 <div className="flex justify-between text-sm mt-1">
                   {newTodo.cost.toLocaleString("id-ID", {
                     style: "currency",
@@ -155,7 +138,7 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
                   min={0}
                   max={3000000}
                   value={newTodo.cost}
-                  step={getStepValue(newTodo.cost)} // Set step berdasarkan nilai
+                  step={getStepValue(newTodo.cost)}
                   onChange={(e) => handleCostChange(e.target.value)}
                   className="w-full"
                 />
@@ -167,7 +150,6 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
                 </div>
               </div>
             )}
-            {/* Tombol untuk switch antara slider dan input manual */}
             <div className="mt-2 flex justify-center gap-4">
               <button
                 type="button"
@@ -212,77 +194,10 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
               className="w-full p-2 border rounded-md"
             />
           </div>
-
-          {/* Waktu Mulai */}
-          <div className="w-full">
-            <label
-              htmlFor="timeStart"
-              className="block mb-1 text-sm font-medium"
-            >
-              Waktu Mulai
-            </label>
-            <input
-              id="timeStart"
-              type="time"
-              value={newTodo.timeStart || ""}
-              onChange={(e) =>
-                setNewTodo({ ...newTodo, timeStart: e.target.value })
-              }
-              required
-              className="w-full p-2 border rounded-md"
-            />
-          </div>
-
-          {/* Waktu Selesai */}
-          <div className="w-full">
-            <label htmlFor="timeEnd" className="block mb-1 text-sm font-medium">
-              Waktu Selesai
-            </label>
-            <input
-              id="timeEnd"
-              type="time"
-              value={newTodo.timeEnd || ""}
-              onChange={(e) =>
-                setNewTodo({ ...newTodo, timeEnd: e.target.value })
-              }
-              required
-              className="w-full p-2 border rounded-md"
-            />
-          </div>
-
-          {/* Upload Gambar */}
-          <div className="flex flex-start">
-            <label  className="block mb-1 text-sm text-start font-medium">
-                Upload Gambar Tempat Wisata
-            </label>
-          </div>
-          {imageUrlCover ? (
-            <img
-              src={imageUrlCover}
-              alt="Trip Image"
-              className="h-[340px] w-full object-cover rounded"
-            />
-          ) : (
-            <UploadDropzone
-              className="border-4 border-dashed border-blue-400 h-[340px] w-full"
-              endpoint="imageUploader"
-              onClientUploadComplete={async (res) => {
-                setNewTodo({ ...newTodo, image: res[0].url });
-                setImageUrlCover(res[0].url);
-                // setImageKeyCover(res[0].key);
-                // if (res && res.length > 0) {
-                //     handleImageChange({ url: res[0].url, key: res[0].key });
-                //   }
-              }}
-              onUploadError={(error: Error) => {
-                console.error("Upload error:", error.message);
-              }}
-            />
-          )}
         </div>
       </ScrollArea>
     </div>
   );
 };
 
-export default WisataForm;
+export default TransportasiForm;

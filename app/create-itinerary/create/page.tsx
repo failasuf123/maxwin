@@ -29,9 +29,7 @@ import { DatePickerWithRange } from "@/components/create-itinerary/datePickerDum
 function Page() {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [selectedDays, setSelectedDays] = useState<number | null>(null);
-  const [selectedStartDate, setSelectedStartDate] = useState<string | null>(
-    null
-  );
+  const [selectedStartDate, setSelectedStartDate] = useState<string | null>(null);
   const [selectedEndDate, setSelectedEndDate] = useState<string | null>(null);
   const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
   const [selectedTravelWith, setSelectedTravelWith] = useState<string | null>(
