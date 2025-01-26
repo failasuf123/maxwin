@@ -59,7 +59,7 @@ function ContentItinerary({ trip }: { trip: TripData | null }) {
   };
 
   return (
-    <div>
+   
       <div className="mt-10">
         {trip?.tripData?.todos &&
           Object.entries(trip.tripData.todos)
@@ -69,17 +69,24 @@ function ContentItinerary({ trip }: { trip: TripData | null }) {
               const dateObjB = new Date(dateB);
               return dateObjA.getTime() - dateObjB.getTime(); // Urutkan secara ascending
             })
-            .map(([date, activities]) => {
+            .map(([date, activities], dayIndex) => {
               const formattedDate = new Intl.DateTimeFormat("id-ID", {
                 weekday: "long",
                 day: "numeric",
                 month: "long",
+                year: "numeric",
               }).format(new Date(date));
 
               return (
-                <div className="flex flex-col pt-2 mt-5 border-t-2">
-                  <div key={date} className="flex flex-col mb-5">
-                    <h3 className="text-gray-500 text-lg text-start mb-5">
+                // <div className="flex flex-col pt-2 mt-5 border-t-2">
+                //   <div key={date} className="flex flex-col mb-5">
+                <div key={date} className="flex flex-col pt-2 mt-5 border-t-2">
+                  <div  className="flex flex-col mb-5">
+                  <h3 className="text-gray-700 font-semibold text-lg ">
+                      Hari ke-{dayIndex + 1}
+                    </h3>
+
+                    <h3 className="text-gray-500 text-base text-start mb-5">
                       {formattedDate}
                     </h3>
                     <div className="space-y-2">
@@ -102,7 +109,7 @@ function ContentItinerary({ trip }: { trip: TripData | null }) {
               );
             })}
       </div>
-    </div>
+   
   );
 }
 

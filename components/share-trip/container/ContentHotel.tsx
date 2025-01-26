@@ -29,12 +29,12 @@ type Todo = {
   date: string;
 };
 
-type ContentWisataProps = Todo & {
-  onDelete: () => void; // Fungsi untuk handle delete
+type ContentHotelProps = Todo & {
+  onDelete: () => void; 
   onEdit: () => void;
 };
 
-const ContentWisata = ({
+const ContentHotel = ({
   name,
   description,
   cost,
@@ -43,7 +43,7 @@ const ContentWisata = ({
   image,
   onDelete,
   onEdit,
-}: ContentWisataProps) => {
+}: ContentHotelProps) => {
   return (
     <div className="flex flex-col ">
       <div className="p-3 rounded-lg flex flex-row items-center gap-4 relative ">
@@ -145,4 +145,4 @@ const ContentWisata = ({
   );
 };
 
-export default ContentWisata;
+export default ContentHotel;

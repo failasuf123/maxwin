@@ -26,10 +26,11 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Privat from "@/components/dashboard/Privat";
 import Link from "next/link";
 import Publish from "@/components/dashboard/Publish";
+import { useRouter } from "next/navigation";
 
 function page() {
+  const router = useRouter();
   const [modalCreateTrip, setModalCreateTrip] = useState(false);
-
   const [switchMenu, setSwitchMenu] = useState("Privat");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -65,6 +66,7 @@ function page() {
         console.log(response);
         localStorage.setItem("user", JSON.stringify(response.data));
         setIsLoggedIn(false);
+        router.push("/dashboard");
       });
   };
 
@@ -92,7 +94,7 @@ function page() {
         <div className="p-10 md:px-20 lg:px-32 flex flex-col items-center">
           {/* Upper Content */}
           <div className="w-full flex flex-col md:flex-row md:items-center justify-start md:justify-between gap-3 md:gap-0">
-            <h2 className="text-2xl font-semibold">Rencana Perjalanan</h2>
+            <h2 className="text-2xl font-semibold">Rencana Perjalanan Kamu</h2>
             <div
               onClick={() => setModalCreateTrip(true)}
               className="flex flex-row gap-2 px-3 py-2 items-center justify-center bg-black text-white cursor-pointer hover:bg-gray-700 rounded-lg"

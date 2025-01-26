@@ -49,6 +49,7 @@ function HeaderUpper({ trip }: { trip: TripData | null }) {
           </div>
         </div>
       </div>
+
     </div>
   );
 }

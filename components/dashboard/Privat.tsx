@@ -57,7 +57,7 @@ function Privat() {
   );
 
   return (
-    <div className="w-full flex flex-col gap-4 p-4 w-full">
+    <div className="w-full flex flex-col gap-4  py-4 md:px-4 w-full">
       {/* SearchBar */}
       <div className="w-full md:w-96 h-10 flex flex-row justify-start items-center border-2 border-gray-500 rounded-lg gap-2 px-3">
         <FaSearchLocation className="text-xl text-gray-500" />
@@ -78,7 +78,7 @@ function Privat() {
           <h2>Loading...</h2>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 w-full">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 mt-2 w-full">
           {filteredItineraries.length > 0 ? (
             filteredItineraries.map((trip: any, index: any) => (
               <div key={index}>
