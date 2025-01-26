@@ -1,4 +1,21 @@
 import React from "react";
+import { FaPen, FaTrash } from "react-icons/fa";
+import { HiDotsVertical } from "react-icons/hi";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog"
 
 type Todo = {
   type: string;
@@ -14,6 +31,7 @@ type Todo = {
 
 type ContentWisataProps = Todo & {
   onDelete: () => void; // Fungsi untuk handle delete
+  onEdit: () => void;
 };
 
 const ContentWisata = ({
@@ -24,6 +42,7 @@ const ContentWisata = ({
   timeEnd,
   image,
   onDelete,
+  onEdit,
 }: ContentWisataProps) => {
   return (
     <div className="flex flex-col ">
@@ -36,7 +55,7 @@ const ContentWisata = ({
 
           <div className="w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32  rounded-lg overflow-hidden shadow-sm">
             <img
-              src={image || "/placeholder.png"}
+              src={image || "/placeholder.webp"}
               alt={name || "No Title"}
               className="w-full h-full object-cover mt-3"
             />
@@ -65,12 +84,56 @@ const ContentWisata = ({
         </div>
 
         {/* Delete Button */}
-        <div
+        {/* <div
           className="absolute top-2 right-2 text-white bg-red-500 text-sm px-3 py-1 h-[28px] rounded-full cursor-pointer hover:bg-black"
           onClick={onDelete}
         >
           x
-        </div>
+        </div> */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <div className="absolute top-2 right-2 text-black text-xl bg-gray-100 text-sm px-3 py-3  rounded-full cursor-pointer hover:bg-gray-200">
+              <HiDotsVertical />
+            </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-40">
+            <div className="flex flex-col ">
+              <div onClick={onEdit} className="hover:bg-gray-200 rounded-xl cursor-pointer px-2 py-2 flex flex-row text-gray-700 items-center gap-4 text-lg">
+                <FaPen className="text-sm"/> Edit
+              </div>
+
+              <hr className="w-full text-gray-300 my-1" />
+
+              {/* <div className="hover:bg-gray-200 rounded-xl cursor-pointer px-2 py-2 flex flex-row text-gray-700 items-center gap-4 text-lg text-red-400">
+                <FaTrash className="text-sm "/> Hapus
+              </div> */}
+              <Dialog>
+                <DialogTrigger className="border-none outline-none focus:outline-none">
+                <div className="hover:bg-gray-200 rounded-xl cursor-pointer px-2 py-2 flex flex-row text-gray-700 items-center gap-4 text-lg text-red-400 border-none">
+                <FaTrash className="text-sm "/> Hapus
+              </div>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Apakah Anda Yakin Menghapus Aktivitas Ini ?</DialogTitle>
+                    <DialogDescription>
+                      Perhatian! Anda akan menghapus lokasi "{name}" dari rencana perjalanan anda.
+                    </DialogDescription>
+                  </DialogHeader>
+                <DialogFooter>
+                <DialogClose asChild>
+                  <button className="bg-red-500 rounded text-white border-none px-2 py-2 cursor-pointer hover:bg-red-600" onClick={onDelete}>Hapus Aktivitas</button>
+                </DialogClose>
+                </DialogFooter>
+                </DialogContent>
+
+              </Dialog>
+
+            </div>
+          </PopoverContent>
+        </Popover>
+
+
       </div>
 
       <div className="block md:hidden ml-8">

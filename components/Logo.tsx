@@ -1,14 +1,24 @@
-import Link from 'next/link'
-import React from 'react'
+import Link from 'next/link';
+import React from 'react';
 
 function Logo() {
   return (
-      <div>
-          <Link href={"/"} className="font-bold text-xl bg-gradient-to-r from-red-400 to-blue-400 text-transparent bg-clip-text hover:cursor-pointer">
-            <img src="/tripio-logo.png" height={40} width={120}/>
-          </Link>
-      </div>
-  )
+    <div>
+      <Link
+        href="/"
+        className="hidden md:block font-bold text-xl bg-gradient-to-r from-red-400 to-blue-400 text-transparent bg-clip-text hover:cursor-pointer"
+      >
+        <img src="/malib-logo-long.png" height={50} width={140} alt="Logo Panjang" />
+      </Link>
+
+      <Link
+        href="/"
+        className="block md:hidden font-bold text-xl bg-gradient-to-r from-red-400 to-blue-400 text-transparent bg-clip-text hover:cursor-pointer"
+      >
+        <img src="/malib-logo-short.png" height={40} width={40} alt="Logo Pendek" />
+      </Link>
+    </div>
+  );
 }
 
-export default Logo
+export default Logo;
