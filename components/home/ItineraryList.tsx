@@ -13,7 +13,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-
 interface Props {
   // searchParams: string;
   typeParams: string;
@@ -39,14 +38,9 @@ function ItineraryList({ typeParams }: Props) {
   useEffect(() => {
     const cityFromURL = searchParams.get("city") || ""; // Ambil dari URL
     setCityParam(cityFromURL); // Simpan ke state lokal
-    setSearchTerm(cityFromURL)
-    GetUserTrips()
+    setSearchTerm(cityFromURL);
+    GetUserTrips();
   }, [searchParams]); // Triggered saat `searchParams` berubah
-  
-  // useEffect(() => {
-  //   setSearchTerm(cityFromURL);
-  //   GetUserTrips();
-  // }, []);
 
   const GetUserTrips = async () => {
     setLoading(true);
@@ -58,6 +52,8 @@ function ItineraryList({ typeParams }: Props) {
         where("public", "==", true),
         where("publish", "==", true)
       );
+
+      console.log("db fire store Trips: ", db)
       const querySnapshot = await getDocs(q);
 
       const trips: any[] = [];
@@ -70,15 +66,15 @@ function ItineraryList({ typeParams }: Props) {
     }
   };
 
-  const filteredItineraries = userTrips.filter((itinerary) =>
-  (itinerary.tripData.title?.toLowerCase() || "").includes(
-    searchTerm?.toLowerCase() || ""
-  ) ||
-  (itinerary.tripData.city?.toLowerCase() || "").includes(
-    searchTerm?.toLowerCase() || ""
-  )
-);
-
+  const filteredItineraries = userTrips.filter(
+    (itinerary) =>
+      (itinerary.tripData.title?.toLowerCase() || "").includes(
+        searchTerm?.toLowerCase() || ""
+      ) ||
+      (itinerary.tripData.city?.toLowerCase() || "").includes(
+        searchTerm?.toLowerCase() || ""
+      )
+  );
 
   return (
     <div className="mt-10  md:mx-20">
@@ -139,9 +135,51 @@ function ItineraryList({ typeParams }: Props) {
       </AnimatePresence> */}
       {/* Loading state */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center mt-14 md:mt-20 gap-4">
-          <LoadingAnimationBlack />
-          <p className="text-center text-gray-500">Memuat...</p>
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2  md:gap-3 xl:gap-5 2xl:gap-8 mt-2">
+          <div className="flex flex-col w-full gap-1 p-1 rounded-xl">
+            <div className=" h-[150px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+            <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse mt-1"></div>
+            <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+            <div className="flex flex-row justify-evenly gap-2">
+              <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+              <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+              <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+            </div>
+          </div>
+
+          <div className="flex flex-col w-full gap-1 p-1 rounded-xl">
+            <div className=" h-[150px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+            <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse mt-1"></div>
+            <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+            <div className="flex flex-row justify-evenly gap-2">
+              <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+              <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+              <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+            </div>
+          </div>
+
+          <div className="flex flex-col w-full gap-1 p-1 rounded-xl">
+            <div className=" h-[150px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+            <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse mt-1"></div>
+            <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+            <div className="flex flex-row justify-evenly gap-2">
+              <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+              <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+              <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+            </div>
+          </div>
+
+          <div className="flex flex-col w-full gap-1 p-1 rounded-xl">
+            <div className=" h-[150px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+            <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse mt-1"></div>
+            <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+            <div className="flex flex-row justify-evenly gap-2">
+              <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+              <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+              <div className=" h-[15px] w-full overflow-hidden rounded  bg-gray-200 animate-pulse"></div>
+            </div>
+          </div>
+
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2  md:gap-3 xl:gap-5 2xl:gap-8 mt-2">
@@ -152,8 +190,12 @@ function ItineraryList({ typeParams }: Props) {
                 href={`/view-experience/${itinerary?.id}`}
                 onClick={() => setIsLoadingNavigate(true)}
               >
-                <div className="flex flex-col h-[300px] w-full overflow-hidden cursor-pointer group">
-                  <div className="relative h-3/5 w-full justify-evently">
+                {" "}
+                <div
+                  key={index}
+                  className="flex flex-col h-[300px] w-full overflow-hidden cursor-pointer group"
+                >
+                  <div className="relative h-3/5 w-full">
                     <img
                       src={itinerary.tripData.imageCover || "/placeholder.webp"}
                       className="h-full w-full object-cover rounded-lg"
@@ -171,37 +213,41 @@ function ItineraryList({ typeParams }: Props) {
                           : "")}
                     </div>
 
-                    <div className="absolute bottom-2 left-2">
+                    <div className="absolute bottom-2 left-2 px-0.5 py-0.5 bg-white rounded-lg bg-opacity-40 group-hover:bg-opacity-80 ">
                       <img
                         src={itinerary?.userPicture || "/placeholder.webp"}
-                        className="h-7 w-7 rounded-lg  md:hidden group-hover:rounded-sm"
+                        className="h-7 w-7 md:w-8 md:h-8 rounded-lg  "
                         alt={itinerary.tripData.username}
                       />
                     </div>
                   </div>
-                  <div className="flex flex-col items-center p-2 overflow-hidden text-sm text-gray-500">
-                    <div className="flex flex-row justify-between items-center gap-2">
-                      <img
-                        src={itinerary?.userPicture || "/placeholder.webp"}
-                        className="h-9 w-9 rounded-full hidden md:block"
-                        alt={itinerary.tripData.username}
-                      />
+                  <div className="flex flex-col justify-start p-2 overflow-hidden text-sm text-gray-500">
+                    <div className="flex flex-row items-center gap-2">
+                      {/* <img
+                      src={itinerary?.userPicture || "/placeholder.webp"}
+                      className="h-8 w-8 rounded-full hidden md:block"
+                      alt={itinerary.tripData.username}
+                    /> */}
                       <div className="flex flex-col gap-0.5 leading-tight">
                         <h2 className="text-gray-700 font-semibold w-full text-ellipsis overflow-hidden line-clamp-2">
                           {itinerary.tripData.title}
                         </h2>
-                        <div className="text-xs font-light">
+                        <div className="text-xs font-light overflow-hidden line-clamp-1">
                           Oleh: {itinerary.tripData.username}
                         </div>
-                        <div className="flex flex-row gap-1 text-xs font-normal">
+                        <div className="flex flex-row gap-1 text-xs font-normal ">
                           <span>{itinerary.tripData.totalDays} hari</span>
                           <span>|</span>
                           <span>{itinerary.tripData.category}</span>
                           <span>|</span>
                           <span className="text-green-600 font-normal">
-                            Rp.{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(itinerary.tripData.totalPrice).replace(",00", "")}
+                            {new Intl.NumberFormat("id-ID", {
+                              style: "currency",
+                              currency: "IDR",
+                            })
+                              .format(itinerary.tripData.totalPrice)
+                              .replace(",00", "")}
                           </span>
-
                         </div>
                         <div className="text-xs font-light">
                           {itinerary.tripData.highlights}

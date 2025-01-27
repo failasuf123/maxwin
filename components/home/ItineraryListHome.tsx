@@ -15,7 +15,6 @@ function ItineraryListHome() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingNavigate, setIsLoadingNavigate] = useState(false);
 
-
   useEffect(() => {
     GetUserTrips();
   }, []);
@@ -61,16 +60,14 @@ function ItineraryListHome() {
 
   return (
     <div className="mt-10  md:mx-12 xl:mx-20">
-            {isLoading && (
+      {isLoading && (
         <div className="fixed inset-0 flex flex-col gap-3 items-center justify-center bg-white bg-opacity-50 z-50">
           <LoadingAnimationBlack />
-          <div>
-            Memuat Halaman...
-          </div>
+          <div>Memuat Halaman...</div>
         </div>
       )}
 
-{isLoadingNavigate && (
+      {isLoadingNavigate && (
         <div className="fixed inset-0 flex flex-col gap-3 items-center justify-center bg-white bg-opacity-50 z-50">
           <LoadingAnimationBlack />
           <div className="font-semibold text-lg md:text-xl text-black">
@@ -106,10 +103,11 @@ function ItineraryListHome() {
             {filteredItineraries.length > 0 ? (
               filteredItineraries.map((itinerary: any, index: number) => (
                 <Link
-                key={itinerary?.id || index} // Gunakan id dari itinerary atau index sebagai fallback
-                href={`/view-experience/${itinerary?.id}`}
-                onClick={() => setIsLoadingNavigate(true)}
-              >                  {" "}
+                  key={itinerary?.id || index} // Gunakan id dari itinerary atau index sebagai fallback
+                  href={`/view-experience/${itinerary?.id}`}
+                  onClick={() => setIsLoadingNavigate(true)}
+                >
+                  {" "}
                   <div
                     key={index}
                     className="flex flex-col h-[300px] w-full overflow-hidden cursor-pointer group"
@@ -134,35 +132,35 @@ function ItineraryListHome() {
                             : "")}
                       </div>
 
-                      <div className="absolute bottom-2 left-2">
+                      <div className="absolute bottom-2 left-2 px-0.5 py-0.5 bg-white rounded-lg bg-opacity-40 group-hover:bg-opacity-80 ">
                         <img
                           src={itinerary?.userPicture || "/placeholder.webp"}
-                          className="h-7 w-7 rounded-lg  md:hidden group-hover:rounded-sm"
+                          className="h-7 w-7 md:w-8 md:h-8 rounded-lg  "
                           alt={itinerary.tripData.username}
                         />
                       </div>
                     </div>
-                    <div className="flex flex-col items-center p-2 overflow-hidden text-sm text-gray-500">
+                    <div className="flex flex-col justify-start p-2 overflow-hidden text-sm text-gray-500">
                       <div className="flex flex-row items-center gap-2">
-                        <img
+                        {/* <img
                           src={itinerary?.userPicture || "/placeholder.webp"}
-                          className="h-9 w-9 rounded-full hidden md:block"
+                          className="h-8 w-8 rounded-full hidden md:block"
                           alt={itinerary.tripData.username}
-                        />
+                        /> */}
                         <div className="flex flex-col gap-0.5 leading-tight">
                           <h2 className="text-gray-700 font-semibold w-full text-ellipsis overflow-hidden line-clamp-2">
                             {itinerary.tripData.title}
                           </h2>
-                          <div className="text-xs font-light">
-                            Oleh: {itinerary.tripData.username}
+                          <div className="text-xs font-light overflow-hidden line-clamp-1">
+                            Oleh: {itinerary.tripData.username} 
                           </div>
-                          <div className="flex flex-row gap-1 text-xs font-normal">
+                          <div className="flex flex-row gap-1 text-xs font-normal overflow-hidden line-clamp-1 ">
                             <span>{itinerary.tripData.totalDays} hari</span>
                             <span>|</span>
                             <span>{itinerary.tripData.category}</span>
                             <span>|</span>
                             <span className="text-green-600 font-normal">
-                              Rp.{itinerary.tripData.totalPrice}
+                              {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(itinerary.tripData.totalPrice).replace(",00", "")}
                             </span>
                           </div>
                           <div className="text-xs font-light">
@@ -171,11 +169,15 @@ function ItineraryListHome() {
                         </div>
                       </div>
                     </div>
+
                   </div>
                 </Link>
               ))
             ) : (
-              <p className="text-gray-500">Tidak ada hasil yang ditemukan</p>
+              <div>
+  
+                <p className="text-gray-500">Tidak ada hasil yang ditemukan</p>
+              </div>
             )}
           </>
         )}
