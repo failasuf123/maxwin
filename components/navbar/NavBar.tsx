@@ -23,14 +23,16 @@ import Link from "next/link";
 import LoadingAnimationBlack from "../LoadingAnimationBlack";
 import { useRouter } from "next/navigation";
 
-const NavBar: React.FC = ({renderPage} : {renderPage?:string}) => {
+const NavBar: React.FC = ({ renderPage }: { renderPage?: string }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter()
+  const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
 
-  useEffect(()  => {
-    setIsLoading(false)
-  },[])
+  const router = useRouter();
+
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
 
   const handleMenuToggle = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -43,8 +45,6 @@ const NavBar: React.FC = ({renderPage} : {renderPage?:string}) => {
     await new Promise((resolve) => setTimeout(resolve, 1000)); // Timeout opsional (sesuai UX)
     setIsLoading(false); // Matikan state loading setelah navigasi selesai
   };
-
-  
 
   const data = {
     user: {
@@ -76,14 +76,20 @@ const NavBar: React.FC = ({renderPage} : {renderPage?:string}) => {
             </PopoverTrigger>
             <PopoverContent className="w-64 py-2">
               <div className="grid gap-1">
-                  <div onClick={() => handleLinkClick("/create-itinerary/create")} className="text-base text-gray-600 hover:bg-gray-200 cursor-pointer px-1 py-3 rounded-lg flex flex-row gap-2 items-center justify-start px-3">
-                    <BsStars />
-                    <div>Buat menggunakan AI</div>
-                  </div>
-                  <div onClick={() => handleLinkClick("/share-trip/share")} className="text-base text-gray-600 hover:bg-gray-200 cursor-pointer px-1 py-3 rounded-lg flex flex-row gap-2 items-center justify-start px-3">
-                    <IoIosCreate />
-                    <div>Buat manual</div>
-                  </div>
+                <div
+                  onClick={() => handleLinkClick("/create-itinerary/create")}
+                  className="text-base text-gray-600 hover:bg-gray-200 cursor-pointer px-1 py-3 rounded-lg flex flex-row gap-2 items-center justify-start px-3"
+                >
+                  <BsStars />
+                  <div>Buat menggunakan AI</div>
+                </div>
+                <div
+                  onClick={() => handleLinkClick("/share-trip/share")}
+                  className="text-base text-gray-600 hover:bg-gray-200 cursor-pointer px-1 py-3 rounded-lg flex flex-row gap-2 items-center justify-start px-3"
+                >
+                  <IoIosCreate />
+                  <div>Buat manual</div>
+                </div>
               </div>
             </PopoverContent>
           </Popover>
@@ -91,8 +97,6 @@ const NavBar: React.FC = ({renderPage} : {renderPage?:string}) => {
             href="/dashboard"
             className="text-gray-800 font-semibold hover:bg-gray-200 rounded-xl px-3 py-2 text-sm"
             onClick={() => handleLinkClick("/dashboard")}
-
-            
           >
             Trip Saya
           </a>
@@ -100,23 +104,17 @@ const NavBar: React.FC = ({renderPage} : {renderPage?:string}) => {
             href="/explore/itinerary"
             className="text-gray-800 font-semibold hover:bg-gray-200 rounded-xl px-3 py-2 text-sm"
             onClick={() => handleLinkClick("/explore/itinerary")}
-
           >
             Trip Orang Lain
           </a>
-          {/* <a href="#" className="text-gray-800 font-semibold hover:bg-gray-200 rounded-xl px-3 py-2 text-sm">
-            Hotel
-          </a>
-          <a href="#" className="text-gray-800 font-semibold hover:bg-gray-200 rounded-xl px-3 py-2 text-sm">
-            Wisata
-          </a> */}
         </div>
 
-        <div className="max-w-44 h-12 flex  items-center hidden md:block ">
+        <div className="max-w-44 h-12 flex  items-center block md:block ">
           <SidebarProvider>
             <NavUser user={data.user} />
           </SidebarProvider>
         </div>
+
         <button
           className="md:hidden text-gray-700 focus:outline-none"
           onClick={handleMenuToggle}
@@ -124,41 +122,66 @@ const NavBar: React.FC = ({renderPage} : {renderPage?:string}) => {
           {isMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
         </button>
       </nav>
-
       {isMenuOpen && (
-        <div className="flex flex-col px-4 py-2 bg-white shadow-md md:hidden">
+        <div className="flex flex-col gap-1 px-4 py-2 bg-white shadow-md md:hidden">
+          {/* State untuk mengontrol sub-menu */}
+          <div>
+            <div
+              className="py-2 text-gray-700 hover:bg-gray-200 px-3 rounded-lg font-semibold cursor-pointer flex justify-between items-center"
+              onClick={() => setIsSubMenuOpen(!isSubMenuOpen)}
+            >
+              Buat Trip
+              <IoIosArrowDropdown
+                className={`transform ${
+                  isSubMenuOpen ? "rotate-180" : "rotate-0"
+                } transition-transform`}
+              />
+            </div>
+            {/* Sub-menu untuk Buat Trip */}
+            {isSubMenuOpen && (
+              <div className="ml-4 flex flex-col gap-1">
+                <div
+                  onClick={() => handleLinkClick("/create-itinerary/create")}
+                  className="py-2 text-gray-700 hover:bg-gray-200 px-3 rounded-lg cursor-pointer flex justify-start gap-3  items-center"
+                >
+                  <BsStars />
+                  <div>Buat menggunakan AI</div>
+                </div>
+                <hr className="w-full bg-gray-400" />
+                <div
+                  onClick={() => handleLinkClick("/share-trip/share")}
+                  className="py-2 text-gray-700 hover:bg-gray-200 px-3 rounded-lg cursor-pointer flex justify-start gap-3  items-center"
+                >
+                  <IoIosCreate />
+                  <div>Buat manual</div>
+                </div>
+              </div>
+            )}
+          </div>
+          <hr className="w-full bg-gray-400" />
           <a
             href="#"
-            className="py-1 text-gray-700 hover:text-blue-600"
-            onClick={() => handleLinkClick("#")}
-
-          >
-            Buat Trip
-          </a>
-          <a
-            href="#"
-            className="py-1 text-gray-700 hover:text-blue-600"
-            onClick={() => handleLinkClick("#")}
+            className="py-2 text-gray-700 hover:bg-gray-200 px-3 rounded-lg font-semibold"
+            onClick={() => handleLinkClick("/dashboard")}
           >
             Trip Saya
           </a>
+          <hr className="w-full bg-gray-400" />
           <a
             href="#"
-            className="py-1 text-gray-700 hover:text-blue-600"
-            onClick={() => handleLinkClick("#")}
+            className="py-2 text-gray-700 hover:bg-gray-200 px-3 rounded-lg font-semibold"
+            onClick={() => handleLinkClick("/explore/itinerary")}
           >
-            Hotel
+            Trip Orang Lain
           </a>
-          <a
-            href="#"
-            className="py-1 text-gray-700 hover:text-blue-600"
-            onClick={() => handleLinkClick("#")}
-          >
-            Wisata
-          </a>
-          <button className="mt-2 w-full px-3 py-1  text-sm text-white bg-black rounded-md hover:bg-gray-800">
-            Sign In
-          </button>
+
+          <hr className="w-full bg-gray-400" />
+
+          <div className="overflow-hidden max-h-14 py-1 bg-gray-100 mt-1 rounded-lg">
+            <SidebarProvider>
+              <NavUser user={data.user} />
+            </SidebarProvider>
+          </div>
         </div>
       )}
     </>
