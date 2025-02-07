@@ -69,7 +69,7 @@ const Page: React.FC<PageProps> = ({ params }) => {
   };
 
   return (
-    <div className="p-10 md:px-28 lg:px-36 xl:px-52 relative">
+    <div className="p-5 pt-10 md:p-10 md:px-28 lg:px-36 xl:px-52 relative">
       {isLoading && ( 
         <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-50">
           <div className="flex items-center space-x-2 text-lg">

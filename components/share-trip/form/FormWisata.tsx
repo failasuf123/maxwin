@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Drawer,
   DrawerHeader,
@@ -8,6 +8,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import GooglePlacesAutocomplete from "react-google-places-autocomplete";
 import { UploadDropzone } from "@/app/utils/uploadthing";
+import PriceFilter from "./PriceFilter";
 
 interface WisataFormProps {
   newTodo: {
@@ -31,7 +32,55 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
     "slider"
   ); // State untuk menentukan jenis input biaya
   const [imageUrlCover, setImageUrlCover] = useState("");
+  const [minValue, setMinValue] = useState(0);
+  const [maxValue, setMaxValue] = useState(100000);
+  const MAX_LIMIT = 20000000; // Batas maksimum
+  const MIN_LIMIT = 0; // Batas minimum
+  const MIN_DIFFERENCE = 20000; // Selisih minimal antara min dan max
+  const maxValueRef = useRef(100000); // Ref untuk menyimpan nilai max yang stabil
 
+
+  useEffect(() => {
+    if (newTodo.cost > 100000) {
+      const newMax = Math.min(newTodo.cost * 2, MAX_LIMIT); // Pastikan tidak melebihi MAX_LIMIT
+      setMaxValue(newMax);
+      maxValueRef.current = newMax; // Simpan di ref agar tidak berubah
+    }
+  }, [newTodo.cost]);
+  
+
+  // Fungsi untuk membulatkan ke ribuan terdekat ke atas
+  const roundUpToNearestThousand = (value: any) =>
+    Math.ceil(value / 1000) * 1000;
+
+  // Fungsi untuk menghitung nilai tengah yang sudah dibulatkan
+  const calculateMidValue = (min: any, max: any) =>
+    roundUpToNearestThousand((min + max) / 2);
+
+  // Fungsi untuk mengupdate nilai tengah setiap kali min/max berubah
+  const updateMidValue = (newMin: any, newMax: any) => {
+    const midValue = calculateMidValue(newMin, newMax);
+    setNewTodo((prev: any) => ({ ...prev, cost: midValue }));
+  };
+
+  const handleMinChange = (e:any) => {
+    let newMin = Number(e.target.value);
+    if (newMin < MIN_LIMIT) newMin = MIN_LIMIT; // Cegah negatif
+    if (newMin >= maxValue - MIN_DIFFERENCE) return; // Pastikan ada jarak minimal
+    setMinValue(newMin);
+    updateMidValue(newMin, maxValue);
+  };
+  
+
+  const handleMaxChange = (e:any) => {
+    let newMax = Number(e.target.value);
+    if (newMax > MAX_LIMIT) newMax = MAX_LIMIT; // Batasi ke 20 juta
+    if (newMax <= minValue + MIN_DIFFERENCE) return; // Pastikan selisih minimal
+    setMaxValue(newMax);
+    maxValueRef.current = newMax; // Update ref agar tidak berubah oleh slider
+    updateMidValue(minValue, newMax);
+  };
+  
   // Fungsi untuk menghitung nilai step berdasarkan cost
   const getStepValue = (cost: number) => {
     if (cost <= 100000) return 5000;
@@ -49,24 +98,31 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
     });
   };
 
+  const handleCostChanges = (value: number) => {
+    setNewTodo({
+      ...newTodo,
+      cost: value,
+    });
+  };
+
   return (
-    <div className="w-full">
+    <div className="w-full ">
       <DrawerHeader>
-        <DrawerTitle>Tempat Wisata</DrawerTitle>
-        <DrawerDescription>
+        <DrawerTitle className="text-center">Tempat Wisata</DrawerTitle>
+        <DrawerDescription className="text-center">
           Masukan tempat wisata secara manual
         </DrawerDescription>
       </DrawerHeader>
 
-      <ScrollArea className="h-[300px]  rounded-md border p-4">
-        <div className="flex flex-col items-center w-full gap-4">
+      <ScrollArea className="h-[calc(100vh-200px)] px-3 md:px-28 lg:px-32 xl:px-64 py-1">
+        <div className="flex flex-col items-center w-full gap-8">
           {/* Baris untuk input nama tempat wisata dan tombol switch */}
           <div className="w-full flex flex-col md:flex-row items-start md:items-center gap-4">
-            <div className="flex-1">
-              <label htmlFor="name" className="block mb-1 text-sm font-medium">
+            <div className="w-full">
+              <label htmlFor="name" className="block mb-3 text-sm font-medium">
                 Nama Tempat Wisata
               </label>
-              {isManual ? (
+              {/* {isManual ? (
                 <input
                   type="text"
                   id="name"
@@ -108,89 +164,83 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
                     types: ["establishment"],
                   }}
                 />
-              )}
+              )} */}
+              <input
+                type="text"
+                id="name"
+                value={newTodo.name}
+                onChange={(e) =>
+                  setNewTodo({ ...newTodo, name: e.target.value })
+                }
+                placeholder="Masukkan nama tempat wisata"
+                className="w-full p-2 border rounded-md"
+              />
             </div>
 
             {/* Tombol Switch Manual */}
-            <button
+            {/* <button
               type="button"
               onClick={() => setIsManual((prev) => !prev)}
               className="p-2 bg-black text-xs md:text-base text-white rounded-md w-32 md:w-40 h-7 md:h-10 flex items-center justify-center"
             >
               {isManual ? "Bantuan Google" : "Input Manual"}
-            </button>
+            </button> */}
           </div>
 
           {/* Biaya */}
           <div className="w-full">
-            <label htmlFor="cost" className="block mb-1 text-sm font-medium">
+            <label htmlFor="cost" className="block mb-3 text-sm font-medium">
               Biaya
             </label>
 
-            {/* Input manual atau slider */}
+            {/* Slider */}
+            <div className="w-full ">
+            <input
+  type="range"
+  min={minValue}
+  max={maxValueRef.current} // Gunakan nilai dari ref agar tidak berubah
+  value={newTodo.cost}
+  step={1000}
+  onChange={(e) => setNewTodo((prev:any) => ({ ...prev, cost: Number(e.target.value) }))}
+  className="w-full"
+/>
 
-            {costInputType === "manual" ? (
-              <div>
-                <input
-                  id="cost"
-                  type="number"
-                  placeholder="Biaya"
-                  value={newTodo.cost}
-                  onChange={(e) => handleCostChange(e.target.value)}
-                  required
-                  className="w-full p-2 border rounded-md"
-                />
+              <div className="flex justify-between text-sm mt-1">
+                {newTodo.cost.toLocaleString("id-ID", {
+                  style: "currency",
+                  currency: "IDR",
+                })}
+              </div>
 
-                <div className="flex justify-between text-sm mt-1">
-                  {newTodo.cost.toLocaleString("id-ID", {
-                    style: "currency",
-                    currency: "IDR",
-                  })}
+              <div className="flex flex-row items-center md:justify-end gap-2 mt-3">
+                {/* Input manual atau slider */}
+                <div className="flex flex-col items-center space-x-2 text-xs">
+                  <input
+                    type="number"
+                    value={minValue}
+                    min={0}
+                    max={maxValue - 20000}
+                    onChange={handleMinChange}
+                    className="border p-2 w-full"
+                  />
+                  <label className="w-40 text-gray-500">Min Range Harga</label>
+                </div>
+
+                <div className="flex flex-col items-center space-x-2 text-xs"><div>-</div><div>.</div></div>
+
+                {/* Form Max */}
+                <div className="flex flex-col items-center space-x-2 text-xs">
+                  <input
+                    type="number"
+                    value={maxValue}
+                    min={minValue + 20000}
+                    max={3000000}
+                    onChange={handleMaxChange}
+                    className="border p-2 w-full"
+                  />
+                  <label className="w-40 text-gray-500">Maks Range Harga</label>
                 </div>
               </div>
-            ) : (
-              <div className="w-full">
-                <input
-                  type="range"
-                  min={0}
-                  max={3000000}
-                  value={newTodo.cost}
-                  step={getStepValue(newTodo.cost)} // Set step berdasarkan nilai
-                  onChange={(e) => handleCostChange(e.target.value)}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-sm mt-1">
-                  {newTodo.cost.toLocaleString("id-ID", {
-                    style: "currency",
-                    currency: "IDR",
-                  })}
-                </div>
-              </div>
-            )}
-            {/* Tombol untuk switch antara slider dan input manual */}
-            <div className="mt-2 flex justify-center gap-4">
-              <button
-                type="button"
-                onClick={() => setCostInputType("slider")}
-                className={`p-2 border rounded-md text-xs md:text-base ${
-                  costInputType === "slider"
-                    ? "bg-black text-white"
-                    : "bg-gray-200"
-                }`}
-              >
-                Slider
-              </button>
-              <button
-                type="button"
-                onClick={() => setCostInputType("manual")}
-                className={`p-2 border rounded-md text-xs md:text-base ${
-                  costInputType === "manual"
-                    ? "bg-black text-white"
-                    : "bg-gray-200"
-                }`}
-              >
-                Input Manual
-              </button>
             </div>
           </div>
 
@@ -198,7 +248,7 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
           <div className="w-full">
             <label
               htmlFor="description"
-              className="block mb-1 text-sm font-medium"
+              className="block mb-3 text-sm font-medium"
             >
               Deskripsi (Opsional)
             </label>
@@ -209,7 +259,7 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
               onChange={(e) =>
                 setNewTodo({ ...newTodo, description: e.target.value })
               }
-              className="w-full p-2 border rounded-md"
+              className="w-full h-32 p-2 border rounded-md"
             />
           </div>
 
@@ -217,7 +267,7 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
           <div className="w-full">
             <label
               htmlFor="timeStart"
-              className="block mb-1 text-sm font-medium"
+              className="block mb-3 text-sm font-medium"
             >
               Waktu Mulai
             </label>
@@ -235,7 +285,7 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
 
           {/* Waktu Selesai */}
           <div className="w-full">
-            <label htmlFor="timeEnd" className="block mb-1 text-sm font-medium">
+            <label htmlFor="timeEnd" className="block mb-3 text-sm font-medium">
               Waktu Selesai
             </label>
             <input
@@ -252,8 +302,8 @@ const WisataForm: React.FC<WisataFormProps> = ({ newTodo, setNewTodo }) => {
 
           {/* Upload Gambar */}
           <div className="flex flex-start">
-            <label  className="block mb-1 text-sm text-start font-medium">
-                Upload Gambar Tempat Wisata
+            <label className="block  text-sm text-start font-medium">
+              Upload Gambar Tempat Wisata
             </label>
           </div>
           {imageUrlCover ? (
