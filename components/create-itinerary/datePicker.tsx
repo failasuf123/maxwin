@@ -47,13 +47,13 @@ export default function DatePicker({ className, onDateChange }: DatePickerProps)
 
   return (
     <div className={cn("grid gap-2", className)}>
-      <Popover>
+      <Popover  >
         <PopoverTrigger asChild>
           <Button
             id="date"
             variant={"outline"}
             className={cn(
-              "w-[300px] justify-start text-left font-normal",
+              "w-[300px] md:w-[430px] lg:w-[460px] h-12 justify-start text-left font-normal",
               !date && "text-muted-foreground"
             )}
           >
@@ -72,7 +72,7 @@ export default function DatePicker({ className, onDateChange }: DatePickerProps)
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-full md:w-auto p-0" align="start">
           <Calendar
             initialFocus
             mode="range"
@@ -86,6 +86,7 @@ export default function DatePicker({ className, onDateChange }: DatePickerProps)
           />
         </PopoverContent>
       </Popover>
+      
     </div>
   )
 }

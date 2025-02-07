@@ -14,6 +14,7 @@ import { generateDateList } from "@/components/service/generateDateList";
 import { LuCalendarX, LuCalendarDays } from "react-icons/lu";
 import { PiArrowBendDownRightBold } from "react-icons/pi";
 import { serverTimestamp } from "firebase/firestore";
+import { FaTrash } from "react-icons/fa";
 
 import {
   Todo,
@@ -153,6 +154,12 @@ function EditMain({ tripidProps, typeProps }: Props) {
   const [isLoadingRender, setIsLoadingRender] = useState(true);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingWisataIndex, setEditingWisataIndex] = useState<string | null>(
+    null
+  );
+  const [editingWisataDate, setEditingWisataDate] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     // setIsLoadingRender(true)
@@ -224,6 +231,10 @@ function EditMain({ tripidProps, typeProps }: Props) {
         setCategory(tripData.category || "");
         setDescription(tripData.description || description);
         setTotalDays(tripData.totalDays || 0);
+        setPublishState(trip.publish);
+        setPublicState(trip.public);
+        console.log(trip.public);
+        console.log(trip.publish);
       } else if (typeContent === "manualTrip") {
         return;
       }
@@ -299,7 +310,7 @@ function EditMain({ tripidProps, typeProps }: Props) {
     const formattedDate = date.toISOString().split("T")[0];
 
     setNewTodo({
-      id:nanoid(14),
+      id: nanoid(14),
       type,
       name: "",
       description: "",
@@ -315,18 +326,17 @@ function EditMain({ tripidProps, typeProps }: Props) {
     setShowTodoModal(true);
   };
 
-
   const handleTodoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTodo) return;
-  
+
     const dateKey = newTodo.date;
     const updated = structuredClone(todos);
-  
+
     if (!updated[dateKey]) {
       updated[dateKey] = [];
     }
-  
+
     if (editingWisataIndex === null) {
       const isDuplicate = updated[dateKey].some(
         (todo) =>
@@ -334,7 +344,7 @@ function EditMain({ tripidProps, typeProps }: Props) {
           todo.type === newTodo.type &&
           todo.timeStart === newTodo.timeStart
       );
-  
+
       if (!isDuplicate) {
         updated[dateKey].push({ ...newTodo, id: crypto.randomUUID() });
       }
@@ -342,42 +352,42 @@ function EditMain({ tripidProps, typeProps }: Props) {
       const indexToUpdate = updated[editingWisataDate!]?.findIndex(
         (todo) => todo.id === editingWisataIndex
       );
-  
+
       if (indexToUpdate !== -1) {
         updated[editingWisataDate!][indexToUpdate] = { ...newTodo };
       } else {
         console.error("Item wisata tidak ditemukan untuk diedit.");
       }
     }
-  
+
     let costSum = 0;
     Object.values(updated).forEach((arr) =>
-      arr.forEach((t) => (costSum += typeof t.cost === "string" ? parseFloat(t.cost) : t.cost))
+      arr.forEach(
+        (t) =>
+          (costSum += typeof t.cost === "string" ? parseFloat(t.cost) : t.cost)
+      )
     );
 
     setTodos(updated);
     setTotalPrice(costSum);
     setShowTodoModal(false);
     setNewTodo(null);
-    setEditingWisataIndex(null); 
+    setEditingWisataIndex(null);
     setEditingWisataDate(null);
   };
-  
-  const [editingWisataIndex, setEditingWisataIndex] = useState<string | null>(null);
-  const [editingWisataDate, setEditingWisataDate] = useState<string | null>( null);
 
   const handleEditWisata = (dateKey: string, id: string) => {
     const item = todos[dateKey]?.find((todo) => todo.id === id);
-  
+
     if (!item) {
       console.error("Item wisata tidak ditemukan.");
       return;
     }
-  
+
     setEditingWisataDate(dateKey);
-    setEditingWisataIndex(item.id); 
+    setEditingWisataIndex(item.id);
     setNewTodo({
-      id: item.id, 
+      id: item.id,
       type: item.type,
       name: item.name,
       description: item.description,
@@ -389,39 +399,37 @@ function EditMain({ tripidProps, typeProps }: Props) {
       imageList: item.imageList,
       date: dateKey,
     });
-  
+
     setTodoType(item.type);
-      setShowTodoModal(true);
+    setShowTodoModal(true);
   };
-  
 
   const handleDeleteTodo = (dateKey: string, id: string) => {
     let costToReduce = 0;
-  
+
     setTodos((prevTodos) => {
       const updatedTodos = { ...prevTodos };
       const todoToDelete = updatedTodos[dateKey].find((todo) => todo.id === id);
-  
+
       if (todoToDelete) {
         costToReduce =
           typeof todoToDelete.cost === "string"
             ? parseFloat(todoToDelete.cost) || 0
             : todoToDelete.cost;
-  
+
         updatedTodos[dateKey] = updatedTodos[dateKey].filter(
           (todo) => todo.id !== id
         );
-  
+
         if (updatedTodos[dateKey].length === 0) {
           delete updatedTodos[dateKey];
         }
       }
-  
-      setTotalPrice(totalPrice-costToReduce)
+
+      setTotalPrice(totalPrice - costToReduce);
       return updatedTodos;
     });
   };
-  
 
   const deleteTrip = async () => {
     if (!docId) {
@@ -700,41 +708,41 @@ function EditMain({ tripidProps, typeProps }: Props) {
                             date={""}
                             key={i}
                             {...todo}
-                            onDelete={() => handleDeleteTodo(dateKey, todo.id)} 
+                            onDelete={() => handleDeleteTodo(dateKey, todo.id)}
                             onEdit={() => handleEditWisata(dateKey, todo.id)}
-                            />
-                            );
-                          } else if (todo.type === "catatan") {
-                            return (
-                              <ContentUlasan
-                              date={""}
-                              key={i}
-                              onDelete={() => handleDeleteTodo(dateKey, todo.id)}
-                              onEdit={() => handleEditWisata(dateKey, todo.id)}
-                              {...todo}
-                              />
-                              );
-                            } else if (todo.type === "transportasi") {
-                              return (
-                                <ContentTransportasi
-                                date={""}
-                                key={i}
-                                onDelete={() => handleDeleteTodo(dateKey, todo.id)}
-                                onEdit={() => handleEditWisata(dateKey, todo.id)}
-                                {...todo}
-                                />
-                                );
-                            } else if (todo.type === "hotel") {
-                              return (
-                                <ContentHotel
-                                date={""}
-                                key={i}
-                                onDelete={() => handleDeleteTodo(dateKey, todo.id)}
-                                onEdit={() => handleEditWisata(dateKey, todo.id)}
-                                {...todo}
-                                />
-                                );
-                              } else {
+                          />
+                        );
+                      } else if (todo.type === "catatan") {
+                        return (
+                          <ContentUlasan
+                            date={""}
+                            key={i}
+                            onDelete={() => handleDeleteTodo(dateKey, todo.id)}
+                            onEdit={() => handleEditWisata(dateKey, todo.id)}
+                            {...todo}
+                          />
+                        );
+                      } else if (todo.type === "transportasi") {
+                        return (
+                          <ContentTransportasi
+                            date={""}
+                            key={i}
+                            onDelete={() => handleDeleteTodo(dateKey, todo.id)}
+                            onEdit={() => handleEditWisata(dateKey, todo.id)}
+                            {...todo}
+                          />
+                        );
+                      } else if (todo.type === "hotel") {
+                        return (
+                          <ContentHotel
+                            date={""}
+                            key={i}
+                            onDelete={() => handleDeleteTodo(dateKey, todo.id)}
+                            onEdit={() => handleEditWisata(dateKey, todo.id)}
+                            {...todo}
+                          />
+                        );
+                      } else {
                         return (
                           <div
                             key={i}
@@ -756,10 +764,14 @@ function EditMain({ tripidProps, typeProps }: Props) {
                             <div
                               className="text-white bg-red-500 text-sm px-3 py-1 h-[28px] rounded-full cursor-pointer hover:bg-black"
                               onClick={() => handleDeleteTodo(dateKey, todo.id)}
-                              >
+                            >
                               x
                             </div>
-                            <div  onClick={() => handleEditWisata(dateKey, todo.id)}>edit</div>
+                            <div
+                              onClick={() => handleEditWisata(dateKey, todo.id)}
+                            >
+                              edit
+                            </div>
                           </div>
                         );
                       }
@@ -776,8 +788,10 @@ function EditMain({ tripidProps, typeProps }: Props) {
           <button
             type="button"
             onClick={submitExperiance}
-            className={`w-full p-2 rounded-lg flex justify-center items-center text-white ${
-              isLoadingSubmit ? "bg-gray-500 cursor-not-allowed" : "bg-black"
+            className={`w-full p-2 rounded-lg flex justify-center items-center text-white  ${
+              isLoadingSubmit
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-black hover:bg-cyan-500"
             }`}
             disabled={isLoadingSubmit}
           >
@@ -799,16 +813,16 @@ function EditMain({ tripidProps, typeProps }: Props) {
                 <DialogTrigger asChild>
                   <button
                     type="button"
-                    className="w-[140px] p-2 bg-red-600 text-white rounded-lg cursor-pointer flex justify-center items-center hover:bg-red-700"
+                    className="p-2 w-10 h-10 bg-red-600 text-white rounded-lg cursor-pointer flex justify-center items-center hover:bg-red-700"
                     onClick={() => setIsDialogOpen(true)}
                   >
-                    Hapus Trip
+                    <FaTrash />
                   </button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px] flex flex-col justify-center">
                   <DialogHeader>
                     <DialogTitle className="text-center">
-                        Peringatan! Menghapus Keseluruhan Rencana Perjalanan
+                      Peringatan! Menghapus Keseluruhan Rencana Perjalanan
                     </DialogTitle>
                     <DialogDescription className="flex justify-center items-center mt-5">
                       <div>
@@ -861,26 +875,31 @@ function EditMain({ tripidProps, typeProps }: Props) {
           setEditingWisataDate(null);
         }}
       >
-        <DrawerContent>
-          <form onSubmit={handleTodoSubmit} className="">
-            <div className="mx-auto w-full max-w-4xl">
-              <div className="p-6  bg-white h-full space-y-4 flex flex-col items-center justify-center">
+        <DrawerContent className="h-[100vh] md:h-[90vh]">
+          <form onSubmit={handleTodoSubmit} className="relative  flex flex-col">
+            {/* Konten yang bisa di-scroll */}
+            <div className="flex-1">
+              <div className="px-2 bg-white space-y-2 flex flex-col items-center justify-center">
                 {renderTodoForm()}
               </div>
-              <DrawerFooter className="flex flex-col md:flex-row-reverse">
-                <button
-                  type="submit"
-                  className="w-full px-4 py-1 bg-cyan-500 text-white rounded"
-                >
-                  Simpan
-                </button>
-                <DrawerClose asChild>
-                  <button className="w-full md:w-1/3  px-4 py-1 border-gray-600 border rounded">
-                    Cancel
-                  </button>
-                </DrawerClose>
-              </DrawerFooter>
             </div>
+
+            {/* Footer dengan tombol Simpan */}
+            <DrawerFooter className="flex items-center justify-center mb-5">
+              <button
+                type="submit"
+                className="w-1/2 px-4 py-1 bg-black hover:bg-cyan-500 text-white rounded-lg mb-2"
+              >
+                Simpan
+              </button>
+            </DrawerFooter>
+
+            {/* Tombol Close */}
+            <DrawerClose asChild>
+              <button className="absolute top-0 right-5 sm:text-lg md:text-xl text-gray-600">
+                x
+              </button>
+            </DrawerClose>
           </form>
         </DrawerContent>
       </Drawer>

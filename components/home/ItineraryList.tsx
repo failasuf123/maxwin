@@ -215,7 +215,7 @@ function ItineraryList({ typeParams }: Props) {
 
                     <div className="absolute bottom-2 left-2 px-0.5 py-0.5 bg-white rounded-lg bg-opacity-40 group-hover:bg-opacity-80 ">
                       <img
-                        src={itinerary?.userPicture || "/placeholder.webp"}
+                        src={itinerary?.userPicture || "/default-picture.png"}
                         className="h-7 w-7 md:w-8 md:h-8 rounded-lg  "
                         alt={itinerary.tripData.username}
                       />
@@ -235,12 +235,20 @@ function ItineraryList({ typeParams }: Props) {
                         <div className="text-xs font-light overflow-hidden line-clamp-1">
                           Oleh: {itinerary.tripData.username}
                         </div>
+                          <div className="text-green-600 text-xs font-normal md:hidden">
+                            {new Intl.NumberFormat("id-ID", {
+                              style: "currency",
+                              currency: "IDR",
+                            })
+                              .format(itinerary.tripData.totalPrice)
+                              .replace(",00", "")}
+                          </div>
                         <div className="flex flex-row gap-1 text-xs font-normal ">
                           <span>{itinerary.tripData.totalDays} hari</span>
                           <span>|</span>
                           <span>{itinerary.tripData.category}</span>
                           <span>|</span>
-                          <span className="text-green-600 font-normal">
+                          <span className="text-green-600 font-normal hidden md:block">
                             {new Intl.NumberFormat("id-ID", {
                               style: "currency",
                               currency: "IDR",

@@ -16,6 +16,14 @@
   }
 }
 
+/* Misalnya, tambahkan ini di file CSS global Anda */
+@media (max-width: 640px) {
+  .mobile-popover-content {
+    max-height: 300px; /* Sesuaikan tinggi maksimum sesuai kebutuhan */
+    overflow-y: auto;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

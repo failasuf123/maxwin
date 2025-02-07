@@ -22,6 +22,7 @@ import { IoIosCreate } from "react-icons/io";
 import Link from "next/link";
 import LoadingAnimationBlack from "../LoadingAnimationBlack";
 import { useRouter } from "next/navigation";
+import LogoBeta from "../LogoBeta";
 
 const NavBar: React.FC = ({ renderPage }: { renderPage?: string }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -64,7 +65,8 @@ const NavBar: React.FC = ({ renderPage }: { renderPage?: string }) => {
       )}
       <nav className="flex items-center justify-between px-4 py-2 bg-white shadow md:px-8 overflow-y-hidden w-screen">
         <div className="flex items-center" onClick={() => handleLinkClick("/")}>
-          <Logo />
+          {/* <Logo /> */}
+          <LogoBeta />
         </div>
 
         <div className="hidden space-x-1 md:flex">
