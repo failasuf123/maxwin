@@ -47,11 +47,11 @@ function HeaderUpper({ trip }: { trip: TripData | null }) {
         />
 
         <h2 className="font-bold text-2xl md:text-3xl mt-3">
-          {trip?.tripData?.title}
+          {trip?.tripData?.title || "Tanpa Judul"}
         </h2>
         <div className="flex flex-row items-center justify-between mt-2">
           <p className="text-base text-gray-400 ">
-            - dibuat oleh: {trip?.tripData?.username} -
+            - dibuat oleh: {trip?.username} -
           </p>
           <Link href={`/my-trip/${trip?.id}/edit`}>
           <div className="px-5 py-2 text-base  bg-black rounded-lg text-white cursor-pointer hover:bg-cyan-600 flex flex-row gap-2 items-center">
@@ -78,7 +78,7 @@ function HeaderUpper({ trip }: { trip: TripData | null }) {
         </div>
         <div className="flex flex-col mt-3">
           <h2 className="font-semibold text-lg md:text-xl mt-3 text-gray-700">
-            🏙️ Kota {trip?.tripData?.city}
+            🏙️ Kota {trip?.tripData?.city[0]}
           </h2>
           <div className="bg-gray-100 px-3 py-2 md:px-5 rounded-2xl mt-3 ">
             <p>{trip?.tripData?.description}</p>

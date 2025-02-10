@@ -11,6 +11,9 @@ import { ToastContainer, toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { format } from "date-fns";
 import GooglePlacesAutocomplete from "react-google-places-autocomplete";
+import { saveUserToFirestore } from "@/components/service/signin/saveUserToFirestore";
+import { updateUserProfilePictureIfChanged } from "@/components/service/signin/updateUserProfilePictureIfChanged";
+import {fetchUnsplashPhoto} from "@/components/service/unsplash"
 
 import {
   Dialog,
@@ -34,7 +37,6 @@ import { BsPersonArmsUp } from "react-icons/bs";
 import { GiLovers } from "react-icons/gi";
 import { MdOutlineFamilyRestroom } from "react-icons/md";
 import { GiThreeFriends } from "react-icons/gi";
-
 
 function Page() {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -70,6 +72,15 @@ function Page() {
       )
       .then((response) => {
         localStorage.setItem("user", JSON.stringify(response.data));
+
+        const userData = response.data;
+
+        // Simpan data user ke Firestore (jika belum ada)
+        saveUserToFirestore(userData);
+        console.log("User Data", userData);
+
+        // Perbarui URL foto profil di Firestore jika berbeda
+        updateUserProfilePictureIfChanged(userData.id, userData.picture);
         setOpenDialog(false);
         onGenerateTrip();
       });
@@ -252,11 +263,47 @@ function Page() {
 
     const transformedTodos = transformTodos(todosWithDates);
 
+    // ================ UNSPLASH CODE: Insert Photos ================
+    // We'll iterate over every plan item and fetch a suitable photo
+    for (const dateKey of Object.keys(transformedTodos)) {
+      const plans = transformedTodos[dateKey];
+      // transformedTodos[dateKey] is an array of "todo" items
+      for (let i = 0; i < plans.length; i++) {
+        const item = plans[i];
+        // We always fetch a new Unsplash photo (force override).
+        const searchQuery = item.name || saveFormData.city || "travel";
+        try {
+          const photoUrl = await fetchUnsplashPhoto(searchQuery);
+          if (photoUrl) {
+            item.image = photoUrl;
+          } else {
+            item.image = "/placeholder.png";
+          }
+        } catch (err) {
+          console.error("Unsplash fetch error for:", searchQuery, err);
+          item.image = "/placeholder.png";
+        }
+      }
+    }
+
+    // === UNSPLASH CODE: imageCover ===
+    let coverUrl = "/placeholder.png";
+    try {
+      // for better results, you can do e.g. `${saveFormData.city} tourist destination`
+      coverUrl =
+        (await fetchUnsplashPhoto(saveFormData.city || "travel")) ||
+        "/placeholder.png";
+    } catch (err) {
+      console.error("Unsplash fetch error for cover:", err);
+    }
+
+    // ================ End Unsplash Code ================
+
     const tripData = {
       ...JSON.parse(TripData),
       category: saveFormData.travelWith,
       activitiesOptions: [],
-      city: saveFormData.city,
+      city: [saveFormData.city],
       dateEnd: selectedEndDate,
       dateStart: selectedStartDate,
       description: "",
@@ -267,19 +314,19 @@ function Page() {
       totalHotelPricePayAble: 0,
       totalActivitiesPricePayAble: 0,
       totalPayAblePrice: 0,
-      username: user?.name,
+      // username: user?.name,
+      public: false,
+      publish: false,
       todos: transformedTodos,
     };
     delete tripData.itinerary;
 
     const data = {
       id: docId,
-      public: false,
-      publish: false,
       contributor: [],
       userId: user?.id,
-      userEmail: user?.email,
-      userPicture: user?.picture,
+      // userEmail: user?.email,
+      // userPicture: user?.picture,
       userSelection: saveFormData,
       tripData,
     };
@@ -290,16 +337,6 @@ function Page() {
     router.push(`/create-itinerary/edit/${docId}`);
     setLoading(false);
   };
-
-  useEffect(() => {
-    console.log("Updated formData: ", formData);
-  }, [formData]);
-
-  const [dateInfo, setDateInfo] = useState({
-    startDate: null as Date | null,
-    endDate: null as Date | null,
-    totalDays: 0,
-  });
 
   const handleDateChange = (data: {
     startDate: Date | null;
@@ -348,7 +385,8 @@ function Page() {
             Kapan Anda Ingin Berlibur?
           </label>
           <p className="pb-1 text-xs text-gray-400">
-            *pilih rentang tanggal dengan <span className="font-semibold text-gray-600">maksimal 5 hari</span>
+            *pilih rentang tanggal dengan{" "}
+            <span className="font-semibold text-gray-600">maksimal 5 hari</span>
           </p>
 
           <div className="flex flex-row gap-2 h-12 items-center w-full">
@@ -376,7 +414,9 @@ function Page() {
           {loading ? (
             <AiOutlineLoading3Quarters className="h-6 w-6 animate-spin" />
           ) : (
-            <><BsStars /> Generate Trip by AI</>
+            <>
+              <BsStars /> Generate Trip by AI
+            </>
           )}
         </button>
       </div>
@@ -466,17 +506,16 @@ const SelectCityAndDays: React.FC<SelectCityAndDaysProps> = ({
           }}
         /> */}
 
-      <div className="relative w-full items-center">
-        <FaCity className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-base" />
-        <input
-          type="text"
-          id="location"
-          placeholder="Masukkan Nama Kota"
-          onChange={(e) => setSelectedCity(e.target.value)}
-          className="mt-1 block w-full pl-10 p-2 h-12 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm hover:bg-gray-100 hover:placeholder-gray-700 transition-all duration-300 ease-in-out"
-        />
-      </div>
-
+        <div className="relative w-full items-center">
+          <FaCity className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-base" />
+          <input
+            type="text"
+            id="location"
+            placeholder="Masukkan Nama Kota"
+            onChange={(e) => setSelectedCity(e.target.value)}
+            className="mt-1 block w-full pl-10 p-2 h-12 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm hover:bg-gray-100 hover:placeholder-gray-700 transition-all duration-300 ease-in-out"
+          />
+        </div>
       </div>
     </div>
   );
@@ -495,42 +534,22 @@ const SelectBudget: React.FC<SelectBudgetProps> = ({
     {
       label: "Hemat",
       value: "Cheap",
-      icon: <TbPigMoney/>,
+      icon: <TbPigMoney />,
       description: "Fokus pada efisiensi biaya",
     },
     {
       label: "Sedang",
       value: "Moderate",
-      icon: <TbMoneybag/>,
+      icon: <TbMoneybag />,
       description: "Menyeimbangkan biaya dan pengalaman",
     },
     {
       label: "Mewah",
       value: "Luxury",
-      icon: <GiTakeMyMoney/>,
+      icon: <GiTakeMyMoney />,
       description: "Tidak mengkhawatirkan biaya",
     },
   ];
-  // const options = [
-  //   {
-  //     label: "Hemat",
-  //     value: "Cheap",
-  //     icon: "💵",
-  //     description: "Fokus pada efisiensi biaya",
-  //   },
-  //   {
-  //     label: "Sedang",
-  //     value: "Moderate",
-  //     icon: "💰",
-  //     description: "Menyeimbangkan Biaya dan Pengalaman",
-  //   },
-  //   {
-  //     label: "Mewah",
-  //     value: "Luxury",
-  //     icon: "💸",
-  //     description: "Tidak mengkhawatirkan biaya",
-  //   },
-  // ];
 
   return (
     <div className="flex flex-col w-full md:max-w-2xl lg:max-w-4xl px-5 mt-5 items-start gap-6">
@@ -588,7 +607,7 @@ const SelectTravelWith: React.FC<SelectTravelWithProps> = ({
     {
       label: "Solo Trip",
       value: "Solo Trip",
-      icon: <BsPersonArmsUp/>,
+      icon: <BsPersonArmsUp />,
       description: "Petualangan seru untuk diri sendiri!",
     },
     {
@@ -610,32 +629,6 @@ const SelectTravelWith: React.FC<SelectTravelWithProps> = ({
       description: "Buat kenangan terbaik bersama teman-teman!",
     },
   ];
-  // const options = [
-  //   {
-  //     label: "Solo Trip",
-  //     value: "Solo Trip",
-  //     icon: "🏄🏻‍♂️",
-  //     description: "Petualangan seru untuk diri sendiri!",
-  //   },
-  //   {
-  //     label: "Pasangan",
-  //     value: "Date",
-  //     icon: "👩🏻‍🤝‍👨🏽",
-  //     description: "Liburan romantis berdua",
-  //   },
-  //   {
-  //     label: "Keluarga",
-  //     value: "Family",
-  //     icon: "👨🏻‍👩🏻‍👧🏻‍👧🏻",
-  //     description: "Liburan nyaman untuk semua anggota keluarga.",
-  //   },
-  //   {
-  //     label: "Sahabat",
-  //     value: "Friends",
-  //     icon: "💯",
-  //     description: "Buat kenangan terbaik bersama teman-teman!",
-  //   },
-  // ];
 
   return (
     <div className="flex flex-col w-full  md:max-w-2xl lg:max-w-4xl px-5 mt-5 items-start gap-6">

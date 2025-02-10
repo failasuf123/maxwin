@@ -60,36 +60,7 @@ import LoadingAnimationBlack from "@/components/LoadingAnimationBlack";
 import { useToast } from "@/hooks/use-toast";
 import DatePicker from "@/components/edit/DatePicker";
 import ContentHotel from "../share-trip/container/ContentHotel";
-
-const updateTodosWithRange = (
-  todos: any,
-  selectedStartDate: any,
-  selectedEndDate: any
-) => {
-  if (!selectedStartDate || !selectedEndDate) return todos; // Jika rentang tanggal tidak valid, kembalikan todos asli
-
-  // 1. Dapatkan semua tanggal dalam rentang
-  const dateRange = eachDayOfInterval({
-    start: new Date(selectedStartDate),
-    end: new Date(selectedEndDate),
-  }).map((date) => format(date, "yyyy-MM-dd"));
-
-  // 2. Update todos: Ganti key lama dengan tanggal dalam rentang
-  const updatedTodos = dateRange.reduce<Record<string, any[]>>(
-    (acc, date, index) => {
-      const oldKey = Object.keys(todos)[index];
-      if (oldKey) {
-        acc[date] = todos[oldKey];
-      } else {
-        acc[date] = [];
-      }
-      return acc;
-    },
-    {}
-  );
-
-  return updatedTodos;
-};
+import { updateTodosWithRange } from "@/components/service/updateTodosWithRange";
 
 interface Props {
   tripidProps: string;
@@ -103,7 +74,7 @@ function EditMain({ tripidProps, typeProps }: Props) {
   const [typeContent, setTypeContent] = useState(""); // NOTE: terdapat 4 tipe yaitu [AItrip, manualTrip, editTrip, implementTrip]
   const [trip, setTrip] = useState<{ [key: string]: any } | null>(null);
   const [title, setTitle] = useState("");
-  const [city, setCity] = useState("");
+  const [city, setCity] = useState([""]);
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
   const [category, setCategory] = useState("");
@@ -120,8 +91,6 @@ function EditMain({ tripidProps, typeProps }: Props) {
   } | null>(null);
   const username = user?.name || "no name";
   const userpicture = user?.picture || "/default-picture.png";
-  const nanoFirst = nanoid(6);
-  const nanoLast = nanoid(6);
   const generateDocId = nanoid(16);
   const [docId, setDocId] = useState(generateDocId);
   const [imageUrlCover, setImageUrlCover] = useState("");
@@ -162,7 +131,6 @@ function EditMain({ tripidProps, typeProps }: Props) {
   );
 
   useEffect(() => {
-    // setIsLoadingRender(true)
     const userItem = localStorage.getItem("user");
     if (userItem) {
       setUser(JSON.parse(userItem));
@@ -231,8 +199,8 @@ function EditMain({ tripidProps, typeProps }: Props) {
         setCategory(tripData.category || "");
         setDescription(tripData.description || description);
         setTotalDays(tripData.totalDays || 0);
-        setPublishState(trip.publish);
-        setPublicState(trip.public);
+        setPublishState(tripData.publish);
+        setPublicState(tripData.public);
         console.log(trip.public);
         console.log(trip.publish);
       } else if (typeContent === "manualTrip") {
@@ -490,6 +458,8 @@ function EditMain({ tripidProps, typeProps }: Props) {
       dateStart,
       description,
       imageCover,
+      public: publicState,
+      publish: publishState,
       totalDays,
       totalPrice,
       totalHotelPricePayAble: 0,
@@ -497,20 +467,19 @@ function EditMain({ tripidProps, typeProps }: Props) {
       totalPayAblePrice: 0,
       todos: cleanedTodos,
       title,
-      username,
+      // username,
+      lastUpdate: serverTimestamp(),
     };
 
     await setDoc(doc(db, "Trips", docId), {
       id: docId,
-      lastUpdate: serverTimestamp(),
-      public: publicState,
-      publish: publishState,
       contributor: [],
       userId: user?.id,
-      userPicture: userpicture,
-      userEmail: user?.email,
+      // userPicture: userpicture,
+      // userEmail: user?.email,
       tripData: response,
     });
+    console.log("after submit: ",response)
     router.push("/dashboard");
   };
 
@@ -543,7 +512,7 @@ function EditMain({ tripidProps, typeProps }: Props) {
 
   const handleUpdate = (
     newTitle: string,
-    newCity: string,
+    newCity: string[],
     newDescription: string,
     newCategory: string,
     newDateStart: string,

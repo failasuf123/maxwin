@@ -28,7 +28,7 @@ interface Data {
   title: string;
   imageUrlCover: string;
   username: string;
-  city: string;
+  city: string[];
   description: string;
   dateStart: string;
   dateEnd: string;
@@ -46,7 +46,7 @@ function HeaderUpper({
   data: Data;
   onUpdate: (
     title: string,
-    city: string,
+    city: string[],
     description: string,
     category: string,
     dateStart: string,
@@ -57,7 +57,7 @@ function HeaderUpper({
   ) => void;
 }) {
   const [title, setTitle] = useState("");
-  const [city, setCity] = useState("");
+  const [city, setCity] = useState<string[]>([]);
   const [lat, setLat] = useState<number | null>(null); // State untuk lat
   const [lng, setLng] = useState<number | null>(null); // State untuk lng
   const [dateStart, setDateStart] = useState("");
@@ -108,17 +108,13 @@ function HeaderUpper({
   };
 
   const handleCityChange = (value: any) => {
-    const newCity = value?.label || "";
-    const newLat = value?.data?.geometry?.location?.lat() || null; // Ambil lat
-    const newLng = value?.data?.geometry?.location?.lng() || null; // Ambil lng
-    setCity(newCity);
-    setLat(newLat); // Set lat
-    setLng(newLng); // Set lng
-    console.log("lat-lng");
-    console.log(newLat, "==", newLng);
+    const newCity = value?.label ? [value.label] : []; // Simpan dalam array
+    setCity(newCity); // Tanpa array tambahan
+    setLat(value?.data?.geometry?.location?.lat() || null);
+    setLng(value?.data?.geometry?.location?.lng() || null);
     onUpdate(
       title,
-      newCity,
+      newCity, // Kirim dalam bentuk array
       description,
       category,
       dateStart,
@@ -128,6 +124,8 @@ function HeaderUpper({
       publishState
     );
   };
+  
+  
 
   const handleDescriptionChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>
@@ -327,27 +325,6 @@ function HeaderUpper({
           </p>
 
           <div className="flex flex-row flex-wrap gap-2 mt-3">
-            {/* Total Price Input */}
-            {/* <h2
-              className="bg-gray-200 cursor-default items-center text-center text-sm md:text-base px-3 py-2 border rounded-full"
-              onClick={() => {
-                toast({
-                  className: cn(
-                    "top-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4"
-                  ),
-                  title: "Ups! Bukan sesuatu yang dapat di edit manual.",
-                  description:
-                    "Akan otomatis berubah ketika anda menambahkan atau menghapus aktivitas dengan biaya.",
-                  duration: 12000,
-                });
-              }}
-            >
-              💰{" "}
-              {totalPrice.toLocaleString("id-ID", {
-                style: "currency",
-                currency: "IDR",
-              })}
-            </h2> */}
 
             {/* Total Days Input */}
             <Popover>
@@ -360,29 +337,7 @@ function HeaderUpper({
                 <div className="text-base font-semibold text-gray-700 mb-1 ">Rentang Waktu Trip</div>
                 <p className="text-xs text-gray-500 mb-3 md:mb-4 text-center">Pilih rentang waktu liburan kamu <span className="text-gray-600 font-semibold">Maksimal 21 Hari</span></p>
                 <DatePicker onDateChange={handleDateChange}  />
-                {/* <div className="flex flex-col md:flex-row items-start justify-between gap-2 flex-1 w-full">
-                  <div className="flex flex-col items-start gap-1 w-full">
-                    <div className="text-sm text-gray-500">Memulai Trip</div>
-                    <input
-                      type="date"
-                      value={dateStart}
-                      onChange={handleDateStartChange}
-                      required
-                      className="w-full p-2 border rounded"
-                    />
-                  </div>
 
-                  <div className="flex flex-col items-start gap-1 w-full">
-                    <div className="text-sm text-gray-500">Trip Berakhir</div>
-                    <input
-                      type="date"
-                      value={dateEnd}
-                      onChange={handleDateEndChange}
-                      required
-                      className="w-full p-2 border rounded"
-                    />
-                  </div>
-                </div> */}
               </PopoverContent>
             </Popover>
 
@@ -428,7 +383,7 @@ function HeaderUpper({
               <GooglePlacesAutocomplete
                 apiKey={process.env.NEXT_PUBLIC_GOOGLE_PLACE_API_KEY}
                 selectProps={{
-                  value: city ? { value: city, label: city } : null,
+                  value: city.length > 0 ? { value: city[0], label: city[0] } : null,
                   onChange: handleCityChange,
                   placeholder: "Pilih kota tujuan...",
                   noOptionsMessage: () =>

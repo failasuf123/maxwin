@@ -45,24 +45,43 @@ function ItineraryList({ typeParams }: Props) {
   const GetUserTrips = async () => {
     setLoading(true);
     try {
-      const userLocalStorage = localStorage.getItem("user");
-
       const q = query(
         collection(db, "Trips"),
-        where("public", "==", true),
-        where("publish", "==", true)
+        where("tripData.public", "==", true),
+        where("tripData.publish", "==", true)
       );
-
-      console.log("db fire store Trips: ", db)
       const querySnapshot = await getDocs(q);
-
+  
       const trips: any[] = [];
-      querySnapshot.forEach((doc) => trips.push(doc.data()));
+      for (const doc of querySnapshot.docs) {
+        let tripData = doc.data();
+        const userId = tripData.userId;
+  
+        if (userId) {
+          // Ambil data user berdasarkan userId
+          const userRef = collection(db, "Users");
+          const userQuery = query(userRef, where("userId", "==", userId));
+          const userSnapshot = await getDocs(userQuery);
+  
+          if (!userSnapshot.empty) {
+            const userData = userSnapshot.docs[0].data();
+            tripData.username = userData.username; // Menambahkan username ke tripData
+            tripData.userPicture = userData.userPicture; // Menambahkan userPicture ke tripData
+          } else {
+            // Jika user tidak ditemukan, gunakan nilai default
+            tripData.username = "anonim";
+            tripData.userPicture = "/default-picture.png";
+          }
+        }
+  
+        trips.push(tripData);
+      }
+  
       setUserTrips(trips);
     } catch (error) {
       console.error("Error fetching trips:", error);
     } finally {
-      setLoading(false); // Set loading menjadi false setelah fetch selesai
+      setLoading(false);
     }
   };
 
@@ -71,10 +90,24 @@ function ItineraryList({ typeParams }: Props) {
       (itinerary.tripData.title?.toLowerCase() || "").includes(
         searchTerm?.toLowerCase() || ""
       ) ||
-      (itinerary.tripData.city?.toLowerCase() || "").includes(
+      (itinerary.tripData.city[0]?.toLowerCase() || "").includes(
         searchTerm?.toLowerCase() || ""
       )
   );
+
+  const formatRupiah = (value: number | string): string => {
+    const numberValue = Math.floor(Number(value)); // Hapus desimal tanpa pembulatan ke atas
+    if (isNaN(numberValue)) {
+      return "Rp 0"; // Tampilkan Rp 0 jika bukan angka
+    }
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(numberValue);
+  };
+
 
   return (
     <div className="mt-10  md:mx-20">
@@ -202,12 +235,12 @@ function ItineraryList({ typeParams }: Props) {
                       alt={itinerary.tripData.title}
                     />
                     <div className="absolute bottom-2 right-2 bg-white text-xs text-cyan-500 px-2 py-1 rounded group-hover:bg-black group-hover:text-white transition-colors duration-800">
-                      {itinerary.tripData.city
+                      {itinerary.tripData.city[0]
                         .split(",")[0] // Ambil bagian pertama sebelum koma
                         .split(" ") // Pisahkan menjadi kata-kata
                         .slice(0, 10) // Ambil maksimal 10 kata
                         .join(" ") +
-                        (itinerary.tripData.city.split(",")[0].split(" ")
+                        (itinerary.tripData.city[0].split(",")[0].split(" ")
                           .length > 10
                           ? "..."
                           : "")}
@@ -217,11 +250,11 @@ function ItineraryList({ typeParams }: Props) {
                       <img
                         src={itinerary?.userPicture || "/default-picture.png"}
                         className="h-7 w-7 md:w-8 md:h-8 rounded-lg  "
-                        alt={itinerary.tripData.username}
+                        alt={itinerary?.username}
                       />
                     </div>
                   </div>
-                  <div className="flex flex-col justify-start p-2 overflow-hidden text-sm text-gray-500">
+                  <div className="flex flex-col justify-start p-2 text-sm text-gray-500">
                     <div className="flex flex-row items-center gap-2">
                       {/* <img
                       src={itinerary?.userPicture || "/placeholder.webp"}
@@ -229,37 +262,24 @@ function ItineraryList({ typeParams }: Props) {
                       alt={itinerary.tripData.username}
                     /> */}
                       <div className="flex flex-col gap-0.5 leading-tight">
-                        <h2 className="text-gray-700 font-semibold w-full text-ellipsis overflow-hidden line-clamp-2">
+                        <h2 className="text-gray-700 font-semibold w-full text-ellipsis overflow-hidden line-clamp-2  text-xs md:text-base">
                           {itinerary.tripData.title}
                         </h2>
-                        <div className="text-xs font-light overflow-hidden line-clamp-1">
-                          Oleh: {itinerary.tripData.username}
+                        <div className="text-[9px] md:text-xs font-light overflow-hidden line-clamp-1">
+                          Oleh: {itinerary.username}
                         </div>
-                          <div className="text-green-600 text-xs font-normal md:hidden">
-                            {new Intl.NumberFormat("id-ID", {
-                              style: "currency",
-                              currency: "IDR",
-                            })
-                              .format(itinerary.tripData.totalPrice)
-                              .replace(",00", "")}
+ 
+                        <div className="flex flex-row gap-1 text-[9px] md:text-xs font-normal overflow-hidden line-clamp-1 ">
+                            <span>{itinerary.tripData.totalDays} hari</span>
+                            <span>|</span>
+                            <span>{itinerary.tripData.category}</span>
+                            <span className="">|</span>
+                            <span className="text-green-600 font-normal ">
+                              {formatRupiah(itinerary?.tripData.totalPrice || 0)}
+                            </span>
+
                           </div>
-                        <div className="flex flex-row gap-1 text-xs font-normal ">
-                          <span>{itinerary.tripData.totalDays} hari</span>
-                          <span>|</span>
-                          <span>{itinerary.tripData.category}</span>
-                          <span>|</span>
-                          <span className="text-green-600 font-normal hidden md:block">
-                            {new Intl.NumberFormat("id-ID", {
-                              style: "currency",
-                              currency: "IDR",
-                            })
-                              .format(itinerary.tripData.totalPrice)
-                              .replace(",00", "")}
-                          </span>
-                        </div>
-                        <div className="text-xs font-light">
-                          {itinerary.tripData.highlights}
-                        </div>
+
                       </div>
                     </div>
                   </div>

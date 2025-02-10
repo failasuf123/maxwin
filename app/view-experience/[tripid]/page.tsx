@@ -34,23 +34,49 @@ const Page: React.FC<PageProps> = ({ params }) => {
       getTripData();
     }
   }, [tripid]);
-
+  
   const getTripData = async () => {
     setIsLoading(true); // Tampilkan spinner
+  
     try {
       const docRef = doc(db, "Trips", tripid);
       const docSnap = await getDoc(docRef);
-
+  
       if (docSnap.exists()) {
         const data = docSnap.data();
+  
+        // Ambil userId dari trip
+        const userId = data.userId;
+  
+        let userData: { username: string; userPicture: string } = {
+          username: "anonim",
+          userPicture: "/default-picture.png",
+        };
+  
+        if (userId) {
+          // Query ke Users untuk mendapatkan username & userPicture
+          const userRef = doc(db, "Users", userId);
+          const userSnap = await getDoc(userRef);
+  
+          if (userSnap.exists()) {
+            const userDoc = userSnap.data() as { username?: string; userPicture?: string };
+            userData = {
+              username: userDoc.username ?? "anonim",
+              userPicture: userDoc.userPicture ?? "/default-picture.png",
+            };
+          }
+        }
+  
+        // Gabungkan hasil trip dengan data user
         const tripData: TripData = {
-          title: data.title || "",
+          title: data.title || "Tanpa Judul",
           description: data.description || "",
           ...data,
+          username: userData.username,
+          userPicture: userData.userPicture,
         };
+  
         setTrip(tripData);
-
-
       } else {
         console.error("No Document");
         toast({
@@ -65,10 +91,10 @@ const Page: React.FC<PageProps> = ({ params }) => {
         description: "Rencana Perjalanan Ini Tidak Ditemukan",
       });
     } finally {
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   };
-
+  
   return (
     <div className="p-5 pt-10 md:p-10 md:px-28 lg:px-36 xl:px-52 relative">
       {isLoading && ( 
