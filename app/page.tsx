@@ -45,8 +45,6 @@ export default function Home() {
     "di Jogja",
     "di Malang",
     "di Surabaya",
-    // "di Hatimu... Bercanda! >..<",
-    // "di Mana Lagi Ya? ",
   ];
   const handleLinkClick = () => {
     setIsLoading(true); // Activate loading

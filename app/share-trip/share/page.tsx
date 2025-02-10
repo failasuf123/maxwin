@@ -1,24 +1,98 @@
 "use client";
 
 import EditMain from "@/components/edit/EditMain";
-import React,{Suspense} from "react";
-
-
+import React, { useEffect, useState, Suspense } from "react";
+import { useRouter } from "next/navigation";
+import { useGoogleLogin } from "@react-oauth/google";
+import axios from "axios";
+import { saveUserToFirestore } from "@/components/service/signin/saveUserToFirestore";
+import { updateUserProfilePictureIfChanged } from "@/components/service/signin/updateUserProfilePictureIfChanged";
+import { FcGoogle } from "react-icons/fc";
 
 function Page() {
+  const tripid = "manualTrip";
 
-  const tripid = "manualTrip"
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    console.log("User from localStorage:", user);
+
+    if (!user) {
+      console.log("User not found, opening dialog");
+      setIsLoggedIn(true);
+    } else {
+      console.log("User found:", user);
+    }
+  }, []);
+
+  const login = useGoogleLogin({
+    onSuccess: (codeResp) => getUserProfile(codeResp),
+    onError: (error) => console.log(error),
+  });
+
+  const getUserProfile = (tokenInfo: any) => {
+    axios
+      .get(
+        `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenInfo?.access_token}`,
+        {
+          headers: {
+            Authorization: `Bearer ${tokenInfo?.access_token}`,
+            Accept: "Application/json",
+          },
+        }
+      )
+      .then((response) => {
+        console.log(response);
+        const userData = response.data;
+
+        // Simpan data user ke localStorage
+        localStorage.setItem("user", JSON.stringify(userData));
+
+        // Simpan data user ke Firestore (jika belum ada)
+        saveUserToFirestore(userData);
+        console.log("User Data", userData);
+
+        // Perbarui URL foto profil di Firestore jika berbeda
+        updateUserProfilePictureIfChanged(userData.id, userData.picture);
+
+        setIsLoggedIn(false);
+        router.push("/dashboard");
+      })
+      .catch((error) => {
+        console.error("Error fetching user profile:", error);
+      });
+  };
 
   return (
     <Suspense>
-
-      <EditMain tripidProps={tripid} typeProps={"manualTrip"}  />
+      {isLoggedIn ? ( // Cek apakah user login
+        <div className="flex flex-col item-center justify-center h-screen px-16 md:px-32 lg:px-36">
+          <div>
+            <h2 className="text-lg font-bold mb-2">Sign In With Google</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Sign In dengan aman menggunakan Google Authentication.
+            </p>
+          </div>
+          <div>
+            <button
+              className="flex items-center justify-center w-full px-4 py-2 text-white bg-gray-900 rounded hover:bg-blue-600"
+              onClick={() => login()}
+            >
+              <FcGoogle className="mr-3 h-6 w-6" />
+              Sign Up dengan Google
+            </button>
+          </div>
+        </div>
+      ) : (
+        <EditMain tripidProps={tripid} typeProps={"manualTrip"} />
+      )}
     </Suspense>
   );
-};
+}
 
 export default Page;
-
 
 // "use client";
 
