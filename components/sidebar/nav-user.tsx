@@ -5,13 +5,12 @@ import { Button } from "@/components/ui/button";
 import { googleLogout, useGoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import {saveUserToFirestore} from "@/components/service/signin/saveUserToFirestore"
+import {updateUserProfilePictureIfChanged} from "@/components/service/signin/updateUserProfilePictureIfChanged"
+
 
 import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
   LogOut,
-  Sparkles,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,14 +28,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { FcGoogle } from "react-icons/fc";
 
 export function NavUser({
@@ -61,14 +52,16 @@ export function NavUser({
     }
   }, []);
 
+
+
   const login = useGoogleLogin({
     onSuccess: (codeResp) => getUserProfile(codeResp),
     onError: (error) => console.log(error),
   });
 
-  const getUserProfile = (tokenInfo: any) => {
-    axios
-      .get(
+  const getUserProfile = async (tokenInfo: any) => {
+    try {
+      const response = await axios.get(
         `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenInfo?.access_token}`,
         {
           headers: {
@@ -76,14 +69,33 @@ export function NavUser({
             Accept: "Application/json",
           },
         }
-      )
-      .then((response) => {
-        console.log(response);
-        localStorage.setItem("user", JSON.stringify(response.data));
-        setOpenDialog(false);
-        window.location.reload();
-      });
+      );
+  
+      const userData = response.data;
+      console.log("User Response:", response);
+  
+      // Simpan data user ke localStorage
+      localStorage.setItem("user", JSON.stringify(userData));
+  
+      // Simpan data user ke Firestore (jika belum ada)
+      await saveUserToFirestore(userData);
+      console.log("User Data saved:", userData);
+  
+      // Perbarui URL foto profil di Firestore jika berbeda
+      await updateUserProfilePictureIfChanged(userData.id, userData.picture);
+  
+      // Tutup dialog setelah proses selesai
+      setOpenDialog(false);
+  
+      // Reload halaman setelah semua proses selesai
+      window.location.reload();
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
   };
+  
+
+  
 
   return (
     <SidebarMenu>
@@ -97,11 +109,13 @@ export function NavUser({
               >
                 <Avatar className="h-9 w-9 rounded-xl">
                   <AvatarImage src={users?.picture} alt={users?.name} />
-                  <AvatarFallback className="rounded-lg"><img src="/default-picture.png" alt="default"/></AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    <img src="/default-picture.png" alt="default" />
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight md:hidden">
                   <span className="truncate font-semibold">{users?.name}</span>
-                   <span className="truncate text-xs">{users?.email}</span>
+                  <span className="truncate text-xs">{users?.email}</span>
                 </div>
                 {/* <ChevronsUpDown className="ml-auto size-4" /> */}
               </SidebarMenuButton>
@@ -116,7 +130,9 @@ export function NavUser({
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                   <Avatar className="h-8 w-8 rounded-lg">
                     <AvatarImage src={users?.picture} alt={users?.name} />
-                    <AvatarFallback className="rounded-lg"><img src="/default-picture.png" alt="" /></AvatarFallback>
+                    <AvatarFallback className="rounded-lg">
+                      <img src="/default-picture.png" alt="" />
+                    </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">

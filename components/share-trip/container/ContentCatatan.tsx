@@ -66,7 +66,7 @@ const ContentUlasan = ({ name, description, onDelete ,  onEdit,}: ContentWisataP
       </div> */}
               <Popover>
           <PopoverTrigger asChild>
-            <div className="absolute top-2 right-2 text-black text-xl bg-gray-100 text-sm px-3 py-3  rounded-full cursor-pointer hover:bg-gray-200">
+            <div className="absolute top-2 right-2 text-black text-xl  text-sm px-3 py-3  rounded-full cursor-pointer hover:bg-gray-100">
               <HiDotsVertical />
             </div>
           </PopoverTrigger>

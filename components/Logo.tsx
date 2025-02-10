@@ -8,7 +8,7 @@ function Logo() {
         href="/"
         className="hidden md:block font-bold text-xl bg-gradient-to-r from-red-400 to-blue-400 text-transparent bg-clip-text hover:cursor-pointer"
       >
-        <img src="/malib-logo-long.png" height={50} width={140} alt="Logo Panjang" />
+        <img src="/malib-logo-long.png" height={55} width={150} alt="Logo Panjang" />
       </Link>
 
       <Link

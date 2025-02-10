@@ -6,6 +6,8 @@ import { BsStars } from "react-icons/bs";
 import { FaUsersViewfinder } from "react-icons/fa6";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+import {saveUserToFirestore} from "@/components/service/signin/saveUserToFirestore"
+import {updateUserProfilePictureIfChanged} from "@/components/service/signin/updateUserProfilePictureIfChanged"
 
 import {
   Accordion,
@@ -51,6 +53,7 @@ function page() {
     onError: (error) => console.log(error),
   });
 
+
   const getUserProfile = (tokenInfo: any) => {
     axios
       .get(
@@ -64,9 +67,23 @@ function page() {
       )
       .then((response) => {
         console.log(response);
-        localStorage.setItem("user", JSON.stringify(response.data));
+        const userData = response.data;
+  
+        // Simpan data user ke localStorage
+        localStorage.setItem("user", JSON.stringify(userData));
+  
+        // Simpan data user ke Firestore (jika belum ada)
+        saveUserToFirestore(userData);
+        console.log("User Data", userData)
+  
+        // Perbarui URL foto profil di Firestore jika berbeda
+        updateUserProfilePictureIfChanged(userData.id, userData.picture);
+  
         setIsLoggedIn(false);
         router.push("/dashboard");
+      })
+      .catch((error) => {
+        console.error("Error fetching user profile:", error);
       });
   };
 
