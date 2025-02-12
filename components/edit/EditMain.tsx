@@ -837,6 +837,41 @@ function EditMain({ tripidProps, typeProps }: Props) {
       </div>
 
       <Drawer
+  open={showTodoModal}
+  onClose={() => {
+    setShowTodoModal(false);
+    setEditingWisataIndex(null);
+    setEditingWisataDate(null);
+  }}
+>
+  <DrawerContent className="h-[90vh] max-h-screen">
+    <form onSubmit={handleTodoSubmit} className="relative flex flex-col h-full">
+      {/* Konten yang bisa di-scroll */}
+      <div className="flex-1 overflow-y-auto px-2 bg-white space-y-2 flex flex-col items-center justify-center">
+        {renderTodoForm()}
+      </div>
+
+      {/* Footer dengan tombol Simpan */}
+      <DrawerFooter className="sticky bottom-0 bg-white py-4 border-t flex justify-center items-center flex-row">
+        <button
+          type="submit"
+          className="w-1/2 px-4 py-2 bg-black hover:bg-cyan-500 text-white rounded-lg"
+        >
+          Simpan
+        </button>
+      </DrawerFooter>
+
+      {/* Tombol Close */}
+      <DrawerClose asChild>
+        <button className="absolute top-2 right-5 text-lg text-gray-600 hover:text-gray-900">
+          ×
+        </button>
+      </DrawerClose>
+    </form>
+  </DrawerContent>
+</Drawer>
+
+      {/* <Drawer
         open={showTodoModal}
         onClose={() => {
           setShowTodoModal(false);
@@ -846,14 +881,12 @@ function EditMain({ tripidProps, typeProps }: Props) {
       >
         <DrawerContent className="h-[100vh] md:h-[90vh]">
           <form onSubmit={handleTodoSubmit} className="relative  flex flex-col">
-            {/* Konten yang bisa di-scroll */}
             <div className="flex-1">
               <div className="px-2 bg-white space-y-2 flex flex-col items-center justify-center">
                 {renderTodoForm()}
               </div>
             </div>
 
-            {/* Footer dengan tombol Simpan */}
             <DrawerFooter className="flex items-center justify-center mb-5">
               <button
                 type="submit"
@@ -863,7 +896,6 @@ function EditMain({ tripidProps, typeProps }: Props) {
               </button>
             </DrawerFooter>
 
-            {/* Tombol Close */}
             <DrawerClose asChild>
               <button className="absolute top-0 right-5 sm:text-lg md:text-xl text-gray-600">
                 x
@@ -871,7 +903,7 @@ function EditMain({ tripidProps, typeProps }: Props) {
             </DrawerClose>
           </form>
         </DrawerContent>
-      </Drawer>
+      </Drawer> */}
     </div>
   );
 }

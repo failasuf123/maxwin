@@ -20,6 +20,7 @@ import LoadingAnimationBlack from "@/components/LoadingAnimationBlack";
 import ItineraryListHome from "@/components/home/ItineraryListHome";
 import BannerAIBeta from "@/components/home/BannerAIBeta";
 import FooterHome from "@/components/home/FooterHome";
+import LocationAutocomplete from "@/components/service/LocalAutoComplate";
 
 export default function Home() {
   const router = useRouter();
@@ -110,13 +111,20 @@ export default function Home() {
                   types: ["(cities)"],
                 }}
               /> */}
-              <input
+              {/* <input
                 type="text"
                 placeholder="Masukkan kota tujuan..."
                 value={selectedCity || ""}
                 onChange={(e) => setSelectedCity(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
-              />
+              /> */}
+
+        <LocationAutocomplete
+          onSelect={(city) => setSelectedCity(city)} // Simpan kota yang dipilih
+          typeProps="SearchTrip" // Contoh styling yang bisa diubah nantinya
+          initialCity=""
+        />
+
             </div>
 
             <div className="items-center">

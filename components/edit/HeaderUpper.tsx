@@ -21,8 +21,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import DatePicker from "@/components/edit/DatePicker";
 import { eachDayOfInterval, format } from "date-fns";
-
-
+import LocationAutocomplete from "../service/LocalAutoComplate";
 
 interface Data {
   title: string;
@@ -124,8 +123,6 @@ function HeaderUpper({
       publishState
     );
   };
-  
-  
 
   const handleDescriptionChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>
@@ -156,7 +153,7 @@ function HeaderUpper({
     const formattedEndDate = data.endDate
       ? format(data.endDate, "yyyy-MM-dd")
       : "";
-      
+
     setTotalDays(data.totalDays);
     setDateStart(formattedStartDate ?? "");
     setDateEnd(formattedEndDate ?? "");
@@ -173,7 +170,6 @@ function HeaderUpper({
       publishState
     );
   };
-
 
   const handleDateStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDateStart = e.target.value;
@@ -325,7 +321,6 @@ function HeaderUpper({
           </p>
 
           <div className="flex flex-row flex-wrap gap-2 mt-3">
-
             {/* Total Days Input */}
             <Popover>
               <PopoverTrigger asChild>
@@ -334,10 +329,16 @@ function HeaderUpper({
                 </h2>
               </PopoverTrigger>
               <PopoverContent className="w-[320px] md:w-[370px] flex flex-col items-center ">
-                <div className="text-base font-semibold text-gray-700 mb-1 ">Rentang Waktu Trip</div>
-                <p className="text-xs text-gray-500 mb-3 md:mb-4 text-center">Pilih rentang waktu liburan kamu <span className="text-gray-600 font-semibold">Maksimal 21 Hari</span></p>
-                <DatePicker onDateChange={handleDateChange}  />
-
+                <div className="text-base font-semibold text-gray-700 mb-1 ">
+                  Rentang Waktu Trip
+                </div>
+                <p className="text-xs text-gray-500 mb-3 md:mb-4 text-center">
+                  Pilih rentang waktu liburan kamu{" "}
+                  <span className="text-gray-600 font-semibold">
+                    Maksimal 21 Hari
+                  </span>
+                </p>
+                <DatePicker onDateChange={handleDateChange} />
               </PopoverContent>
             </Popover>
 
@@ -378,12 +379,13 @@ function HeaderUpper({
             </div>
           </div>
           <div className="flex flex-col mt-3">
-            <div className="font-semibold text-lg md:text-xl mt-3 text-gray-700 flex flex-row  justify-start items-center ">
-              <h2>🏙️ Kota</h2>
-              <GooglePlacesAutocomplete
+            <div className="font-semibold text-lg md:text-xl mt-3 text-gray-700 flex flex-row  justify-start items-center gap-1">
+              <h2 className="flex flex-row gap-2 mr-2 items-center text-center">🏙️ <span>Kota</span></h2>
+              {/* <GooglePlacesAutocomplete
                 apiKey={process.env.NEXT_PUBLIC_GOOGLE_PLACE_API_KEY}
                 selectProps={{
-                  value: city.length > 0 ? { value: city[0], label: city[0] } : null,
+                  value:
+                    city.length > 0 ? { value: city[0], label: city[0] } : null,
                   onChange: handleCityChange,
                   placeholder: "Pilih kota tujuan...",
                   noOptionsMessage: () =>
@@ -452,9 +454,32 @@ function HeaderUpper({
                   },
                   types: ["(cities)"],
                 }}
+              /> */}
+
+              <LocationAutocomplete
+                onSelect={(newCity) => {
+                  const formattedCity = newCity ? [newCity] : []; // Sesuaikan dengan tipe data yang diharapkan
+                  onUpdate(
+                    title,
+                    formattedCity, // Pastikan dalam bentuk array
+                    description,
+                    category,
+                    dateStart,
+                    dateEnd,
+                    imageUrlCover,
+                    publicState,
+                    publishState
+                  );
+                }}
+                typeProps="EditTrip" // Contoh styling yang bisa diubah nantinya
+                initialCity={
+                  Array.isArray(city) && city.length > 0
+                    ? String(city[0])
+                    : undefined
+                } // Pastikan hanya string atau undefined
               />
 
-              <FaPen className="text-gray-400" />
+              <FaPen className="text-gray-400 ml-2" />
             </div>
 
             <div className="bg-gray-100 hover:bg-gray-200 relative px-3 py-2 md:px-5 rounded-2xl mt-3 flex flex-col gap-3 group ">

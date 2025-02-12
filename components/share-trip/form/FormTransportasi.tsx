@@ -59,10 +59,152 @@ const TransportasiForm: React.FC<TransportasiFormProps> = ({ newTodo, setNewTodo
         <DrawerDescription>Pilih atau masukkan alat transportasi</DrawerDescription>
       </DrawerHeader>
 
-      <ScrollArea className="h-[300px] rounded-md border p-4">
+      <ScrollArea className="h-[calc(90vh - 150px)] rounded-md border p-4">
+  <div className="flex flex-col items-center w-full gap-4">
+    <img
+      width={300}
+      height={200}
+      src="https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&iiprop=url&generator=search&gsrsearch=Eiffel+Tower"
+      alt=""
+      className="w-full max-w-[300px] h-auto"
+    />
+    {/* Input Nama Transportasi */}
+    <div className="w-full flex flex-col md:flex-row items-start md:items-center gap-4">
+      <div className="flex-1">
+        <label htmlFor="name" className="block mb-1 text-sm font-medium">
+          Nama Transportasi
+        </label>
+        {isManual ? (
+          <input
+            type="text"
+            id="name"
+            value={newTodo.name}
+            onChange={(e) =>
+              setNewTodo({ ...newTodo, name: e.target.value })
+            }
+            placeholder="Masukkan nama transportasi"
+            className="w-full p-2 border rounded-md"
+          />
+        ) : (
+          <select
+            id="name"
+            value={newTodo.name || ""}
+            onChange={(e) =>
+              setNewTodo({ ...newTodo, name: e.target.value })
+            }
+            className="w-full p-2 border rounded-md"
+          >
+            <option value="">Pilih transportasi...</option>
+            {transportOptions.map((option, index) => (
+              <option key={index} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+      {/* Tombol Switch Manual */}
+      <button
+        type="button"
+        onClick={() => setIsManual((prev) => !prev)}
+        className="p-2 bg-black text-xs md:text-base text-white rounded-md w-32 md:w-40 h-10 flex items-center justify-center"
+      >
+        {isManual ? "Pilih dari List" : "Input Manual"}
+      </button>
+    </div>
+
+    {/* Input Biaya */}
+    <div className="w-full">
+      <label htmlFor="cost" className="block mb-1 text-sm font-medium">
+        Biaya
+      </label>
+      {costInputType === "manual" ? (
+        <div>
+          <input
+            id="cost"
+            type="number"
+            placeholder="Biaya"
+            value={newTodo.cost}
+            onChange={(e) => handleCostChange(e.target.value)}
+            required
+            className="w-full p-2 border rounded-md"
+          />
+          <div className="flex justify-between text-sm mt-1">
+            {newTodo.cost.toLocaleString("id-ID", {
+              style: "currency",
+              currency: "IDR",
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="w-full">
+          <input
+            type="range"
+            min={0}
+            max={3000000}
+            value={newTodo.cost}
+            step={getStepValue(newTodo.cost)}
+            onChange={(e) => handleCostChange(e.target.value)}
+            className="w-full"
+          />
+          <div className="flex justify-between text-sm mt-1">
+            {newTodo.cost.toLocaleString("id-ID", {
+              style: "currency",
+              currency: "IDR",
+            })}
+          </div>
+        </div>
+      )}
+      <div className="mt-2 flex justify-center gap-4">
+        <button
+          type="button"
+          onClick={() => setCostInputType("slider")}
+          className={`p-2 border rounded-md text-xs md:text-base ${
+            costInputType === "slider"
+              ? "bg-black text-white"
+              : "bg-gray-200"
+          }`}
+        >
+          Slider
+        </button>
+        <button
+          type="button"
+          onClick={() => setCostInputType("manual")}
+          className={`p-2 border rounded-md text-xs md:text-base ${
+            costInputType === "manual"
+              ? "bg-black text-white"
+              : "bg-gray-200"
+          }`}
+        >
+          Input Manual
+        </button>
+      </div>
+    </div>
+
+    {/* Deskripsi */}
+    <div className="w-full">
+      <label
+        htmlFor="description"
+        className="block mb-1 text-sm font-medium"
+      >
+        Deskripsi (Opsional)
+      </label>
+      <textarea
+        id="description"
+        placeholder="Deskripsi (Opsional)"
+        value={newTodo.description}
+        onChange={(e) =>
+          setNewTodo({ ...newTodo, description: e.target.value })
+        }
+        className="w-full p-2 border rounded-md"
+      />
+    </div>
+  </div>
+</ScrollArea>
+
+      {/* <ScrollArea className="h-[300px] rounded-md border p-4">
         <div className="flex flex-col items-center w-full gap-4">
           <img width={300} height={200} src="https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&iiprop=url&generator=search&gsrsearch=Eiffel+Tower" alt="" />
-          {/* Baris untuk input nama transportasi dan tombol switch */}
           <div className="w-full flex flex-col md:flex-row items-start md:items-center gap-4">
             <div className="flex-1">
               <label htmlFor="name" className="block mb-1 text-sm font-medium">
@@ -98,7 +240,6 @@ const TransportasiForm: React.FC<TransportasiFormProps> = ({ newTodo, setNewTodo
               )}
             </div>
 
-            {/* Tombol Switch Manual */}
             <button
               type="button"
               onClick={() => setIsManual((prev) => !prev)}
@@ -108,7 +249,6 @@ const TransportasiForm: React.FC<TransportasiFormProps> = ({ newTodo, setNewTodo
             </button>
           </div>
 
-          {/* Biaya */}
           <div className="w-full">
             <label htmlFor="cost" className="block mb-1 text-sm font-medium">
               Biaya
@@ -176,7 +316,6 @@ const TransportasiForm: React.FC<TransportasiFormProps> = ({ newTodo, setNewTodo
             </div>
           </div>
 
-          {/* Deskripsi */}
           <div className="w-full">
             <label
               htmlFor="description"
@@ -195,7 +334,7 @@ const TransportasiForm: React.FC<TransportasiFormProps> = ({ newTodo, setNewTodo
             />
           </div>
         </div>
-      </ScrollArea>
+      </ScrollArea> */}
     </div>
   );
 };
