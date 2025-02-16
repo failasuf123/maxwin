@@ -229,8 +229,8 @@ function EditMain({ tripidProps, typeProps }: Props) {
         setTotalDays(tripData.totalDays || 0);
         setPublishState(tripData.publish);
         setPublicState(tripData.public);
-        console.log(trip.public);
-        console.log(trip.publish);
+        // console.log(trip.public);
+        // console.log(trip.publish);
       } else if (typeContent === "manualTrip") {
         return;
       }
@@ -507,7 +507,7 @@ function EditMain({ tripidProps, typeProps }: Props) {
       // userEmail: user?.email,
       tripData: response,
     });
-    console.log("after submit: ",response)
+    // console.log("after submit: ",response)
     router.push("/dashboard");
   };
 
