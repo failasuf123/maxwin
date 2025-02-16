@@ -9,6 +9,7 @@ export const touristPlace = [
         "kota": "Wonosobo",
         "lokasi": "Dieng"
     },
+
 ]
 
 export const cityProvinceList = [
@@ -96,7 +97,8 @@ export const cityProvinceList = [
           "Purbalingga",
           "Banyumas",
           "Purwokerto",
-          "Cilacap"
+          "Cilacap",
+          "Solo",
         ]
       },
     
@@ -109,6 +111,10 @@ export const cityProvinceList = [
           "Bantul",
           "Kulon Progo"
         ]
+      },
+      {
+        "provinsi":"Jogja",
+        "kota":[]
       },
     
       {

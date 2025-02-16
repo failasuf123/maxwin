@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { doc, setDoc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { nanoid } from "nanoid";
 import { db } from "@/app/service/firebaseConfig";
@@ -14,6 +14,7 @@ import { generateDateList } from "@/components/service/generateDateList";
 import { LuCalendarX, LuCalendarDays } from "react-icons/lu";
 import { PiArrowBendDownRightBold } from "react-icons/pi";
 import { serverTimestamp } from "firebase/firestore";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaTrash } from "react-icons/fa";
 
 import {
@@ -129,6 +130,33 @@ function EditMain({ tripidProps, typeProps }: Props) {
   const [editingWisataDate, setEditingWisataDate] = useState<string | null>(
     null
   );
+  const [showSaveButton, setShowSaveButton] = useState(false);
+  const [prevScrollPos, setPrevScrollPos] = useState(0);
+  
+
+  const handleScroll = useCallback(() => {
+    const currentScrollPos = window.pageYOffset;
+
+    if (prevScrollPos > currentScrollPos && currentScrollPos > 100) {
+      // Scroll up dan posisi scroll lebih dari 100px
+      setShowSaveButton(true);
+    } else {
+      // Scroll down atau di posisi awal
+      setShowSaveButton(false);
+    }
+
+    setPrevScrollPos(currentScrollPos);
+  }, [prevScrollPos]);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [handleScroll]);
+
+
 
   useEffect(() => {
     const userItem = localStorage.getItem("user");
@@ -201,8 +229,8 @@ function EditMain({ tripidProps, typeProps }: Props) {
         setTotalDays(tripData.totalDays || 0);
         setPublishState(tripData.publish);
         setPublicState(tripData.public);
-        console.log(trip.public);
-        console.log(trip.publish);
+        // console.log(trip.public);
+        // console.log(trip.publish);
       } else if (typeContent === "manualTrip") {
         return;
       }
@@ -479,7 +507,7 @@ function EditMain({ tripidProps, typeProps }: Props) {
       // userEmail: user?.email,
       tripData: response,
     });
-    console.log("after submit: ",response)
+    // console.log("after submit: ",response)
     router.push("/dashboard");
   };
 
@@ -551,7 +579,47 @@ function EditMain({ tripidProps, typeProps }: Props) {
         </div>
       )}
       {/* Display itinerary details */}
-      <div className="flex flex-col w-full items-center py-8 ">
+      <div className="flex flex-col w-full items-center py-8  ">
+
+<AnimatePresence>
+  {showSaveButton && (
+    <motion.div
+      initial={{ y: -50, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: -50, opacity: 0 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      className="fixed top-0 left-0 w-full bg-white shadow-md z-50"
+    >
+      <div className="flex flex-row justify-between items-center py-4 px-5 md:px-16 lg:px-20 xl:px-32 gap-4 md:gap-8">
+        <div className="flex flex-col gap-1">
+          <div className="font-semibold text-base md:text-lg line-clamp-1">
+            {title || "Tanpa Judul"}
+          </div>
+          <div className="text-light text-gray-400 text-xs md:text-sm line-clamp-1">
+            {description || "Tanpa Deskripsi"}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={submitExperiance}
+          className={`w-36 md:w-44 px-4 p-2 rounded-lg flex justify-center items-center text-white ${
+            isLoadingSubmit
+              ? "bg-gray-500 cursor-not-allowed"
+              : "bg-black hover:bg-cyan-500"
+          }`}
+          disabled={isLoadingSubmit}
+        >
+          {isLoadingSubmit ? (
+            <AiOutlineLoading3Quarters className="h-6 w-6 animate-spin" />
+          ) : (
+            "Simpan"
+          )}
+        </button>
+      </div>
+    </motion.div>
+  )}
+</AnimatePresence>
+
         {/* Header Upper */}
         <div className="w-full">
           <HeaderUpper

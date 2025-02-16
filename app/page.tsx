@@ -21,20 +21,31 @@ import ItineraryListHome from "@/components/home/ItineraryListHome";
 import BannerAIBeta from "@/components/home/BannerAIBeta";
 import FooterHome from "@/components/home/FooterHome";
 import LocationAutocomplete from "@/components/service/LocalAutoComplate";
+import { useToast } from "@/hooks/use-toast";
+
 
 export default function Home() {
   const router = useRouter();
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
 
   const handleSearch = () => {
-    if (selectedCity) {
-      setIsLoading(true); // Activate loading
-      setTimeout(() => {
-        router.push(`/explore/itinerary?city=${encodeURIComponent(selectedCity)}`);
-      }, 500); // Simulate loading delay
+    if (!selectedCity) {
+      toast({
+        title: "Oops!",
+        description: "Silakan pilih kota dari daftar sebelum mencari.",
+      });
+      return;
     }
+  
+    setIsLoading(true); // Activate loading
+    setTimeout(() => {
+      router.push(`/explore/itinerary?city=${encodeURIComponent(selectedCity)}`);
+    }, 500); // Simulate loading delay
   };
+  
 
   const cities = [
     "di Jakarta",
