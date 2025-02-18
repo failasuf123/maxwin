@@ -256,57 +256,93 @@ function Page() {
     // 1) Parse the AI's JSON
     const parsedTripData = JSON.parse(TripData);
 
-  const startDate = new Date(selectedStartDate ?? ""); // Fallback ke string kosong jika null
-  if (isNaN(startDate.getTime())) {
-    throw new Error("Invalid start date");
-  }
+    const startDate = new Date(selectedStartDate ?? ""); // Fallback ke string kosong jika null
+    if (isNaN(startDate.getTime())) {
+      throw new Error("Invalid start date");
+    }
 
-  const todosWithDates: Record<string, any> = {};
-  Object.entries(parsedTripData.itinerary).forEach(([key, value], index) => {
-    const date = new Date(startDate);
-    date.setDate(date.getDate() + index); 
-    const formattedDate = date.toISOString().split("T")[0]; 
-    todosWithDates[formattedDate] = value; 
-  });
+    const todosWithDates: Record<string, any> = {};
+    Object.entries(parsedTripData.itinerary).forEach(([key, value], index) => {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() + index);
+      const formattedDate = date.toISOString().split("T")[0];
+      todosWithDates[formattedDate] = value;
+    });
 
-  const transformedTodos = transformTodos(todosWithDates);
+    const transformedTodos = transformTodos(todosWithDates);
+
+    // ================ UNSPLASH CODE: Insert Photos ================
+    // We'll iterate over every plan item and fetch a suitable photo
+    for (const dateKey of Object.keys(transformedTodos)) {
+      const plans = transformedTodos[dateKey];
+      // transformedTodos[dateKey] is an array of "todo" items
+      for (let i = 0; i < plans.length; i++) {
+        const item = plans[i];
+        // We always fetch a new Unsplash photo (force override).
+        const searchQuery = item.name || saveFormData.city || "travel";
+        try {
+          const photoUrl = await fetchUnsplashPhoto(searchQuery);
+          if (photoUrl) {
+            item.image = photoUrl;
+          } else {
+            item.image = "/placeholder.png";
+          }
+        } catch (err) {
+          console.error("Unsplash fetch error for:", searchQuery, err);
+          item.image = "/placeholder.png";
+        }
+      }
+    }
+
+    // === UNSPLASH CODE: imageCover ===
+    let coverUrl = "/placeholder.png";
+    try {
+      // for better results, you can do e.g. `${saveFormData.city} tourist destination`
+      coverUrl =
+        (await fetchUnsplashPhoto(saveFormData.city || "travel")) ||
+        "/placeholder.png";
+    } catch (err) {
+      console.error("Unsplash fetch error for cover:", err);
+    }
+
+    // ================ End Unsplash Code ================
 
     const tripData = {
       ...JSON.parse(TripData),
       category: saveFormData.travelWith,
       activitiesOptions: [],
-      city: saveFormData.city,
+      city: [saveFormData.city],
       dateEnd: selectedEndDate,
       dateStart: selectedStartDate,
       description: "",
-      imageCover: "",
+      imageCover: coverUrl,
       title: selectedTitle,
       totalDays: saveFormData.days,
       totalPrice: 0,
       totalHotelPricePayAble: 0,
       totalActivitiesPricePayAble: 0,
       totalPayAblePrice: 0,
-      username: user?.name,
+      // username: user?.name,
+      public: false,
+      publish: false,
       todos: transformedTodos,
     };
     delete tripData.itinerary;
 
     const data = {
       id: docId,
-      public: false,
-      publish: false,
       contributor: [],
       userId: user?.id,
-      userEmail: user?.email,
-      userPicture: user?.picture,
+      // userEmail: user?.email,
+      // userPicture: user?.picture,
       userSelection: saveFormData,
       tripData,
     };
 
-    await setDoc(doc(db, "Trips", docId), data)
+    await setDoc(doc(db, "Trips", docId), data);
 
-    console.log("DATA SAVED", data);
-    router.push(`/create-itinerary/edit/${docId}`)
+    // console.log("DATA SAVED", data);
+    router.push(`/create-itinerary/edit/${docId}`);
     setLoading(false);
   };
 
@@ -357,7 +393,8 @@ function Page() {
             Kapan Anda Ingin Berlibur?
           </label>
           <p className="pb-1 text-xs text-gray-400">
-            *pilih rentang tanggal dengan maksimal 5 hari
+            *pilih rentang tanggal dengan{" "}
+            <span className="font-semibold text-gray-600">maksimal 5 hari</span>
           </p>
 
           <div className="flex flex-row gap-2 h-12 items-center w-full">
@@ -385,7 +422,9 @@ function Page() {
           {loading ? (
             <AiOutlineLoading3Quarters className="h-6 w-6 animate-spin" />
           ) : (
-            <>Generate Trip by AI</>
+            <>
+              <BsStars /> Generate Trip by AI
+            </>
           )}
         </button>
       </div>
@@ -593,26 +632,26 @@ const SelectTravelWith: React.FC<SelectTravelWithProps> = ({
     {
       label: "Solo Trip",
       value: "Solo Trip",
-      icon: "🏄🏻‍♂️",
-      description: "Dengan memperhatikan biaya",
+      icon: <BsPersonArmsUp />,
+      description: "Petualangan seru untuk diri sendiri!",
     },
     {
       label: "Pasangan",
       value: "Date",
-      icon: "👩🏻‍🤝‍👨🏽",
-      description: "Memastikan biaya rata-rata",
+      icon: <GiLovers />,
+      description: "Buat cerita romantis bersama pasangan",
     },
     {
       label: "Keluarga",
       value: "Family",
-      icon: "👨🏻‍👩🏻‍👧🏻‍👧🏻",
-      description: "Tidak mengkhawatirkan biaya",
+      icon: <MdOutlineFamilyRestroom />,
+      description: "Liburan nyaman untuk semua anggota keluarga.",
     },
     {
       label: "Sahabat",
       value: "Friends",
-      icon: "💯",
-      description: "Tidak mengkhawatirkan biaya",
+      icon: <GiThreeFriends />,
+      description: "Buat kenangan terbaik bersama teman-teman!",
     },
   ];
 
