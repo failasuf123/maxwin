@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import ContentWisata from './container/ContentWisata';
 import ContentTransportasi from './container/ContentTransportasi';
 import ContentUlasan from './container/ContentUlasan';
+import ContentHotel from './container/ContentHotel';
 
 interface TodoItem {
   cost: number;
@@ -63,10 +64,12 @@ function ContentItinerary({ trip }: { trip: TripData | null }) {
     switch (todo.type.toLowerCase()) {
       case "wisata":
         return <ContentWisata date={''} {...todo} allImageDetails={allImageDetails} />;
-      case "transportasi":
-        return <ContentTransportasi date={''} {...todo} />;
-      case "ulasan":
-        return <ContentUlasan date={''} {...todo} />;
+        case "transportasi":
+          return <ContentTransportasi date={''} {...todo} />;
+          case "ulasan":
+            return <ContentUlasan date={''} {...todo} />;
+            case "hotel":
+        return <ContentHotel date={''} {...todo} allImageDetails={allImageDetails} />;
       default:
         return (
           <div className="bg-gray-100 p-4 rounded-lg">

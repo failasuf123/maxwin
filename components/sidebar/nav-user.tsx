@@ -79,7 +79,6 @@ export function NavUser({
   
       // Simpan data user ke Firestore (jika belum ada)
       await saveUserToFirestore(userData);
-      console.log("User Data saved:", userData);
   
       // Perbarui URL foto profil di Firestore jika berbeda
       await updateUserProfilePictureIfChanged(userData.id, userData.picture);

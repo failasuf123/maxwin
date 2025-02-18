@@ -20,7 +20,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle,
+  DialogTitle,                                                     
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
@@ -38,13 +38,13 @@ function page() {
 
   useEffect(() => {
     const user = localStorage.getItem("user");
-    console.log("User from localStorage:", user);
+    // console.log("User from localStorage:", user);
 
     if (!user) {
-      console.log("User not found, opening dialog");
+      // console.log("User not found, opening dialog");
       setIsLoggedIn(true)
     } else {
-      console.log("User found:", user);
+      // console.log("User found:", user);
     }
   }, []);
 
@@ -66,7 +66,7 @@ function page() {
         }
       )
       .then((response) => {
-        console.log(response);
+        // console.log(response);
         const userData = response.data;
   
         // Simpan data user ke localStorage
@@ -74,7 +74,7 @@ function page() {
   
         // Simpan data user ke Firestore (jika belum ada)
         saveUserToFirestore(userData);
-        console.log("User Data", userData)
+        // console.log("User Data", userData)
   
         // Perbarui URL foto profil di Firestore jika berbeda
         updateUserProfilePictureIfChanged(userData.id, userData.picture);

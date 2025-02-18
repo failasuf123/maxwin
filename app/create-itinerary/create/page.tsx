@@ -13,7 +13,7 @@ import { format } from "date-fns";
 import GooglePlacesAutocomplete from "react-google-places-autocomplete";
 import { saveUserToFirestore } from "@/components/service/signin/saveUserToFirestore";
 import { updateUserProfilePictureIfChanged } from "@/components/service/signin/updateUserProfilePictureIfChanged";
-import {fetchUnsplashPhoto} from "@/components/service/unsplash"
+import { fetchUnsplashPhoto } from "@/components/service/unsplash";
 
 import {
   Dialog,
@@ -37,6 +37,7 @@ import { BsPersonArmsUp } from "react-icons/bs";
 import { GiLovers } from "react-icons/gi";
 import { MdOutlineFamilyRestroom } from "react-icons/md";
 import { GiThreeFriends } from "react-icons/gi";
+import LocationAutocomplete from "@/components/service/LocalAutoComplate";
 
 function Page() {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -77,7 +78,7 @@ function Page() {
 
         // Simpan data user ke Firestore (jika belum ada)
         saveUserToFirestore(userData);
-        console.log("User Data", userData);
+        // console.log("User Data", userData);
 
         // Perbarui URL foto profil di Firestore jika berbeda
         updateUserProfilePictureIfChanged(userData.id, userData.picture);
@@ -88,7 +89,7 @@ function Page() {
 
   const handleSubmit = async () => {
     const user = localStorage.getItem("user");
-    console.log("user is:", user);
+    // console.log("user is:", user);
 
     if (!user) {
       setOpenDialog(true);
@@ -115,10 +116,10 @@ function Page() {
         .replace("{traveler}", selectedTravelWith)
         .replace("{budget}", selectedBudget);
 
-      console.log(FINAL_PROMPT);
+      // console.log(FINAL_PROMPT);
 
       const result = await chatSession.sendMessage(FINAL_PROMPT);
-      console.log("response result: ", result?.response.text());
+      // console.log("response result: ", result?.response.text());
       setLoading(false);
       saveAITrip(result?.response?.text());
     } else if (!selectedCity) {
@@ -187,6 +188,8 @@ function Page() {
 
   const transformTodos = (todos: Record<string, any>) => {
     const transformedTodos: Record<string, any> = {};
+    // console.log("#todos:");
+    // console.log(todos);
 
     Object.entries(todos).forEach(([date, todo]) => {
       const transformedPlans = todo.plan.map((plan: any) => {
@@ -307,7 +310,7 @@ function Page() {
       dateEnd: selectedEndDate,
       dateStart: selectedStartDate,
       description: "",
-      imageCover: "",
+      imageCover: coverUrl,
       title: selectedTitle,
       totalDays: saveFormData.days,
       totalPrice: 0,
@@ -333,7 +336,7 @@ function Page() {
 
     await setDoc(doc(db, "Trips", docId), data);
 
-    console.log("DATA SAVED", data);
+    // console.log("DATA SAVED", data);
     router.push(`/create-itinerary/edit/${docId}`);
     setLoading(false);
   };
@@ -350,9 +353,9 @@ function Page() {
       ? format(data.endDate, "yyyy-MM-dd")
       : null;
 
-    console.log("Formatted Start Date:", formattedStartDate);
-    console.log("Formatted End Date:", formattedEndDate);
-    console.log("Total Days:", data.totalDays);
+    // console.log("Formatted Start Date:", formattedStartDate);
+    // console.log("Formatted End Date:", formattedEndDate);
+    // console.log("Total Days:", data.totalDays);
     setSelectedDays(data.totalDays);
     setSelectedStartDate(formattedStartDate);
     setSelectedEndDate(formattedEndDate);
@@ -505,7 +508,24 @@ const SelectCityAndDays: React.FC<SelectCityAndDaysProps> = ({
             types: ['(cities)'], 
           }}
         /> */}
+        <LocationAutocomplete
+          onSelect={(city) => setSelectedCity(city)} // Simpan kota yang dipilih
+          typeProps="AITrip" // Contoh styling yang bisa diubah nantinya
+          initialCity=""
+        />
+        {selectedCity ? (
+          <p className="mt-2 text-xs">
+            Daerah yang dipilih:{" "}
+            <span className="font-semibold">{selectedCity}</span>
+          </p>
+        ) : (
+          <p className="mt-2 text-xs">
+            Daerah yang dipilih:{" "}
+            <span className="font-semibold">Anda Belum Memilih Kota</span>
+          </p>
+        )}
 
+        {/* 
         <div className="relative w-full items-center">
           <FaCity className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-base" />
           <input
@@ -515,7 +535,7 @@ const SelectCityAndDays: React.FC<SelectCityAndDaysProps> = ({
             onChange={(e) => setSelectedCity(e.target.value)}
             className="mt-1 block w-full pl-10 p-2 h-12 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm hover:bg-gray-100 hover:placeholder-gray-700 transition-all duration-300 ease-in-out"
           />
-        </div>
+        </div> */}
       </div>
     </div>
   );
