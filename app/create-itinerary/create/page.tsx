@@ -43,6 +43,10 @@ function Page() {
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
 
+  const getRandomElement = (array) => {
+    return array[Math.floor(Math.random() * array.length)];
+  };
+
   const login = useGoogleLogin({
     onSuccess: (codeResp) => getUserProfile(codeResp),
     onError: (error) => console.log(error),
@@ -261,7 +265,9 @@ function Page() {
   let coverUrl = "/placeholder.png";
   try {
     // for better results, you can do e.g. `${saveFormData.city} tourist destination`
-    coverUrl = (await fetchUnsplashPhoto(saveFormData.city || "travel")) || "/placeholder.png";
+    coverUrl = (await fetchUnsplashPhoto(getRandomE)) || "/placeholder.png";
+
+    // coverUrl = (await fetchUnsplashPhoto(saveFormData.city || "travel")) || "/placeholder.png";
   } catch (err) {
     console.error("Unsplash fetch error for cover:", err);
   }
