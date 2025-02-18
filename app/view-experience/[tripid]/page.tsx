@@ -1,11 +1,14 @@
-'use client'
-import React, { useEffect, useState } from 'react';
-import { db } from '@/app/service/firebaseConfig';
-import { doc, getDoc } from '@firebase/firestore';
-import { ToastContainer, toast, Bounce } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import HeaderUpper from '@/components/myexperience-trip/HeaderUpper';
-import ContentItinerary from '@/components/myexperience-trip/ContentItinerary';
+"use client";
+import React, { useEffect, useState, useRef } from "react";
+import { db } from "@/app/service/firebaseConfig";
+import { doc, getDoc } from "@firebase/firestore";
+import HeaderUpper from "@/components/myexperience-trip/HeaderUpper";
+import ContentItinerary from "@/components/myexperience-trip/ContentItinerary";
+import FooterButton from "@/components/myexperience-trip/FooterButton";
+import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
+import { cn } from "@/lib/utils";
+import LoadingAnimationBlack from "@/components/LoadingAnimationBlack";
 
 interface TripData {
   title: string;
@@ -14,15 +17,18 @@ interface TripData {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     tripid: string;
-  };
+  }>;
 }
 
+
 const Page: React.FC<PageProps> = ({ params }) => {
-  const { tripid } = params; 
+  const { tripid } = React.use(params);
   const [trip, setTrip] = useState<TripData | null>(null);
-  
+  const [isLoading, setIsLoading] = useState<boolean>(true); 
+  const { toast } = useToast();
+
   useEffect(() => {
     if (tripid) {
       getTripData();
@@ -30,52 +36,79 @@ const Page: React.FC<PageProps> = ({ params }) => {
   }, [tripid]);
   
   const getTripData = async () => {
-    const docRef = doc(db, 'ShareTrips', tripid);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      const tripData: TripData = {
-        title: data.title || '',
-        description: data.description || '',
-        ...data,
-      };
-      setTrip(tripData);
-    } else {
-      console.error("No Document");
-      toast.error('Upss! Trip tidak ditemukan', {
-        position: "top-center",
-        autoClose: 6000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "dark",
-        transition: Bounce,
+    setIsLoading(true); // Tampilkan spinner
+  
+    try {
+      const docRef = doc(db, "Trips", tripid);
+      const docSnap = await getDoc(docRef);
+  
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+  
+        // Ambil userId dari trip
+        const userId = data.userId;
+  
+        let userData: { username: string; userPicture: string } = {
+          username: "anonim",
+          userPicture: "/default-picture.png",
+        };
+  
+        if (userId) {
+          // Query ke Users untuk mendapatkan username & userPicture
+          const userRef = doc(db, "Users", userId);
+          const userSnap = await getDoc(userRef);
+  
+          if (userSnap.exists()) {
+            const userDoc = userSnap.data() as { username?: string; userPicture?: string };
+            userData = {
+              username: userDoc.username ?? "anonim",
+              userPicture: userDoc.userPicture ?? "/default-picture.png",
+            };
+          }
+        }
+  
+        // Gabungkan hasil trip dengan data user
+        const tripData: TripData = {
+          title: data.title || "Tanpa Judul",
+          description: data.description || "",
+          ...data,
+          username: userData.username,
+          userPicture: userData.userPicture,
+        };
+  
+        setTrip(tripData);
+      } else {
+        console.error("No Document");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "There was a problem with your request.",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching trip data:", error);
+      toast({
+        title: "Upss",
+        description: "Rencana Perjalanan Ini Tidak Ditemukan",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
-
+  
   return (
-    <div className="p-10 md:px-28">
+    <div className="p-5 pt-10 md:p-10 md:px-28 lg:px-36 xl:px-52 relative">
+      {isLoading && ( 
+        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-50">
+          <div className="flex items-center space-x-2 text-lg">
+            <div>
+              <LoadingAnimationBlack />
+            </div>
+          </div>
+        </div>
+      )}
       <HeaderUpper trip={trip} />
-      {/* {trip ? <ContentItinerary trip={trip} /> : <p>Loading or no data available</p>} */}
-      <ContentItinerary trip={trip as any} />
-
-
-      <ToastContainer
-        position="top-center"
-        autoClose={6000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-      />
+      <FooterButton id={tripid} trip={trip} />
+      {!isLoading && <ContentItinerary trip={trip as any} />}
     </div>
   );
 };

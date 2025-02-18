@@ -69,7 +69,10 @@ const config: Config = {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
-  			}
+  			},
+			fontSize: {
+			'xxs': '10px', // Ukuran teks lebih kecil dari xs
+			},
   		},
   		keyframes: {
   			'accordion-down': {

@@ -6,6 +6,8 @@ import { BsStars } from "react-icons/bs";
 import { FaUsersViewfinder } from "react-icons/fa6";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+import {saveUserToFirestore} from "@/components/service/signin/saveUserToFirestore"
+import {updateUserProfilePictureIfChanged} from "@/components/service/signin/updateUserProfilePictureIfChanged"
 
 import {
   Accordion,
@@ -18,7 +20,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle,
+  DialogTitle,                                                     
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
@@ -26,22 +28,23 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Privat from "@/components/dashboard/Privat";
 import Link from "next/link";
 import Publish from "@/components/dashboard/Publish";
+import { useRouter } from "next/navigation";
 
 function page() {
+  const router = useRouter();
   const [modalCreateTrip, setModalCreateTrip] = useState(false);
-
   const [switchMenu, setSwitchMenu] = useState("Privat");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
-    console.log("User from localStorage:", user);
+    // console.log("User from localStorage:", user);
 
     if (!user) {
-      console.log("User not found, opening dialog");
+      // console.log("User not found, opening dialog");
       setIsLoggedIn(true)
     } else {
-      console.log("User found:", user);
+      // console.log("User found:", user);
     }
   }, []);
 
@@ -49,6 +52,7 @@ function page() {
     onSuccess: (codeResp) => getUserProfile(codeResp),
     onError: (error) => console.log(error),
   });
+
 
   const getUserProfile = (tokenInfo: any) => {
     axios
@@ -62,9 +66,24 @@ function page() {
         }
       )
       .then((response) => {
-        console.log(response);
-        localStorage.setItem("user", JSON.stringify(response.data));
+        // console.log(response);
+        const userData = response.data;
+  
+        // Simpan data user ke localStorage
+        localStorage.setItem("user", JSON.stringify(userData));
+  
+        // Simpan data user ke Firestore (jika belum ada)
+        saveUserToFirestore(userData);
+        // console.log("User Data", userData)
+  
+        // Perbarui URL foto profil di Firestore jika berbeda
+        updateUserProfilePictureIfChanged(userData.id, userData.picture);
+  
         setIsLoggedIn(false);
+        router.push("/dashboard");
+      })
+      .catch((error) => {
+        console.error("Error fetching user profile:", error);
       });
   };
 
@@ -92,7 +111,7 @@ function page() {
         <div className="p-10 md:px-20 lg:px-32 flex flex-col items-center">
           {/* Upper Content */}
           <div className="w-full flex flex-col md:flex-row md:items-center justify-start md:justify-between gap-3 md:gap-0">
-            <h2 className="text-2xl font-semibold">Rencana Perjalanan</h2>
+            <h2 className="text-2xl font-semibold">Rencana Perjalanan Kamu</h2>
             <div
               onClick={() => setModalCreateTrip(true)}
               className="flex flex-row gap-2 px-3 py-2 items-center justify-center bg-black text-white cursor-pointer hover:bg-gray-700 rounded-lg"
