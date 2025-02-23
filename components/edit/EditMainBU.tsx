@@ -16,14 +16,6 @@ import { PiArrowBendDownRightBold } from "react-icons/pi";
 import { serverTimestamp } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTrash } from "react-icons/fa";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 
 import {
   Todo,
@@ -938,19 +930,47 @@ function EditMain({ tripidProps, typeProps }: Props) {
 
             {/* Tombol Close */}
             <DrawerClose asChild>
-              <button className="absolute top-2 right-8 text-lg md:text-xl bg-black text-white px-3 py-1 rounded-full"           onClick={() => {
-            console.log("Close button clicked");
-            setShowTodoModal(false); // Pastikan state diatur dengan benar
-          }}> 
-                X
+              <button className="absolute top-2 right-5 text-lg text-gray-600 hover:text-gray-900">
+                ×
               </button>
             </DrawerClose>
           </form>
         </DrawerContent>
       </Drawer>
-      
 
+      {/* <Drawer
+        open={showTodoModal}
+        onClose={() => {
+          setShowTodoModal(false);
+          setEditingWisataIndex(null);
+          setEditingWisataDate(null);
+        }}
+      >
+        <DrawerContent className="h-[100vh] md:h-[90vh]">
+          <form onSubmit={handleTodoSubmit} className="relative  flex flex-col">
+            <div className="flex-1">
+              <div className="px-2 bg-white space-y-2 flex flex-col items-center justify-center">
+                {renderTodoForm()}
+              </div>
+            </div>
 
+            <DrawerFooter className="flex items-center justify-center mb-5">
+              <button
+                type="submit"
+                className="w-1/2 px-4 py-1 bg-black hover:bg-cyan-500 text-white rounded-lg mb-2"
+              >
+                Simpan
+              </button>
+            </DrawerFooter>
+
+            <DrawerClose asChild>
+              <button className="absolute top-0 right-5 sm:text-lg md:text-xl text-gray-600">
+                x
+              </button>
+            </DrawerClose>
+          </form>
+        </DrawerContent>
+      </Drawer> */}
     </div>
   );
 }

@@ -50,13 +50,13 @@ export default function Home() {
   const cities = [
     "di Jakarta",
     "di Bali",
-    "di Dieng",
-    "di Batu",
-    "di Bandung",
     "di Purwokerto",
+    "di Bandung",
     "di Jogja",
     "di Malang",
     "di Surabaya",
+    "di Dieng",
+    "di Batu",
   ];
   const handleLinkClick = () => {
     setIsLoading(true); // Activate loading

@@ -1,18 +1,14 @@
 "use client";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { googleLogout, useGoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import {saveUserToFirestore} from "@/components/service/signin/saveUserToFirestore"
 import {updateUserProfilePictureIfChanged} from "@/components/service/signin/updateUserProfilePictureIfChanged"
-
-
 import {
   LogOut,
 } from "lucide-react";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -76,10 +72,18 @@ export function NavUser({
   
       // Simpan data user ke localStorage
       localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.getItem("user")
   
+      localStorage.setItem("user", JSON.stringify(response.data));
+      const userDataGet = response.data;
+      const userId = userDataGet.id;
+      const username = userDataGet.name;
+      console.log(
+        `username:${username} \n
+        userId:${userId}`
+      )
       // Simpan data user ke Firestore (jika belum ada)
       await saveUserToFirestore(userData);
-      console.log("User Data saved:", userData);
   
       // Perbarui URL foto profil di Firestore jika berbeda
       await updateUserProfilePictureIfChanged(userData.id, userData.picture);
