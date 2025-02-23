@@ -23,7 +23,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
+} from "@/components/ui/sheet";
 
 import {
   Todo,
@@ -60,6 +60,7 @@ import {
 import convertTo24HourFormat from "@/components/service/convertTo24HourFormat";
 import { useRouter } from "next/navigation";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { FaArrowLeft } from "react-icons/fa";
 import { useSearchParams } from "next/navigation";
 import { eachDayOfInterval, format } from "date-fns";
 import HeaderUpper from "@/components/edit/HeaderUpper";
@@ -140,6 +141,11 @@ function EditMain({ tripidProps, typeProps }: Props) {
   );
   const [showSaveButton, setShowSaveButton] = useState(false);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
+
+  useEffect(() => {
+    console.log("newTodo di-update:", newTodo); // 🔥 Debugging
+  }, [newTodo]);
+
 
   const handleScroll = useCallback(() => {
     const currentScrollPos = window.pageYOffset;
@@ -309,6 +315,7 @@ function EditMain({ tripidProps, typeProps }: Props) {
 
   const handleAddTodo = (type: string, date: Date) => {
     const formattedDate = date.toISOString().split("T")[0];
+    console.log("Date Add Todo", formattedDate)
 
     setNewTodo({
       id: nanoid(14),
@@ -377,8 +384,12 @@ function EditMain({ tripidProps, typeProps }: Props) {
     setEditingWisataDate(null);
   };
 
+
+  
   const handleEditWisata = (dateKey: string, id: string) => {
     const item = todos[dateKey]?.find((todo) => todo.id === id);
+    console.log("Date Edit todo", dateKey)
+
 
     if (!item) {
       console.error("Item wisata tidak ditemukan.");
@@ -400,7 +411,6 @@ function EditMain({ tripidProps, typeProps }: Props) {
       imageList: item.imageList,
       date: dateKey,
     });
-
     setTodoType(item.type);
     setShowTodoModal(true);
   };
@@ -908,49 +918,133 @@ function EditMain({ tripidProps, typeProps }: Props) {
         {/* End Submit Button */}
       </div>
 
-      <Drawer
+      {/* <Drawer
         open={showTodoModal}
         onClose={() => {
+          console.log("Drawer ditutup"); // 🔥 Debugging
+          console.log("Drawer ditutup, newTodo:", newTodo); // 🔥 Debugging
           setShowTodoModal(false);
-          setEditingWisataIndex(null);
-          setEditingWisataDate(null);
+          setNewTodo((prevTodo) => {
+            console.log("Sebelum di-set baru, newTodo:", prevTodo); // 🔥 Debugging
+            return null; // 🔥 Reset state newTodo
+          });
+          setEditingWisataIndex(null); // 🔥 Reset state editing
+          setEditingWisataDate(null); // 🔥 Reset state editing
         }}
       >
-        <DrawerContent className="h-[90vh] max-h-screen">
-          <form
-            onSubmit={handleTodoSubmit}
-            className="relative flex flex-col h-full"
+        {showTodoModal && ( // 🔥 Pastikan Drawer hanya dirender saat open
+          <DrawerContent className="h-[90vh] max-h-screen" >
+            <form
+              onSubmit={handleTodoSubmit}
+              className="relative flex flex-col h-full"
+            >
+              <div className="flex-1 overflow-y-auto px-2 bg-white space-y-2 flex flex-col items-center justify-center">
+                {renderTodoForm()}
+              </div>
+
+              <DrawerFooter className="sticky bottom-0 bg-white py-4 border-t flex justify-center items-center flex-row">
+                <button
+                  type="submit"
+                  className="w-1/2 px-4 py-2 bg-black hover:bg-cyan-500 text-white rounded-lg"
+                >
+                  Simpan
+                </button>
+              </DrawerFooter>
+
+              <DrawerClose asChild>
+                <button
+                  className="absolute top-2 right-8 text-lg md:text-xl bg-black text-white px-3 py-1 rounded-full"
+                >
+                  X
+                </button>
+              </DrawerClose>
+            </form>
+          </DrawerContent>
+        )}
+      </Drawer> */}
+{showTodoModal && (
+  <>
+    {/* Overlay untuk mencegah scroll di halaman utama */}
+    <motion.div
+      className="fixed inset-0 z-50 bg-black bg-opacity-50"
+      onClick={() => {
+        setShowTodoModal(false);
+        setNewTodo(null);
+      }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    ></motion.div>
+
+    {/* Modal */}
+    <AnimatePresence>
+      <motion.div
+        className={`fixed inset-y-0 z-50 bg-white overflow-y-auto ${
+          window.innerWidth >= 1024 // Mode lg ke atas
+            ? "right-0 w-3/5" // Modal di sebelah kanan dengan lebar 1/3 layar
+            : "inset-x-0 bottom-0 h-[100vh]" // Modal di bagian bawah untuk mode sm dan md
+        }`}
+        initial={
+          window.innerWidth >= 1024
+            ? { x: "100%" } // Animasi dari kanan untuk lg ke atas
+            : { y: "100%" } // Animasi dari bawah untuk sm dan md
+        }
+        animate={
+          window.innerWidth >= 1024
+            ? { x: 0 } // Animasi ke posisi awal (kanan)
+            : { y: 0 } // Animasi ke posisi awal (bawah)
+        }
+        exit={
+          window.innerWidth >= 1024
+            ? { x: "100%" } // Animasi keluar ke kanan
+            : { y: "100%" } // Animasi keluar ke bawah
+        }
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
+        <form
+          onSubmit={handleTodoSubmit}
+          className="relative flex flex-col h-full"
+        >
+          {/* Konten form */}
+          <div className="flex-1 overflow-y-auto px-2 bg-white space-y-2 flex flex-col items-center justify-center">
+            {renderTodoForm()}
+          </div>
+
+          {/* Footer dengan tombol Simpan */}
+          <div className="sticky bottom-0 bg-white py-4 border-t flex justify-center items-center flex-row">
+            <button
+              type="submit"
+              className="w-1/2 px-4 py-2 bg-black hover:bg-cyan-500 text-white rounded-lg"
+            >
+              Simpan
+            </button>
+          </div>
+
+          {/* Tombol Close */}
+          <button
+            onClick={() => {
+              setShowTodoModal(false);
+              setNewTodo(null);
+            }}
+            className="absolute top-2 right-8 text-lg md:text-xl bg-black text-white px-3 py-1 rounded-full cursor-pointer lg:hidden"
           >
-            {/* Konten yang bisa di-scroll */}
-            <div className="flex-1 overflow-y-auto px-2 bg-white space-y-2 flex flex-col items-center justify-center">
-              {renderTodoForm()}
-            </div>
-
-            {/* Footer dengan tombol Simpan */}
-            <DrawerFooter className="sticky bottom-0 bg-white py-4 border-t flex justify-center items-center flex-row">
-              <button
-                type="submit"
-                className="w-1/2 px-4 py-2 bg-black hover:bg-cyan-500 text-white rounded-lg"
-              >
-                Simpan
-              </button>
-            </DrawerFooter>
-
-            {/* Tombol Close */}
-            <DrawerClose asChild>
-              <button className="absolute top-2 right-8 text-lg md:text-xl bg-black text-white px-3 py-1 rounded-full"           onClick={() => {
-            console.log("Close button clicked");
-            setShowTodoModal(false); // Pastikan state diatur dengan benar
-          }}> 
-                X
-              </button>
-            </DrawerClose>
-          </form>
-        </DrawerContent>
-      </Drawer>
-      
-
-
+            X
+          </button>
+          <button
+            onClick={() => {
+              setShowTodoModal(false);
+              setNewTodo(null);
+            }}
+            className="absolute top-5 left-8 text-lg md:text-xl  text-gray-700 px-3  cursor-pointer hidden lg:flex lg:items-center flex-row gap-3 hover:border-b-2 hover:border-gray-700 "
+          >
+            <FaArrowLeft /> tutup
+          </button>
+        </form>
+      </motion.div>
+    </AnimatePresence>
+  </>
+)}
     </div>
   );
 }
