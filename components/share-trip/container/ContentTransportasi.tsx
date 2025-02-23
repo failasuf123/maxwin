@@ -68,7 +68,8 @@ const getIconByName = (name: string) => {
     case "bus":
     case "bus kota":
       return <FaBusAlt className="text-4xl text-white" />;
-    case "trevel":
+    case "angkot":
+    case "shuttle/trevel":
       return <FaShuttleVan className="text-4xl text-white" />;
     case "jalan kaki":
       return <BsPersonWalking className="text-4xl text-white" />;
