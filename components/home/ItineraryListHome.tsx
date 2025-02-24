@@ -1,15 +1,29 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import { db } from "@/app/service/firebaseConfig";
 import Link from "next/link";
 import { FaSearchLocation } from "react-icons/fa";
 import LoadingAnimationBlack from "../LoadingAnimationBlack";
 
+// Definisikan tipe data Trip
+type Trip = {
+  id: string;
+  userId: string;
+  category: string;
+  city: string;
+  totalDays: number;
+  imageCover: string;
+  title: string;
+  username: string; // Tambahkan properti username
+  userPicture: string; // Tambahkan properti userPicture
+  totalPrice?: number; // Opsional, jika diperlukan
+};
+
 function ItineraryListHome() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [userTrips, setUserTrips] = useState<any[]>([]);
+  const [userTrips, setUserTrips] = useState<Trip[]>([]); // Gunakan tipe Trip[]
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -22,60 +36,62 @@ function ItineraryListHome() {
   const GetUserTrips = async () => {
     setLoading(true);
 
-    
     try {
       const q = query(
         collection(db, "Trips"),
         where("tripData.public", "==", true),
-        where("tripData.publish", "==", true)
+        where("tripData.publish", "==", true),
+        limit(8) // Ambil hanya 8 data dari Firestore
       );
       const querySnapshot = await getDocs(q);
-  
-      const trips: any[] = [];
+
+      const trips: Trip[] = []; // Gunakan tipe Trip[]
       for (const doc of querySnapshot.docs) {
-        let tripData = doc.data();
-        const userId = tripData.userId;
-  
-        if (userId) {
-          // Ambil data user berdasarkan userId
+        const tripData = doc.data();
+
+        // Ambil hanya field yang diperlukan dari tripData
+        const requiredData: Trip = {
+          id: doc.id, // Ambil ID dokumen untuk routing
+          userId: tripData.userId,
+          category: tripData.tripData.category,
+          city: tripData.tripData.city[0],
+          totalDays: tripData.tripData.totalDays,
+          imageCover: tripData.tripData.imageCover,
+          title: tripData.tripData.title,
+          username: "anonim", // Default value
+          userPicture: "/default-picture.png", // Default value
+          totalPrice: tripData.tripData.totalPrice, // Opsional, jika diperlukan
+        };
+
+        // Ambil data user dari koleksi Users
+        if (requiredData.userId) {
           const userRef = collection(db, "Users");
-          const userQuery = query(userRef, where("userId", "==", userId));
+          const userQuery = query(userRef, where("userId", "==", requiredData.userId));
           const userSnapshot = await getDocs(userQuery);
-  
+
           if (!userSnapshot.empty) {
             const userData = userSnapshot.docs[0].data();
-            tripData.username = userData.username; // Menambahkan username ke tripData
-            tripData.userPicture = userData.userPicture; // Menambahkan userPicture ke tripData
-          } else {
-            // Jika user tidak ditemukan, gunakan nilai default
-            tripData.username = "anonim";
-            tripData.userPicture = "/default-picture.png";
+            requiredData.username = userData.username; // Ambil username
+            requiredData.userPicture = userData.userPicture; // Ambil userPicture
           }
         }
-  
-        trips.push(tripData);
+
+        trips.push(requiredData); // Simpan data yang sudah difilter
       }
-  
-      setUserTrips(trips);
+
+      setUserTrips(trips); // Set state dengan data yang diperlukan
     } catch (error) {
       console.error("Error fetching trips:", error);
     } finally {
       setLoading(false);
     }
   };
-  
 
   const filteredItineraries = userTrips.filter(
     (itinerary) =>
-      itinerary.tripData.title
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      itinerary.tripData.city[0]
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      itinerary.tripData.category
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
+      itinerary.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      itinerary.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      itinerary.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleLinkClick = () => {
@@ -95,8 +111,22 @@ function ItineraryListHome() {
     }).format(numberValue);
   };
 
+  // Fungsi untuk menentukan jumlah data yang ditampilkan berdasarkan ukuran layar
+  const getDisplayCount = () => {
+    if (typeof window !== "undefined") {
+      const width = window.innerWidth;
+      if (width < 640) return 4; // sm: 4 gambar
+      if (width < 768) return 6; // md: 6 gambar
+      if (width < 1024) return 4; // lg: 4 gambar
+      return 8; // xl dan lebih besar: 8 gambar
+    }
+    return 8; // Default
+  };
+
+  const displayCount = getDisplayCount();
+  const displayedItineraries = filteredItineraries.slice(0, displayCount); // Potong data yang ditampilkan
   return (
-    <div className="mt-10  md:mx-12 xl:mx-20">
+    <div className="mt-10 md:mx-12 xl:mx-20">
       {isLoading && (
         <div className="fixed inset-0 flex flex-col gap-3 items-center justify-center bg-white bg-opacity-50 z-50">
           <LoadingAnimationBlack />
@@ -123,95 +153,80 @@ function ItineraryListHome() {
           Selengkapnya &rarr;
         </a>
       </div>
-      {/* <p className="text-gray-600 text-lg md:text-xl mb-5">Pesan aktivitas agar tidak kehabisan</p> */}
       <p className="text-gray-600 text-lg md:text-xl mb-5">
         Jelajahi Pengalaman Perjalanan Orang Lain
       </p>
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2  md:gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-5">
         {loading ? (
           <>
-            <div className=" h-[200px] w-full overflow-hidden rounded-xl  bg-gray-200 animate-pulse"></div>
-            <div className=" h-[200px] w-full overflow-hidden rounded-xl  bg-gray-200 animate-pulse"></div>
-            <div className=" h-[200px] w-full overflow-hidden rounded-xl  bg-gray-200 animate-pulse"></div>
-            <div className=" h-[200px] w-full overflow-hidden rounded-xl  bg-gray-200 animate-pulse"></div>
+            <div className="h-[200px] w-full overflow-hidden rounded-xl bg-gray-200 animate-pulse"></div>
+            <div className="h-[200px] w-full overflow-hidden rounded-xl bg-gray-200 animate-pulse"></div>
+            <div className="h-[200px] w-full overflow-hidden rounded-xl bg-gray-200 animate-pulse"></div>
+            <div className="h-[200px] w-full overflow-hidden rounded-xl bg-gray-200 animate-pulse"></div>
           </>
         ) : (
           <>
-            {filteredItineraries.length > 0 ? (
-              filteredItineraries.map((itinerary: any, index: number) => (
+            {displayedItineraries.length > 0 ? (
+              displayedItineraries.map((itinerary, index) => (
                 <Link
-                  key={itinerary?.id || index} // Gunakan id dari itinerary atau index sebagai fallback
-                  href={`/view-experience/${itinerary?.id}`}
+                  key={itinerary.id || index}
+                  href={`/view-experience/${itinerary.id}`}
                   onClick={() => setIsLoadingNavigate(true)}
                 >
-                  {" "}
                   <div
-                    key={index}
                     className="flex flex-col h-[300px] w-full overflow-hidden cursor-pointer group"
                   >
                     <div className="relative h-3/5 w-full">
                       <img
-                        src={
-                          itinerary.tripData.imageCover || "/placeholder.webp"
-                        }
+                        src={itinerary.imageCover || "/placeholder.webp"}
                         className="h-full w-full object-cover rounded-lg"
-                        alt={itinerary.tripData.title}
+                        alt={itinerary.title}
                       />
                       <div className="absolute bottom-2 right-2 bg-white text-xs text-cyan-500 px-2 py-1 rounded group-hover:bg-black group-hover:text-white transition-colors duration-800">
-                        {itinerary.tripData.city[0]
-                          .split(",")[0] // Ambil bagian pertama sebelum koma
-                          .split(" ") // Pisahkan menjadi kata-kata
-                          .slice(0, 10) // Ambil maksimal 10 kata
+                        {itinerary.city
+                          .split(",")[0]
+                          .split(" ")
+                          .slice(0, 10)
                           .join(" ") +
-                          (itinerary.tripData.city[0].split(",")[0].split(" ")
-                            .length > 10
+                          (itinerary.city.split(",")[0].split(" ").length > 10
                             ? "..."
                             : "")}
                       </div>
 
                       <div className="absolute bottom-2 left-2 px-0.5 py-0.5 bg-white rounded-lg bg-opacity-40 group-hover:bg-opacity-80 ">
                         <img
-                          src={itinerary?.userPicture || "/default-picture.png"}
-                          className="h-7 w-7 md:w-8 md:h-8 rounded-lg  "
-                          alt={itinerary?.username}
+                          src={itinerary.userPicture || "/default-picture.png"}
+                          className="h-7 w-7 md:w-8 md:h-8 rounded-lg"
+                          alt={itinerary.username}
                         />
                       </div>
                     </div>
                     <div className="flex flex-col justify-start p-2 overflow-hidden text-sm text-gray-500">
                       <div className="flex flex-row items-center gap-2">
-                        {/* <img
-                          src={itinerary?.userPicture || "/placeholder.webp"}
-                          className="h-8 w-8 rounded-full hidden md:block"
-                          alt={itinerary.tripData.username}
-                        /> */}
                         <div className="flex flex-col gap-0.5 leading-tight">
-                          <h2 className="text-gray-700 font-semibold w-full text-ellipsis overflow-hidden line-clamp-2  text-xs md:text-base">
-                            {itinerary.tripData.title}
+                          <h2 className="text-gray-700 font-semibold w-full text-ellipsis overflow-hidden line-clamp-2 text-xs md:text-base">
+                            {itinerary.title}
                           </h2>
                           <div className="text-[9px] md:text-xs font-light overflow-hidden line-clamp-1">
-                            Oleh: {itinerary.username} 
+                            Oleh: {itinerary.username}
                           </div>
-                          <div className="flex flex-row gap-1 text-[9px] md:text-xs font-normal overflow-hidden line-clamp-1 ">
-                            <span>{itinerary.tripData.totalDays} hari</span>
+                          <div className="flex flex-row gap-1 text-[9px] md:text-xs font-normal overflow-hidden line-clamp-1">
+                            <span>{itinerary.totalDays} hari</span>
                             <span>|</span>
-                            <span>{itinerary.tripData.category}</span>
+                            <span>{itinerary.category}</span>
                             <span>|</span>
-                            <span className="text-green-600 font-normal ">
-                              {formatRupiah(itinerary?.tripData.totalPrice || 0)}
+                            <span className="text-green-600 font-normal">
+                              {formatRupiah(itinerary.totalPrice || 0)}
                             </span>
-
                           </div>
-
                         </div>
                       </div>
                     </div>
-
                   </div>
                 </Link>
               ))
             ) : (
               <div>
-  
                 <p className="text-gray-500">Tidak ada hasil yang ditemukan</p>
               </div>
             )}
