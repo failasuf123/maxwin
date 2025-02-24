@@ -16,14 +16,6 @@ import { PiArrowBendDownRightBold } from "react-icons/pi";
 import { serverTimestamp } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTrash } from "react-icons/fa";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 
 import {
   Todo,
@@ -60,7 +52,6 @@ import {
 import convertTo24HourFormat from "@/components/service/convertTo24HourFormat";
 import { useRouter } from "next/navigation";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { FaArrowLeft } from "react-icons/fa";
 import { useSearchParams } from "next/navigation";
 import { eachDayOfInterval, format } from "date-fns";
 import HeaderUpper from "@/components/edit/HeaderUpper";
@@ -141,8 +132,6 @@ function EditMain({ tripidProps, typeProps }: Props) {
   );
   const [showSaveButton, setShowSaveButton] = useState(false);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
-
-  
 
   const handleScroll = useCallback(() => {
     const currentScrollPos = window.pageYOffset;
@@ -237,7 +226,8 @@ function EditMain({ tripidProps, typeProps }: Props) {
         setTotalDays(tripData.totalDays || 0);
         setPublishState(tripData.publish);
         setPublicState(tripData.public);
-
+        // console.log(trip.public);
+        // console.log(trip.publish);
       } else if (typeContent === "manualTrip") {
         return;
       }
@@ -379,8 +369,6 @@ function EditMain({ tripidProps, typeProps }: Props) {
     setEditingWisataDate(null);
   };
 
-
-  
   const handleEditWisata = (dateKey: string, id: string) => {
     const item = todos[dateKey]?.find((todo) => todo.id === id);
 
@@ -404,6 +392,7 @@ function EditMain({ tripidProps, typeProps }: Props) {
       imageList: item.imageList,
       date: dateKey,
     });
+
     setTodoType(item.type);
     setShowTodoModal(true);
   };
@@ -511,12 +500,12 @@ function EditMain({ tripidProps, typeProps }: Props) {
       id: docId,
       contributor: [],
       userId: user?.id,
+      // userPicture: userpicture,
+      // userEmail: user?.email,
       tripData: response,
     });
-
-    router.push(`/my-trip/${docId}`);
-    
-
+    // console.log("after submit: ",response)
+    router.push("/dashboard");
   };
 
   const renderTodoForm = () => {
@@ -911,89 +900,77 @@ function EditMain({ tripidProps, typeProps }: Props) {
         {/* End Submit Button */}
       </div>
 
-{showTodoModal && (
-  <>
-    {/* Overlay untuk mencegah scroll di halaman utama */}
-    <motion.div
-      className="fixed inset-0 z-50 bg-black bg-opacity-50"
-      onClick={() => {
-        setShowTodoModal(false);
-        setNewTodo(null);
-      }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-    ></motion.div>
-
-    {/* Modal */}
-    <AnimatePresence>
-      <motion.div
-        className={`fixed inset-y-0 z-50 bg-white overflow-y-auto ${
-          window.innerWidth >= 1024 // Mode lg ke atas
-            ? "right-0 w-3/5" // Modal di sebelah kanan dengan lebar 1/3 layar
-            : "inset-x-0 bottom-0 h-[100vh]" // Modal di bagian bawah untuk mode sm dan md
-        }`}
-        initial={
-          window.innerWidth >= 1024
-            ? { x: "100%" } // Animasi dari kanan untuk lg ke atas
-            : { y: "100%" } // Animasi dari bawah untuk sm dan md
-        }
-        animate={
-          window.innerWidth >= 1024
-            ? { x: 0 } // Animasi ke posisi awal (kanan)
-            : { y: 0 } // Animasi ke posisi awal (bawah)
-        }
-        exit={
-          window.innerWidth >= 1024
-            ? { x: "100%" } // Animasi keluar ke kanan
-            : { y: "100%" } // Animasi keluar ke bawah
-        }
-        transition={{ duration: 0.3, ease: "easeInOut" }}
+      <Drawer
+        open={showTodoModal}
+        onClose={() => {
+          setShowTodoModal(false);
+          setEditingWisataIndex(null);
+          setEditingWisataDate(null);
+        }}
       >
-        <form
-          onSubmit={handleTodoSubmit}
-          className="relative flex flex-col h-full"
-        >
-          {/* Konten form */}
-          <div className="flex-1 overflow-y-auto px-2 bg-white space-y-2 flex flex-col items-center justify-center">
-            {renderTodoForm()}
-          </div>
-
-          {/* Footer dengan tombol Simpan */}
-          <div className="sticky bottom-0 bg-white py-4 border-t flex justify-center items-center flex-row">
-            <button
-              type="submit"
-              className="w-1/2 px-4 py-2 bg-black hover:bg-cyan-500 text-white rounded-lg"
-            >
-              Simpan
-            </button>
-          </div>
-
-          {/* Tombol Close */}
-          <button
-            onClick={() => {
-              setShowTodoModal(false);
-              setNewTodo(null);
-            }}
-            className="absolute top-2 right-8 text-lg md:text-xl bg-black text-white px-3 py-1 rounded-full cursor-pointer lg:hidden"
+        <DrawerContent className="h-[90vh] max-h-screen">
+          <form
+            onSubmit={handleTodoSubmit}
+            className="relative flex flex-col h-full"
           >
-            X
-          </button>
-          <button
-            onClick={() => {
-              setShowTodoModal(false);
-              setNewTodo(null);
-            }}
-            className="absolute top-5 left-8 text-lg md:text-xl  text-gray-700 px-3  cursor-pointer hidden lg:flex lg:items-center flex-row gap-3 hover:border-b-2 hover:border-gray-700 "
-          >
-            <FaArrowLeft /> tutup
-          </button>
-        </form>
-      </motion.div>
-    </AnimatePresence>
-  </>
-)}
+            {/* Konten yang bisa di-scroll */}
+            <div className="flex-1 overflow-y-auto px-2 bg-white space-y-2 flex flex-col items-center justify-center">
+              {renderTodoForm()}
+            </div>
+
+            {/* Footer dengan tombol Simpan */}
+            <DrawerFooter className="sticky bottom-0 bg-white py-4 border-t flex justify-center items-center flex-row">
+              <button
+                type="submit"
+                className="w-1/2 px-4 py-2 bg-black hover:bg-cyan-500 text-white rounded-lg"
+              >
+                Simpan
+              </button>
+            </DrawerFooter>
+
+            {/* Tombol Close */}
+            <DrawerClose asChild>
+              <button className="absolute top-2 right-5 text-lg text-gray-600 hover:text-gray-900">
+                ×
+              </button>
+            </DrawerClose>
+          </form>
+        </DrawerContent>
+      </Drawer>
+
+      {/* <Drawer
+        open={showTodoModal}
+        onClose={() => {
+          setShowTodoModal(false);
+          setEditingWisataIndex(null);
+          setEditingWisataDate(null);
+        }}
+      >
+        <DrawerContent className="h-[100vh] md:h-[90vh]">
+          <form onSubmit={handleTodoSubmit} className="relative  flex flex-col">
+            <div className="flex-1">
+              <div className="px-2 bg-white space-y-2 flex flex-col items-center justify-center">
+                {renderTodoForm()}
+              </div>
+            </div>
+
+            <DrawerFooter className="flex items-center justify-center mb-5">
+              <button
+                type="submit"
+                className="w-1/2 px-4 py-1 bg-black hover:bg-cyan-500 text-white rounded-lg mb-2"
+              >
+                Simpan
+              </button>
+            </DrawerFooter>
+
+            <DrawerClose asChild>
+              <button className="absolute top-0 right-5 sm:text-lg md:text-xl text-gray-600">
+                x
+              </button>
+            </DrawerClose>
+          </form>
+        </DrawerContent>
+      </Drawer> */}
     </div>
   );
 }

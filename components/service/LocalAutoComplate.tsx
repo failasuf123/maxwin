@@ -115,7 +115,13 @@ export default function LocationAutocomplete({
     } else {
       setSuggestions([]);
     }
+
+    // Jika typeProps adalah "EditTrip", kirim nilai query ke onSelect
+    if (typeProps === "EditTrip") {
+      onSelect(value);
+    }
   };
+
   const handleSelectSuggestion = (suggestion: { display: string }) => {
     let formattedCity = suggestion.display;
   
@@ -127,7 +133,6 @@ export default function LocationAutocomplete({
     setSuggestions([]);
     onSelect(formattedCity); // Pastikan value yang dikirim hanya bagian pertama
   };
-  
 
   // 🟢 **Tampilan AITrip**
   if (typeProps === "AITrip") {

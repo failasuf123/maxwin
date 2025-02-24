@@ -73,9 +73,10 @@ function Page() {
       )
       .then((response) => {
         localStorage.setItem("user", JSON.stringify(response.data));
-
         const userData = response.data;
-
+        const userId = userData.id;
+        const username = userData.name;
+        
         // Simpan data user ke Firestore (jika belum ada)
         saveUserToFirestore(userData);
         // console.log("User Data", userData);
