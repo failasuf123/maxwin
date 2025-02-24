@@ -142,10 +142,7 @@ function EditMain({ tripidProps, typeProps }: Props) {
   const [showSaveButton, setShowSaveButton] = useState(false);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
 
-  useEffect(() => {
-    console.log("newTodo di-update:", newTodo); // 🔥 Debugging
-  }, [newTodo]);
-
+  
 
   const handleScroll = useCallback(() => {
     const currentScrollPos = window.pageYOffset;
@@ -240,8 +237,7 @@ function EditMain({ tripidProps, typeProps }: Props) {
         setTotalDays(tripData.totalDays || 0);
         setPublishState(tripData.publish);
         setPublicState(tripData.public);
-        // console.log(trip.public);
-        // console.log(trip.publish);
+
       } else if (typeContent === "manualTrip") {
         return;
       }
@@ -315,7 +311,6 @@ function EditMain({ tripidProps, typeProps }: Props) {
 
   const handleAddTodo = (type: string, date: Date) => {
     const formattedDate = date.toISOString().split("T")[0];
-    console.log("Date Add Todo", formattedDate)
 
     setNewTodo({
       id: nanoid(14),
@@ -388,8 +383,6 @@ function EditMain({ tripidProps, typeProps }: Props) {
   
   const handleEditWisata = (dateKey: string, id: string) => {
     const item = todos[dateKey]?.find((todo) => todo.id === id);
-    console.log("Date Edit todo", dateKey)
-
 
     if (!item) {
       console.error("Item wisata tidak ditemukan.");
@@ -518,12 +511,12 @@ function EditMain({ tripidProps, typeProps }: Props) {
       id: docId,
       contributor: [],
       userId: user?.id,
-      // userPicture: userpicture,
-      // userEmail: user?.email,
       tripData: response,
     });
-    // console.log("after submit: ",response)
-    router.push("/dashboard");
+
+    router.push(`/my-trip/${docId}`);
+    
+
   };
 
   const renderTodoForm = () => {
@@ -918,50 +911,6 @@ function EditMain({ tripidProps, typeProps }: Props) {
         {/* End Submit Button */}
       </div>
 
-      {/* <Drawer
-        open={showTodoModal}
-        onClose={() => {
-          console.log("Drawer ditutup"); // 🔥 Debugging
-          console.log("Drawer ditutup, newTodo:", newTodo); // 🔥 Debugging
-          setShowTodoModal(false);
-          setNewTodo((prevTodo) => {
-            console.log("Sebelum di-set baru, newTodo:", prevTodo); // 🔥 Debugging
-            return null; // 🔥 Reset state newTodo
-          });
-          setEditingWisataIndex(null); // 🔥 Reset state editing
-          setEditingWisataDate(null); // 🔥 Reset state editing
-        }}
-      >
-        {showTodoModal && ( // 🔥 Pastikan Drawer hanya dirender saat open
-          <DrawerContent className="h-[90vh] max-h-screen" >
-            <form
-              onSubmit={handleTodoSubmit}
-              className="relative flex flex-col h-full"
-            >
-              <div className="flex-1 overflow-y-auto px-2 bg-white space-y-2 flex flex-col items-center justify-center">
-                {renderTodoForm()}
-              </div>
-
-              <DrawerFooter className="sticky bottom-0 bg-white py-4 border-t flex justify-center items-center flex-row">
-                <button
-                  type="submit"
-                  className="w-1/2 px-4 py-2 bg-black hover:bg-cyan-500 text-white rounded-lg"
-                >
-                  Simpan
-                </button>
-              </DrawerFooter>
-
-              <DrawerClose asChild>
-                <button
-                  className="absolute top-2 right-8 text-lg md:text-xl bg-black text-white px-3 py-1 rounded-full"
-                >
-                  X
-                </button>
-              </DrawerClose>
-            </form>
-          </DrawerContent>
-        )}
-      </Drawer> */}
 {showTodoModal && (
   <>
     {/* Overlay untuk mencegah scroll di halaman utama */}
