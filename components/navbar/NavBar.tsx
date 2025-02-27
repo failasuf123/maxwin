@@ -109,6 +109,13 @@ const NavBar: React.FC = ({ renderPage }: { renderPage?: string }) => {
           >
             Trip Orang Lain
           </a>
+          <a
+            href="/explore/hotel"
+            className="text-gray-800 font-semibold hover:bg-gray-200 rounded-xl px-3 py-2 text-sm"
+            onClick={() => handleLinkClick("/explore/hotel")}
+          >
+            Hotel
+          </a>
         </div>
 
         <div className="max-w-44 h-12 flex  items-center block md:block ">
@@ -175,6 +182,13 @@ const NavBar: React.FC = ({ renderPage }: { renderPage?: string }) => {
             onClick={() => handleLinkClick("/explore/itinerary")}
           >
             Trip Orang Lain
+          </a>
+          <a
+            href="#"
+            className="py-2 text-gray-700 hover:bg-gray-200 px-3 rounded-lg font-semibold"
+            onClick={() => handleLinkClick("/explore/hotel")}
+          >
+            Hotel
           </a>
 
           <hr className="w-full bg-gray-400" />

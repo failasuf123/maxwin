@@ -41,7 +41,7 @@ function ItineraryListHome() {
         collection(db, "Trips"),
         where("tripData.public", "==", true),
         where("tripData.publish", "==", true),
-        limit(8) // Ambil hanya 8 data dari Firestore
+        limit(4) // Ambil hanya 8 data dari Firestore
       );
       const querySnapshot = await getDocs(q);
 
