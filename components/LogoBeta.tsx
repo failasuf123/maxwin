@@ -8,10 +8,10 @@ function Logo() {
       <Link href="/" className="hidden md:flex relative">
         <div className="relative">
           <img src="/malib-logo-long.png" height={55} width={150} alt="Logo Panjang" />
-          <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 px-1 py-0.1 text-center font-semibold
+          {/* <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 px-1 py-0.1 text-center font-semibold
                           text-[8px]  text-white bg-black rounded-sm mb-1">
             Beta
-          </div>
+          </div> */}
         </div>
       </Link>
 
@@ -19,10 +19,10 @@ function Logo() {
       <Link href="/" className="flex md:hidden relative">
       <div className="relative scale-90 origin-left">
           <img src="/malib-logo-long.png" height={35} width={140} alt="Logo Panjang" />
-          <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 px-1 py-0.1 text-center font-semibold
+          {/* <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 px-1 py-0.1 text-center font-semibold
                           text-[8px]  text-white bg-black rounded-sm mb-1">
             Beta
-          </div>
+          </div> */}
         </div>
       </Link>
       {/* <Link href="/" className="flex md:hidden relative">
