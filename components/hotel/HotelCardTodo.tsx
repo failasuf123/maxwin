@@ -1,13 +1,13 @@
-// components/HotelCard.tsx
+// components/HotelCardTodo.tsx
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
 import { FaArrowLeft, FaStar } from "react-icons/fa";
 import { MdLocalHotel } from "react-icons/md";
 import { motion, AnimatePresence } from "framer-motion";
-import HotelModalContent from "./HotelModalContent";
+import HotelModalContentTodo from "./HotelModalContentTodo";
 
-interface HotelCardProps {
+interface HotelCardTodoProps {
   hotel: {
     hotel_id: number;
     hotel_name: string;
@@ -28,7 +28,27 @@ interface HotelCardProps {
   };
 }
 
-const HotelCard: React.FC<HotelCardProps> = ({ hotel }) => {
+interface HotelFormProps {
+  newTodo: {
+    type: string;
+    name: string;
+    description?: string;
+    cost: number;
+    timeStart?: string;
+    timeEnd?: string;
+    tag?: string[];
+    image?: string;
+    imageList?: string[];
+    date?: string;
+  };
+  setNewTodo: (todo: any) => void;
+}
+
+
+
+interface HotelModalTodoProps extends HotelCardTodoProps, HotelFormProps {}
+
+const HotelCardTodo: React.FC<HotelModalTodoProps> = ({ hotel, newTodo, setNewTodo}) => {
   const [showTodoModal, setShowTodoModal] = useState(false);
 
   return (
@@ -131,13 +151,13 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel }) => {
                     onClick={() => setShowTodoModal(false)}
                     className="items-start text-sm md:text-base text-gray-500 px-3 cursor-pointer flex items-center flex-row gap-3 "
                   >
-                    <FaArrowLeft /> tutup
+                    <FaArrowLeft /> daftar hotel
                   </button>
                 </div>
 
                 <hr className="w-full bg-gray-200 mt-2" />
 
-                <HotelModalContent hotel={hotel} />
+                <HotelModalContentTodo hotel={hotel} newTodo={newTodo} setNewTodo={setNewTodo}  />
 
                 <hr className="w-full bg-gray-500 my-2" />
               </div>
@@ -149,4 +169,4 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel }) => {
   );
 };
 
-export default HotelCard;
+export default HotelCardTodo;
