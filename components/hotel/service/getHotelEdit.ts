@@ -1,0 +1,130 @@
+// app/lib/getHotels.ts
+import hotelData from "@/public/data_hotel.json";
+
+interface Hotel {
+  hotel_id: number;
+  hotel_name: string;
+  city: string;
+  state: string;
+  country: string;
+  star_rating: number;
+  photo1?: string | null;
+  photo2?: string | null;
+  photo3?: string | null;
+  photo4?: string | null;
+  photo5?: string | null;
+  url: string;
+  rating_average: number;
+  overview: string;
+  accommodation_type: string;
+  addressline1: string;
+}
+
+const data: Hotel[] = hotelData as Hotel[];
+
+const statesList = [
+  "D.I. Yogyakarta", "Bali", "East Java", "DKI Jakarta", "Banten",
+  "West Java", "Central Java", "East Kalimantan", "BALI", "Yogyakarta", "Jakarta"
+];
+
+// Fungsi untuk mengambil data secara acak
+export async function getRandomHotels(
+  count: number = 15,
+  type: string // Tambahkan parameter type
+): Promise<Hotel[]> {
+  let stateHotels = data.filter((h) => statesList.includes(h.state));
+  let otherHotels = data.filter((h) => !statesList.includes(h.state));
+
+  // Filter berdasarkan accommodation_type jika type bukan "All Type"
+  if (type !== "All Type") {
+    stateHotels = stateHotels.filter((hotel) => hotel.accommodation_type === type);
+    otherHotels = otherHotels.filter((hotel) => hotel.accommodation_type === type);
+  }
+
+  let selectedHotels: Hotel[] = [];
+  let usedHotelIds = new Set<number>(); // Simpan ID hotel yang sudah dipilih
+
+  for (let i = 0; i < count; i++) {
+    if (i < 14 && stateHotels.length > 0) {
+      let randomIndex;
+      let hotel;
+      do {
+        randomIndex = Math.floor(Math.random() * stateHotels.length);
+        hotel = stateHotels[randomIndex];
+      } while (usedHotelIds.has(hotel.hotel_id));
+
+      selectedHotels.push(hotel);
+      usedHotelIds.add(hotel.hotel_id);
+      stateHotels.splice(randomIndex, 1);
+    } else if (otherHotels.length > 0) {
+      let randomIndex;
+      let hotel;
+      do {
+        randomIndex = Math.floor(Math.random() * otherHotels.length);
+        hotel = otherHotels[randomIndex];
+      } while (usedHotelIds.has(hotel.hotel_id));
+
+      selectedHotels.push(hotel);
+      usedHotelIds.add(hotel.hotel_id);
+      otherHotels.splice(randomIndex, 1);
+    }
+  }
+
+  return selectedHotels;
+}
+
+export async function getFilteredHotels(
+  filters: { city: string; state: string; type: string },
+  page: number,
+  perPage: number = 15
+): Promise<Hotel[]> {
+  let filteredData = data;
+
+  // Filter berdasarkan city dan state
+  if (filters.city !== "Indonesia" || filters.state !== "Indonesia") {
+    filteredData = filteredData.filter((hotel) => {
+      const cityMatch = filters.city === "Indonesia" || hotel.city === filters.city;
+      const stateMatch = filters.state === "Indonesia" || hotel.state === filters.state;
+      return cityMatch && stateMatch;
+    });
+  }
+
+  // Filter berdasarkan accommodation_type
+  if (filters.type !== "All Type") {
+    filteredData = filteredData.filter((hotel) => hotel.accommodation_type === filters.type);
+  }
+
+  // Jika city/state adalah "Indonesia", ambil data secara acak dengan filter type
+  if (filters.city === "Indonesia" && filters.state === "Indonesia") {
+    return getRandomHotels(perPage, filters.type); // Terapkan filter type
+  }
+
+  // Paginasi
+  const startIndex = (page - 1) * perPage;
+  const endIndex = startIndex + perPage;
+  return filteredData.slice(startIndex, endIndex);
+}
+// // Fungsi untuk mengambil data berdasarkan filter
+// export async function getFilteredHotels(
+//   filters: { city: string; state: string; type: string },
+//   page: number,
+//   perPage: number = 15
+// ): Promise<Hotel[]> {
+//   // Jika city/state adalah "Indonesia", ambil data secara acak
+//   if (filters.city === "Indonesia" && filters.state === "Indonesia") {
+//     return getRandomHotels(perPage);
+//   }
+
+//   // Jika city/state spesifik, ambil data sesuai filter
+//   let filteredData = data.filter((hotel) => {
+//     const cityMatch = filters.city === "Indonesia" || hotel.city === filters.city;
+//     const stateMatch = filters.state === "Indonesia" || hotel.state === filters.state;
+//     const typeMatch = filters.type === "All Type" || hotel.accommodation_type === filters.type;
+//     return cityMatch && stateMatch && typeMatch;
+//   });
+
+//   // Paginasi
+//   const startIndex = (page - 1) * perPage;
+//   const endIndex = startIndex + perPage;
+//   return filteredData.slice(startIndex, endIndex);
+// }
