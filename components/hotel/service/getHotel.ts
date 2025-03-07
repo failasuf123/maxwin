@@ -1,5 +1,5 @@
-// app/lib/getHotels.ts
 import hotelData from "@/public/data_hotel.json";
+import convertToHttps from "./convertToHttps";
 
 interface Hotel {
   hotel_id: number;
@@ -20,7 +20,16 @@ interface Hotel {
   addressline1: string;
 }
 
-const data: Hotel[] = hotelData as Hotel[];
+// const data: Hotel[] = hotelData as Hotel[];
+
+const data: Hotel[] = (hotelData as Hotel[]).map((hotel) => ({
+  ...hotel,
+  photo1: convertToHttps(hotel.photo1 || ""),
+  photo2: convertToHttps(hotel.photo2 || ""),
+  photo3: convertToHttps(hotel.photo3 || ""),
+  photo4: convertToHttps(hotel.photo4 || ""),
+  photo5: convertToHttps(hotel.photo5 || ""),
+}));
 
 const statesList = [
   "D.I. Yogyakarta", "Bali", "East Java", "DKI Jakarta", "Banten",
@@ -104,27 +113,3 @@ export async function getFilteredHotels(
   const endIndex = startIndex + perPage;
   return filteredData.slice(startIndex, endIndex);
 }
-// // Fungsi untuk mengambil data berdasarkan filter
-// export async function getFilteredHotels(
-//   filters: { city: string; state: string; type: string },
-//   page: number,
-//   perPage: number = 15
-// ): Promise<Hotel[]> {
-//   // Jika city/state adalah "Indonesia", ambil data secara acak
-//   if (filters.city === "Indonesia" && filters.state === "Indonesia") {
-//     return getRandomHotels(perPage);
-//   }
-
-//   // Jika city/state spesifik, ambil data sesuai filter
-//   let filteredData = data.filter((hotel) => {
-//     const cityMatch = filters.city === "Indonesia" || hotel.city === filters.city;
-//     const stateMatch = filters.state === "Indonesia" || hotel.state === filters.state;
-//     const typeMatch = filters.type === "All Type" || hotel.accommodation_type === filters.type;
-//     return cityMatch && stateMatch && typeMatch;
-//   });
-
-//   // Paginasi
-//   const startIndex = (page - 1) * perPage;
-//   const endIndex = startIndex + perPage;
-//   return filteredData.slice(startIndex, endIndex);
-// }

@@ -115,8 +115,8 @@ const PickHotel: React.FC<HotelFormProps> = ({ newTodo, setNewTodo }) => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-2">Hai! Mau menginap dimana?</h1>
+    <div className="container mx-auto px-1 md:px-4 py-4">
+      <h1 className="text-2xl font-bold mb-2">Mau menginap dimana?</h1>
       <FilterHotelTodo onFilter={handleFilter} />
       <hr className="w-full bg-gray-200 my-2 md:my-4" />
       <div className="grid grid-cols-2 gap-2 md:gap-5">
