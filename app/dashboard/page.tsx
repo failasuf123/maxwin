@@ -108,7 +108,7 @@ function page() {
           </div>
         </div>
       ) : (
-        <div className="p-10 md:px-20 lg:px-32 flex flex-col items-center">
+        <div className="px-4 py-10 md:px-20 lg:px-32 flex flex-col items-center">
           {/* Upper Content */}
           <div className="w-full flex flex-col md:flex-row md:items-center justify-start md:justify-between gap-3 md:gap-0">
             <h2 className="text-2xl font-semibold">Rencana Perjalanan Kamu</h2>

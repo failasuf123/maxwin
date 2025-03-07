@@ -1,5 +1,6 @@
 // app/lib/getHotels.ts
 import hotelData from "@/public/data_hotel.json";
+import convertToHttps from "./convertToHttps";
 
 interface Hotel {
   hotel_id: number;
@@ -20,7 +21,16 @@ interface Hotel {
   addressline1: string;
 }
 
-const data: Hotel[] = hotelData as Hotel[];
+// const data: Hotel[] = hotelData as Hotel[];
+
+const data: Hotel[] = (hotelData as Hotel[]).map((hotel) => ({
+  ...hotel,
+  photo1: convertToHttps(hotel.photo1 || ""),
+  photo2: convertToHttps(hotel.photo2 || ""),
+  photo3: convertToHttps(hotel.photo3 || ""),
+  photo4: convertToHttps(hotel.photo4 || ""),
+  photo5: convertToHttps(hotel.photo5 || ""),
+}));
 
 const statesList = [
   "D.I. Yogyakarta", "Bali", "East Java", "DKI Jakarta", "Banten",

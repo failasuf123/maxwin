@@ -38,9 +38,14 @@ function HotelListHomePage() {
           Selengkapnya &rarr;
         </a>
       </div>
-      <p className="text-gray-600 text-lg md:text-xl mb-5">
+      <p className="text-gray-600 text-lg md:text-xl mb-1 md:mb-5 flex flex-row justify-between items-center">
         Booking / Masukan Hotel Ke Rencana Trip Anda
+        <span className="text-xs md:text-sm font-light text-gray-500 hidden md:block ">*tersedia <span className="font-semibold">28.000+ </span>pilihan hotel</span>
       </p>
+      <div className=" mb-2 w-full flex justify-start items-center md:hidden">
+
+        <p className="text-xs md:text-sm font-light text-gray-400 ">* tersedia 28.000+ pilihan hotel</p>
+      </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-5">
       {hotels.map((hotel) => (

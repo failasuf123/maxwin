@@ -99,7 +99,7 @@ export default function HotelList() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-2">Hai! Mau menginap dimana?</h1>
+      <h1 className="text-2xl font-bold mb-2">Mau menginap dimana?</h1>
       <FilterHotel onFilter={handleFilter} />
       <hr className="w-full bg-gray-200 my-2 md:my-4" />
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-5">
