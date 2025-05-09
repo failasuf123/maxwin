@@ -22,6 +22,7 @@ import BannerAIBeta from "@/components/home/BannerAIBeta";
 import FooterHome from "@/components/home/FooterHome";
 import LocationAutocomplete from "@/components/service/LocalAutoComplate";
 import { useToast } from "@/hooks/use-toast";
+import HotelListHomePage from "@/components/hotel/HotelListHomePage";
 
 
 export default function Home() {
@@ -50,13 +51,13 @@ export default function Home() {
   const cities = [
     "di Jakarta",
     "di Bali",
-    "di Dieng",
-    "di Batu",
-    "di Bandung",
     "di Purwokerto",
+    "di Bandung",
     "di Jogja",
     "di Malang",
     "di Surabaya",
+    "di Dieng",
+    "di Batu",
   ];
   const handleLinkClick = () => {
     setIsLoading(true); // Activate loading
@@ -192,6 +193,10 @@ export default function Home() {
             <ItineraryListHome />
           </div>
 
+          <div className="mt-10">
+            <HotelListHomePage />
+          </div>
+          
           <div className="mt-10 md:mt-16">
             <BannerAIBeta />
           </div>

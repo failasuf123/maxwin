@@ -9,6 +9,58 @@ export const touristPlace = [
         "kota": "Wonosobo",
         "lokasi": "Dieng"
     },
+    {
+      "provinsi": "Bali",
+      "kota": "Badung",
+      "lokasi": "Kawasan Kuta"
+  },
+  {
+      "provinsi": "Bali",
+      "kota": "Gianyar",
+      "lokasi": "Ubud"
+  },
+  {
+    "provinsi": "Sumatera Utara",
+    "kota": "Samosir",
+    "lokasi": "Kawasan Danau Toba"
+  },
+  {
+      "provinsi": "Sumatera Barat",
+      "kota": "Bukittinggi",
+      "lokasi": "Lembah Harau"
+  },
+  {
+    "provinsi": "Kalimantan Timur",
+    "kota": "Berau",
+    "lokasi": "Kepulauan Derawan"
+  },
+  {
+    "provinsi": "Nusa Tenggara Barat",
+    "kota": "Lombok",
+    "lokasi": "Gili Trawangan"
+  },
+  {
+    "provinsi": "Bali",
+    "kota": "Klungkung",
+    "lokasi": "Nusa Penida"
+},
+{
+    "provinsi": "Bali",
+    "kota": "Klungkung",
+    "lokasi": "Nusa Lembongan"
+},
+{
+  "provinsi": "Maluku",
+  "kota": "Maluku Tengah",
+  "lokasi": "Banda Neira"
+},
+{
+  "provinsi": "Jawa Tengah",
+  "kota": "Jepara",
+  "lokasi": "Karimunjawa"
+}
+
+
 
 ]
 
@@ -114,6 +166,10 @@ export const cityProvinceList = [
       },
       {
         "provinsi":"Jogja",
+        "kota":[]
+      },
+      {
+        "provinsi":"Lombok",
         "kota":[]
       },
     

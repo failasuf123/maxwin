@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { UploadDropzone } from "@/app/utils/uploadthing";
 import GooglePlacesAutocomplete from "react-google-places-autocomplete";
 import { FaPen } from "react-icons/fa";
@@ -22,6 +22,8 @@ import { cn } from "@/lib/utils";
 import DatePicker from "@/components/edit/DatePicker";
 import { eachDayOfInterval, format } from "date-fns";
 import LocationAutocomplete from "../service/LocalAutoComplate";
+import { LuImagePlus } from "react-icons/lu";
+
 
 interface Data {
   title: string;
@@ -73,6 +75,8 @@ function HeaderUpper({
   const [totalDays, setTotalDays] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
 
+  const [isEditingCover, setIsEditingCover] = useState(false);
+
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -89,6 +93,19 @@ function HeaderUpper({
     setPublishState(data.publishState);
     setTotalPrice(data.totalPrice);
   }, [data]);
+
+  useEffect(() => {
+    if (showDateModal) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+  
+    // Cleanup saat komponen di-unmount
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, [showDateModal]);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
@@ -276,7 +293,7 @@ function HeaderUpper({
       {/* Header Upper */}
       <div className="w-full">
         <div>
-          {data.imageUrlCover ? (
+          {/* {data.imageUrlCover ? (
             <img
               src={data.imageUrlCover}
               alt="Trip Image"
@@ -292,6 +309,34 @@ function HeaderUpper({
                 if (res && res.length > 0) {
                   handleImageChange({ url: res[0].url, key: res[0].key });
                 }
+              }}
+              onUploadError={(error: Error) => {
+                console.error("Upload error:", error.message);
+              }}
+            />
+          )} */}
+
+          {data.imageUrlCover ? (
+            <div className="relative">
+              <img
+                src={imageUrlCover || "/placeholder.png"}
+                alt="Trip Image"
+                className="h-[340px] w-full object-cover rounded"
+              />
+              {/* Tombol Edit Cover */}
+              <Button
+                className="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white hover:bg-opacity-70 shadow-md rounded-xl borded-2 border-white px-3 py-1 flex flex-row gap-2 items-center"
+                onClick={() => setIsEditingCover(true)}
+              >
+               <LuImagePlus /> Edit Cover
+              </Button>
+            </div>
+          ) : (
+            <UploadDropzone
+              className="border-4 border-dashed border-blue-400 h-[340px] w-full"
+              endpoint="imageUploader"
+              onClientUploadComplete={async (res) => {
+                handleImageChange({ url: res[0].url, key: res[0].key });
               }}
               onUploadError={(error: Error) => {
                 console.error("Upload error:", error.message);
@@ -380,7 +425,9 @@ function HeaderUpper({
           </div>
           <div className="flex flex-col mt-3">
             <div className="font-semibold text-lg md:text-xl mt-3 text-gray-700 flex flex-row  justify-start items-center gap-1">
-              <h2 className="flex flex-row gap-2 mr-2 items-center text-center">🏙️ <span>Kota</span></h2>
+              <h2 className="flex flex-row gap-2 mr-2 items-center text-center">
+                🏙️ <span>Kota</span>
+              </h2>
               {/* <GooglePlacesAutocomplete
                 apiKey={process.env.NEXT_PUBLIC_GOOGLE_PLACE_API_KEY}
                 selectProps={{
@@ -522,7 +569,7 @@ function HeaderUpper({
 
       {/* Date Form Modal */}
       {showDateModal && (
-        <div className="fixed inset-0 px-5 py-5 flex items-center justify-center bg-gray-800 bg-opacity-75">
+        <div className="fixed inset-0 px-5 py-5 flex items-center justify-center bg-gray-800 bg-opacity-75 ">
           <div className="relative bg-white p-6 rounded-md shadow-lg space-y-4 w-full max-w-md">
             <button
               onClick={() => setShowDateModal(false)}
@@ -602,6 +649,30 @@ function HeaderUpper({
                 Publish
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* UploadDropzone saat mode edit aktif */}
+      {isEditingCover && (
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-4 rounded shadow-lg">
+            <UploadDropzone
+              className="border-2 border-dashed border-gray-300 p-6"
+              endpoint="imageUploader"
+              onClientUploadComplete={async (res) => {
+                handleImageChange({ url: res[0].url, key: res[0].key });
+              }}
+              onUploadError={(error: Error) => {
+                console.error("Upload error:", error.message);
+              }}
+            />
+            <Button
+              className="mt-2 w-full bg-red-500 text-white hover:bg-red-600"
+              onClick={() => setIsEditingCover(false)}
+            >
+              Batal
+            </Button>
           </div>
         </div>
       )}

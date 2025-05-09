@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogClose,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 
 type Todo = {
   type: string;
@@ -30,7 +30,7 @@ type Todo = {
 };
 
 type ContentWisataProps = Todo & {
-  onDelete: () => void; // Fungsi untuk handle delete
+  onDelete: () => void;
   onEdit: () => void;
 };
 
@@ -44,16 +44,27 @@ const ContentWisata = ({
   onDelete,
   onEdit,
 }: ContentWisataProps) => {
+  const isInvalidTime = timeStart >= timeEnd;
+
   return (
-    <div className="flex flex-col ">
-      <div className="p-3 rounded-lg flex flex-row items-center gap-4 relative ">
+    <div className="flex flex-col">
+      {/* Peringatan jika timeStart >= timeEnd */}
+      {isInvalidTime && (
+        <div className="mb">
+          <span className="text-[9px] md:text-xs text-red-600 ml-3">
+            ⚠️ Peringatan! Waktu selesai tidak boleh lebih awal atau sama dengan waktu mulai.
+          </span>
+        </div>
+      )}
+
+      <div className="p-3 rounded-lg flex flex-row items-center gap-4 relative">
         {/* Thumbnail */}
         <div className="flex flex-col items-center justify-start gap-2 relative">
           <div className="inline-flex items-center bg-black text-white text-xs font-medium px-3 py-1 rounded-full">
             🕒 {timeStart} - {timeEnd}
           </div>
 
-          <div className="w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32  rounded-lg overflow-hidden shadow-sm">
+          <div className="w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-lg overflow-hidden shadow-sm">
             <img
               src={image || "/placeholder.webp"}
               alt={name || "No Title"}
@@ -76,66 +87,61 @@ const ContentWisata = ({
                 currency: "IDR",
               })}
             </span>
-            {/* Time */}
           </div>
           <p className="text-xs md:text-sm text-gray-600 mt-3 hidden md:block">
             {description || "No description available."}
           </p>
         </div>
 
-        {/* Delete Button */}
-        {/* <div
-          className="absolute top-2 right-2 text-white bg-red-500 text-sm px-3 py-1 h-[28px] rounded-full cursor-pointer hover:bg-black"
-          onClick={onDelete}
-        >
-          x
-        </div> */}
+        {/* Popover (Menu Edit & Delete) */}
         <Popover>
           <PopoverTrigger asChild>
-            <div className="absolute top-2 right-2 text-black text-xl  text-sm px-3 py-3  rounded-full cursor-pointer hover:bg-gray-100">
+            <div className="absolute top-2 right-2 text-black text-xl text-sm px-3 py-3 rounded-full cursor-pointer hover:bg-gray-100">
               <HiDotsVertical />
             </div>
           </PopoverTrigger>
           <PopoverContent className="w-40">
-            <div className="flex flex-col ">
-              <div onClick={onEdit} className="hover:bg-gray-200 rounded-xl cursor-pointer px-2 py-2 flex flex-row text-gray-700 items-center gap-4 text-lg">
-                <FaPen className="text-sm"/> Edit
+            <div className="flex flex-col">
+              <div
+                onClick={onEdit}
+                className="hover:bg-gray-200 rounded-xl cursor-pointer px-2 py-2 flex flex-row text-gray-700 items-center gap-4 text-lg"
+              >
+                <FaPen className="text-sm" /> Edit
               </div>
-
               <hr className="w-full text-gray-300 my-1" />
-
-              {/* <div className="hover:bg-gray-200 rounded-xl cursor-pointer px-2 py-2 flex flex-row text-gray-700 items-center gap-4 text-lg text-red-400">
-                <FaTrash className="text-sm "/> Hapus
-              </div> */}
               <Dialog>
                 <DialogTrigger className="border-none outline-none focus:outline-none">
-                <div className="hover:bg-gray-200 rounded-xl cursor-pointer px-2 py-2 flex flex-row text-gray-700 items-center gap-4 text-lg text-red-400 border-none">
-                <FaTrash className="text-sm "/> Hapus
-              </div>
+                  <div className="hover:bg-gray-200 rounded-xl cursor-pointer px-2 py-2 flex flex-row text-gray-700 items-center gap-4 text-lg text-red-400 border-none">
+                    <FaTrash className="text-sm" /> Hapus
+                  </div>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Apakah Anda Yakin Menghapus Aktivitas Ini ?</DialogTitle>
+                    <DialogTitle>
+                      Apakah Anda Yakin Menghapus Aktivitas Ini?
+                    </DialogTitle>
                     <DialogDescription>
-                      Perhatian! Anda akan menghapus lokasi "{name}" dari rencana perjalanan anda.
+                      Perhatian! Anda akan menghapus lokasi "{name}" dari rencana perjalanan Anda.
                     </DialogDescription>
                   </DialogHeader>
-                <DialogFooter>
-                <DialogClose asChild>
-                  <button className="bg-red-500 rounded text-white border-none px-2 py-2 cursor-pointer hover:bg-red-600" onClick={onDelete}>Hapus Aktivitas</button>
-                </DialogClose>
-                </DialogFooter>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <button
+                        className="bg-red-500 rounded text-white border-none px-2 py-2 cursor-pointer hover:bg-red-600"
+                        onClick={onDelete}
+                      >
+                        Hapus Aktivitas
+                      </button>
+                    </DialogClose>
+                  </DialogFooter>
                 </DialogContent>
-
               </Dialog>
-
             </div>
           </PopoverContent>
         </Popover>
-
-
       </div>
 
+      {/* Deskripsi (Untuk Mobile) */}
       <div className="block md:hidden ml-8">
         <p className="text-xs text-gray-600 mt-1">
           {description || "No description available."}

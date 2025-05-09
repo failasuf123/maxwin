@@ -9,13 +9,13 @@ import Sidebar from "@/components/sidebar";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/toaster";
 import NavBar from "@/components/navbar/NavBar";
-
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://mauliburan.com"), // Tambahkan ini
   title: "Mauliburan - Rencana Wisata & Booking Hotel",
   description:
     "Buat rencana liburan, booking hotel, dan temukan pengalaman wisata terbaik di berbagai kota di Indonesia!",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     siteName: "Mauliburan",
     images: [
       {
-        url: "/malib-logo-circle.png",
+        url: "/malib-logo-circle.png", // Path relatif
         width: 1200,
         height: 630,
         alt: "Mauliburan - Rencana Wisata & Booking Hotel",
@@ -41,10 +41,9 @@ export const metadata: Metadata = {
     title: "Mauliburan - Rencana Wisata & Booking Hotel",
     description:
       "Buat rencana liburan, booking hotel, dan temukan pengalaman wisata terbaik di berbagai kota di Indonesia!",
-    images: ["/malib-logo-circle.png"],
+    images: ["/malib-logo-circle.png"], // Path relatif
   },
 };
-
 
 export default function RootLayout({
   children,
@@ -62,19 +61,12 @@ export default function RootLayout({
 
       <GoogleOAuthProvider clientId={clientId || ""}>
         <body className={inter.className}>
-          {/* <SidebarProvider> */}
-            {/* <AppSidebar /> */}
-            <div className="overflow-x-hidden w-screen">
-              
-              {/* <SidebarInset> */}
-                {/* <Header /> */}
-                <NavBar />
+          <div className="overflow-x-hidden w-screen">
+            <NavBar />
 
-                {children}
-              {/* </SidebarInset> */}
-            </div>
-            <Toaster  />
-          {/* </SidebarProvider> */}
+            {children}
+          </div>
+          <Toaster />
         </body>
       </GoogleOAuthProvider>
     </html>
