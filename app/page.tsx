@@ -24,13 +24,12 @@ import LocationAutocomplete from "@/components/service/LocalAutoComplate";
 import { useToast } from "@/hooks/use-toast";
 import HotelListHomePage from "@/components/hotel/HotelListHomePage";
 
-
 export default function Home() {
   const router = useRouter();
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
 
   const handleSearch = () => {
     if (!selectedCity) {
@@ -40,13 +39,16 @@ export default function Home() {
       });
       return;
     }
-  
+
     setIsLoading(true); // Activate loading
     setTimeout(() => {
-      router.push(`/explore/itinerary?city=${encodeURIComponent(selectedCity)}`);
+      router.push(
+        `/explore?city=${encodeURIComponent(selectedCity)}&cityId=${
+          selectedCityId !== null ? encodeURIComponent(selectedCityId) : ""
+        }`
+      );
     }, 500); // Simulate loading delay
   };
-  
 
   const cities = [
     "di Jakarta",
@@ -68,9 +70,7 @@ export default function Home() {
       {isLoading && (
         <div className="fixed inset-0 flex flex-col gap-3 items-center justify-center bg-white bg-opacity-50 z-50">
           <LoadingAnimationBlack />
-          <div>
-            Loading...
-          </div>
+          <div>Loading...</div>
         </div>
       )}
       {/* HERO SECTION */}
@@ -130,13 +130,14 @@ export default function Home() {
                 onChange={(e) => setSelectedCity(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
               /> */}
-
-        <LocationAutocomplete
-          onSelect={(city) => setSelectedCity(city)} // Simpan kota yang dipilih
-          typeProps="SearchTrip" // Contoh styling yang bisa diubah nantinya
-          initialCity=""
-        />
-
+              <LocationAutocomplete
+                onSelect={(city, cityId) => {
+                  setSelectedCity(city);
+                  setSelectedCityId(cityId || null); // Convert undefined to null
+                }}
+                typeProps="SearchTrip"
+                initialCity=""
+              />
             </div>
 
             <div className="items-center">
@@ -196,7 +197,7 @@ export default function Home() {
           <div className="mt-10">
             <HotelListHomePage />
           </div>
-          
+
           <div className="mt-10 md:mt-16">
             <BannerAIBeta />
           </div>
@@ -220,7 +221,7 @@ export default function Home() {
       </section>
 
       <section className="mt-10">
-        <FooterHome/>
+        <FooterHome />
       </section>
     </>
   );

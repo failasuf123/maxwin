@@ -20,8 +20,7 @@ export const saveUserToFirestore = async (user: any) => {
         content_creator: false,
       },
     });
-    console.log("User data saved to Firestore!");
   } else {
-    console.log("User already exists in Firestore.");
+    console.log("");
   }
 };

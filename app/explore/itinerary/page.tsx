@@ -15,28 +15,4 @@ return(
 
 );}
 
-  // return (
-  //   <Suspense >
-  //     <div className="max-w-screen px-5 md:px-8 lg:px-12 xl:px-16">
-  //       {cityParam && (
-  //         <ItineraryList searchParams={cityParam} typeParams={"explore-itinerary"} />
-  //       )}
-  //     </div>
-  //   </Suspense>
-  // );
-// }
-
-
-
-// import React from 'react'
-
-// function page() {
-//   return (
-//     <div>
-      
-//     </div>
-//   )
-// }
-
-// export default page
 

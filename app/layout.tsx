@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import NavBar from "@/components/navbar/NavBar";
+import FooterNavbar from "@/components/navbar/FootNavbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -65,6 +66,7 @@ export default function RootLayout({
             <NavBar />
 
             {children}
+            <FooterNavbar/>
           </div>
           <Toaster />
         </body>
