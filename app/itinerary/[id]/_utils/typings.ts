@@ -12,6 +12,10 @@ export type Itinerary = {
     dateStart?: Date;
     dateEnd?: Date;
     itineraries: ItineraryPerDay[];
+    budgeting?: {
+      budget: BudgetItem[];
+      expend: ExpendingItem[];
+    };
   };
   
   export type ItineraryPerDay = {
@@ -96,7 +100,12 @@ export type Itinerary = {
   
   export type Todo = HotelTodo | ActivityTodo | TransportationTodo;
   
-  export type TodoType = "hotel" | "activity" | "transportation";
+  export type TodoType = "hotel" | "activity" | "transportation"  | "Makan & minum" 
+  | "Belanja" 
+
+  | "Gaya hidup" 
+  | "Cadangan"
+  | "Lain-lain";;
 
   export type TransportationType =
   | "train"
@@ -111,4 +120,28 @@ export type Itinerary = {
   | "ride_hailing_bike"     // ✅ untuk Gojek bike, GrabBike, etc
   | "ferry"
   | "etc";
+  
+
+
+  // ================
+
+  export type BudgetItem = {
+    id: string;
+    index: string;
+    budgetName: string;
+    budget: number;
+    keterangan: string;
+  }
+
+  export type ExpendingItem = {
+    id: string;
+    index: string;
+    budgetName: string;
+    budget: number;
+    keterangan: string;
+    link?: string;
+    day?: string;
+    category?: string;
+  }
+
   

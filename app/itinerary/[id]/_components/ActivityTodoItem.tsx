@@ -3,14 +3,24 @@ import { GripVertical, Clock } from "lucide-react";
 import { TbPigMoney } from "react-icons/tb";
 import { FaRegClock } from "react-icons/fa6";
 import { TiDelete } from "react-icons/ti";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ActivityTodo } from "../_utils/typings";
 
 interface ActivityTodoItemProps {
   activityTodo: ActivityTodo;
   dayId: number;
   todoId: number;
-  updateActivity: (dayId: number, todoId: number, field: keyof ActivityTodo, value: string | boolean | number) => void;
+  todoIndex: number;
+  updateActivity: (
+    dayId: number,
+    todoId: number,
+    field: keyof ActivityTodo,
+    value: string | boolean | number
+  ) => void;
   confirmDelete: (dayId: number, todoId: number) => void;
   providedDraggableTodo: any;
 }
@@ -18,6 +28,7 @@ interface ActivityTodoItemProps {
 const ActivityTodoItem: React.FC<ActivityTodoItemProps> = ({
   activityTodo,
   dayId,
+  todoIndex,
   todoId,
   updateActivity,
   confirmDelete,
@@ -64,14 +75,23 @@ const ActivityTodoItem: React.FC<ActivityTodoItemProps> = ({
                   <input
                     type="time"
                     value={activityTodo.time_start || ""}
-                    onChange={(e) => updateActivity(dayId, todoId, "time_start", e.target.value)}
+                    onChange={(e) =>
+                      updateActivity(
+                        dayId,
+                        todoId,
+                        "time_start",
+                        e.target.value
+                      )
+                    }
                     className="bg-transparent text-sm text-gray-800 focus:outline-none cursor-pointer"
                   />
                   <p className="items-center text-sm text-gray-800">s.d.</p>
                   <input
                     type="time"
                     value={activityTodo.time_end || ""}
-                    onChange={(e) => updateActivity(dayId, todoId, "time_end", e.target.value)}
+                    onChange={(e) =>
+                      updateActivity(dayId, todoId, "time_end", e.target.value)
+                    }
                     className="bg-transparent text-sm text-gray-800 focus:outline-none cursor-pointer"
                   />
                 </div>
@@ -88,13 +108,28 @@ const ActivityTodoItem: React.FC<ActivityTodoItemProps> = ({
               </PopoverTrigger>
               <PopoverContent>
                 <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={activityTodo.isPayable}
-                      onChange={(e) => updateActivity(dayId, todoId, "isPayable", e.target.checked)}
-                    />
-                    <label>Ada biaya?</label>
+                  <div className="flex flex-col w-full gap-1">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={activityTodo.isPayable}
+                        onChange={(e) =>
+                          updateActivity(
+                            dayId,
+                            todoId,
+                            "isPayable",
+                            e.target.checked
+                          )
+                        }
+                      />
+                      <label>Ada biaya?</label>
+                    </div>
+                    <div className="w-full py-1 px-1 bg-yellow-50 text-[10px] text-gray-500 rounded flex gap-1 items-center justify-center">
+                      <div className="px-2  rounded-full bg-yellow-300 text-gray-600 ">
+                        i
+                      </div>{" "}
+                      Perkiraan biaya yang dihabiskan di tempat ini
+                    </div>
                   </div>
                   {activityTodo.isPayable && (
                     <div className="flex items-center gap-2">
@@ -102,7 +137,14 @@ const ActivityTodoItem: React.FC<ActivityTodoItemProps> = ({
                       <input
                         type="number"
                         value={activityTodo.cost || 0}
-                        onChange={(e) => updateActivity(dayId, todoId, "cost", parseInt(e.target.value) || 0)}
+                        onChange={(e) =>
+                          updateActivity(
+                            dayId,
+                            todoId,
+                            "cost",
+                            parseInt(e.target.value) || 0
+                          )
+                        }
                         className="border rounded px-2 py-1 w-full"
                       />
                     </div>
@@ -126,17 +168,27 @@ const ActivityTodoItem: React.FC<ActivityTodoItemProps> = ({
                 <div className="px-2  text-[8px] md:text-[10px] rounded-full bg-green-100 text-green-800 flex flex-row gap-1 items-center justify-center">
                   <div>Rp</div>
                   <div>
-                    {new Intl.NumberFormat("id-ID").format(activityTodo.cost || 0)}
+                    {new Intl.NumberFormat("id-ID").format(
+                      activityTodo.cost || 0
+                    )}
                   </div>
                 </div>
               )}
             </div>
           )}
 
-          <div className="mb-2">
+          <div className="mb-2 flex gap-2 items-center">
+            <div
+              className="text-[10px]  rounded-full  bg-gray-300 mb-2 flex w-4 h-4 flex  justify-center items-center text-white"
+            >
+              {todoIndex+1}
+            </div>
+
             <input
               value={activityTodo.nameTodo}
-              onChange={(e) => updateActivity(dayId, todoId, "nameTodo", e.target.value)}
+              onChange={(e) =>
+                updateActivity(dayId, todoId, "nameTodo", e.target.value)
+              }
               placeholder="Tempat wisata"
               className="w-full text-xs md:text-base font-medium text-gray-800 placeholder-gray-400 border-b border-gray-200 pb-2 focus:outline-none focus:border-blue-500"
             />
@@ -144,9 +196,11 @@ const ActivityTodoItem: React.FC<ActivityTodoItemProps> = ({
           <div className="">
             <textarea
               value={activityTodo.descriptionTodo || ""}
-              onChange={(e) => updateActivity(dayId, todoId, "descriptionTodo", e.target.value)}
-              placeholder="Tambahkan deskripsi..."
-              className="w-full p-2 text-[10px] md:text-sm text-gray-600 placeholder-gray-400 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+              onChange={(e) =>
+                updateActivity(dayId, todoId, "descriptionTodo", e.target.value)
+              }
+              placeholder="Tambahkan catatan..."
+              className="w-full p-1 md:p-2 text-[10px] md:text-sm text-gray-600 placeholder-gray-400 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
               rows={2}
             />
           </div>

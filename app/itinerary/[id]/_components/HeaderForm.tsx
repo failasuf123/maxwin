@@ -2,16 +2,31 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Itinerary, City } from "@/app/itinerary/_utils/typings";
+import { Itinerary, City } from "@/app/itinerary/[id]/_utils/typings";
 import { TiUpload } from "react-icons/ti";
 import { LuImagePlus } from "react-icons/lu";
 import LocationAutocomplete from "@/components/service/LocalAutoComplate";
+import { UploadDropzone } from "@/app/utils/uploadthing";
 
 const listTag = [
-  "Adventure", "Backpacking", "Beach", "Budget", "City", 
-  "Cultural", "Family", "Festival", "Foodie", "Historical",
-  "Honeymoon", "Luxury", "Mountain", "Nature", "Relaxation",
-  "Road Trip", "Solo", "Wildlife"
+  "Adventure",
+  "Backpacking",
+  "Beach",
+  "Budget",
+  "City",
+  "Cultural",
+  "Family",
+  "Festival",
+  "Foodie",
+  "Historical",
+  "Honeymoon",
+  "Luxury",
+  "Mountain",
+  "Nature",
+  "Relaxation",
+  "Road Trip",
+  "Solo",
+  "Wildlife",
 ];
 
 interface HeaderFormProps {
@@ -39,9 +54,21 @@ function HeaderForm({ initialData, onDataChange }: HeaderFormProps) {
   const tagInputRef = useRef<HTMLInputElement>(null);
   const tagDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Mekanisme terkait modal
+  const [modalUploadImg, setModalUploadImg] = useState(false);
+
   // --- Guard untuk mencegah infinite loop ---
   const isInitialMount = useRef(true);
   const isUpdatingFromInitialData = useRef(false);
+
+  // Modal Ref
+  const modalRef = useRef<HTMLDivElement>(null);
+  
+  // States untuk batasan dan feedback
+  const [cityError, setCityError] = useState<string | null>(null);
+  const [tagError, setTagError] = useState<string | null>(null);
+  const [showCityLimit, setShowCityLimit] = useState(false);
+  const [showTagLimit, setShowTagLimit] = useState(false);
   // -----------------------------------------
 
   useEffect(() => {
@@ -103,11 +130,20 @@ function HeaderForm({ initialData, onDataChange }: HeaderFormProps) {
   };
 
   const handleToggleTag = (tagToToggle: string) => {
+    // Cek batas tag saat menambah
+    if (!tags.includes(tagToToggle) && tags.length >= 3) {
+      setTagError("Maksimal 3 tag yang dapat dipilih");
+      setShowTagLimit(true);
+      setTimeout(() => setShowTagLimit(false), 3000);
+      return;
+    }
+
     setTags((prevTags) =>
       prevTags.includes(tagToToggle)
         ? prevTags.filter((t) => t !== tagToToggle)
         : [...prevTags, tagToToggle]
     );
+    setTagError(null);
   };
 
   const filteredListTags = listTag.filter((tag) =>
@@ -134,18 +170,27 @@ function HeaderForm({ initialData, onDataChange }: HeaderFormProps) {
 
   const handleAddCity = (cityName: string, cityId?: number) => {
     if (!cityName.trim()) return;
-    
+
+    // Cek batas kota
+    if (cities.length >= 5) {
+      // setCityError("Maksimal 5 kota yang dapat ditambahkan");
+      setShowCityLimit(true);
+      setTimeout(() => setShowCityLimit(false), 3000);
+      return;
+    }
+
     // Cek apakah kota sudah ada
     const cityExists = cities.some(
       (c) => c.cityName.toLowerCase() === cityName.trim().toLowerCase()
     );
-    
+
     if (!cityExists) {
       const newCity: City = {
         cityId: cityId || Date.now(),
         cityName: cityName.trim(),
       };
       setCities([...cities, newCity]);
+      setCityError(null);
     }
   };
 
@@ -153,9 +198,9 @@ function HeaderForm({ initialData, onDataChange }: HeaderFormProps) {
     setCities(cities.filter((city) => city.cityId !== cityIdToRemove));
   };
 
-  const triggerImageUpload = () => {
-    console.log("Tombol Upload Gambar diklik");
-    alert("Fitur upload gambar belum diimplementasikan.");
+  const handleImageChange = (url: string) => {
+    setImageCover(url);
+    setModalUploadImg(false);
   };
 
   return (
@@ -192,15 +237,15 @@ function HeaderForm({ initialData, onDataChange }: HeaderFormProps) {
         </div>
 
         <div
-          onClick={triggerImageUpload}
+          onClick={() => {setModalUploadImg(true)}}
           className="absolute bottom-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-white bg-black bg-opacity-50 rounded-xl px-4 py-2 hidden md:group-hover:flex cursor-pointer items-center flex-row gap-2 transition-all duration-300"
-        >
+          >
           <TiUpload />
           <p>Upload Gambar</p>
         </div>
 
         <div
-          onClick={triggerImageUpload}
+          onClick={() => {setModalUploadImg(true)}}
           className="absolute top-3 right-3 p-2 gap-1 flex md:hidden bg-black bg-opacity-50 rounded-lg text-white cursor-pointer"
         >
           <LuImagePlus size={20} />
@@ -210,8 +255,23 @@ function HeaderForm({ initialData, onDataChange }: HeaderFormProps) {
       <div className="w-full flex flex-row items-start gap-4 md:gap-5 lg:gap-7">
         {/* Input Kota dengan Autocomplete */}
         <div className="w-full gap-2 items-center flex flex-col">
+          <div className="w-full flex items-center justify-between md:mb-1">
+            <label className="text-[10px] text-xs font-medium text-gray-700">
+              Kota {cities.length > 0 && `(${cities.length}/5)`}
+            </label>
+            {showCityLimit && (
+              <span className="text-xs text-red-500 animate-pulse">
+                Maksimal 5 kota
+              </span>
+            )}
+          </div>
+          
           <div className="w-full flex items-center">
-            <div className="relative flex-1 flex items-center bg-gray-100 text-xs md:text-base px-3 border-2 border-gray-300 rounded-lg hover:bg-gray-200 hover:border-gray-400 transition-colors duration-200 shadow-sm">
+            <div className={`relative flex-1 flex items-center text-xs md:text-base px-3 border-2 rounded-lg transition-colors duration-200 shadow-sm ${
+              cities.length >= 5 
+                ? "bg-gray-100 border-gray-300 text-gray-400" 
+                : "bg-gray-100 border-gray-300 hover:bg-gray-200 hover:border-gray-400"
+            }`}>
               <svg
                 className="w-5 h-5 text-gray-500 mr-2"
                 fill="none"
@@ -240,9 +300,19 @@ function HeaderForm({ initialData, onDataChange }: HeaderFormProps) {
                 }}
                 typeProps="Itinerary"
                 initialCity=""
+                // disabled={cities.length >= 5}
               />
+              {cities.length >= 5 && (
+                <span className="ml-2 text-xs text-gray-500">
+                  (Maksimal tercapai)
+                </span>
+              )}
             </div>
           </div>
+
+          {/* {cityError && (
+            <p className="text-xs text-red-500 mt-1">{cityError}</p>
+          )} */}
 
           {/* Selected Cities */}
           <div className="flex flex-wrap gap-2 w-full">
@@ -275,11 +345,28 @@ function HeaderForm({ initialData, onDataChange }: HeaderFormProps) {
             ))}
           </div>
         </div>
-        
+
         {/* Input Tag */}
         <div className="w-1/2 gap-2 items-center flex flex-col">
+          <div className="w-full flex items-center justify-between md:mb-1">
+            <label className="text-[10px] md:text-xs font-medium text-gray-700">
+              Tag {tags.length > 0 && `(${tags.length}/3)`}
+            </label>
+            {showTagLimit && (
+              <span className="text-xs text-red-500 animate-pulse">
+                Maksimal 3 tag
+              </span>
+            )}
+          </div>
+          
           <div className="relative w-full">
-            <div className="relative flex items-center bg-gray-100 text-xs md:text-base px-3 border-2 border-gray-300 rounded-lg hover:bg-gray-200 hover:border-gray-400 transition-colors duration-200 shadow-sm">
+            <div className={`relative flex items-center bg-gray-100 text-xs md:text-base px-3 border-2 ${
+              tags.length >= 3 
+                ? "border-gray-300" 
+                : "border-gray-300 hover:border-gray-400"
+            } rounded-lg transition-colors duration-200 shadow-sm ${
+              tags.length < 3 ? "hover:bg-gray-200" : ""
+            }`}>
               <svg
                 className="w-5 h-5 text-gray-500 mr-2"
                 fill="none"
@@ -300,11 +387,13 @@ function HeaderForm({ initialData, onDataChange }: HeaderFormProps) {
                 id="tag-filter-input"
                 value={tagSearchQuery}
                 onChange={handleTagSearchChange}
-                onFocus={() => setIsTagDropdownOpen(true)}
-                placeholder="Kategori..."
+                onFocus={() => tags.length < 3 && setIsTagDropdownOpen(true)}
+                placeholder={tags.length >= 3 ? "Maksimal tag tercapai" : "Kategori..."}
                 className="w-full py-2 bg-transparent focus:outline-none placeholder-gray-500 text-gray-700"
+                disabled={tags.length >= 3}
               />
             </div>
+            
             {isTagDropdownOpen && (
               <div
                 ref={tagDropdownRef}
@@ -315,16 +404,25 @@ function HeaderForm({ initialData, onDataChange }: HeaderFormProps) {
                     <label
                       key={tagItem}
                       htmlFor={`checkbox-${tagItem.replace(/\s+/g, "-")}`}
-                      className={`flex items-center p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
+                      className={`flex items-center p-3 ${
+                        tags.length >= 3 && !tags.includes(tagItem) 
+                          ? "cursor-not-allowed opacity-50" 
+                          : "cursor-pointer hover:bg-gray-50"
+                      } ${
                         tags.includes(tagItem) ? "bg-blue-50" : ""
-                      }`}
+                      } transition-colors`}
                     >
                       <input
                         type="checkbox"
                         id={`checkbox-${tagItem.replace(/\s+/g, "-")}`}
                         checked={tags.includes(tagItem)}
-                        onChange={() => handleToggleTag(tagItem)}
+                        onChange={() => {
+                          if (tags.length < 3 || tags.includes(tagItem)) {
+                            handleToggleTag(tagItem);
+                          }
+                        }}
                         className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        disabled={tags.length >= 3 && !tags.includes(tagItem)}
                       />
                       <span className="ml-3 text-sm font-medium text-gray-700">
                         {tagItem}
@@ -340,12 +438,16 @@ function HeaderForm({ initialData, onDataChange }: HeaderFormProps) {
             )}
           </div>
 
+          {tagError && (
+            <p className="text-xs text-red-500 mt-1">{tagError}</p>
+          )}
+
           {/* Selected Tags */}
           <div className="flex flex-wrap gap-2 w-full">
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center px-2 md:px-3 py-1 rounded-full text-[7px] md:text-[10px] font-medium bg-blue-100 text-blue-800 s"
+                className="inline-flex items-center px-2 md:px-3 py-1 rounded-full text-[7px] md:text-[10px] font-medium bg-blue-100 text-blue-800"
               >
                 {tag}
                 <button
@@ -372,6 +474,59 @@ function HeaderForm({ initialData, onDataChange }: HeaderFormProps) {
           </div>
         </div>
       </div>
+
+      {modalUploadImg && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div 
+            ref={modalRef}
+            className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden"
+          >
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Unggah Gambar Cover</h3>
+              <button 
+                onClick={() => setModalUploadImg(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-4">
+              <UploadDropzone
+                endpoint="imageUploader"
+                onClientUploadComplete={(res) => {
+                  if (res && res.length > 0) {
+                    handleImageChange(res[0].url);
+                  }
+                }}
+                onUploadError={(error: Error) => {
+                  console.error("Upload error:", error.message);
+                  alert(`Upload failed: ${error.message}`);
+                }}
+                appearance={{
+                  container: "border-2 border-dashed border-blue-400 cursor-pointer",
+                  uploadIcon: "text-blue-500",
+                  label: "text-blue-600 font-medium",
+                  button: "bg-blue-600 text-white px-4 py-2 rounded-md mt-2 ut-ready:bg-blue-600 ut-uploading:bg-blue-400",
+                  allowedContent: "text-gray-500 text-sm"
+                }}
+              />
+            </div>
+            
+            <div className="p-4 bg-gray-50 flex justify-end">
+              <button
+                onClick={() => setModalUploadImg(false)}
+                className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium"
+              >
+                Batal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

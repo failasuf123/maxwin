@@ -164,7 +164,7 @@ export default function Hotel({
   return (
     <>
       <ScrollArea className="min-h-screen w-full rounded-md border pb-12">
-        <div className="w-full mx-4 min-h-screen px-4">
+        <div className="w-full mx-4 min-h-screen pl-5 pr-10 md:pl-4 md:pr-4 ">
           <div className="text-gray-800 font-bold text-2xl md:text-4xl my-2">
             <h2>Mau menginap dimana?</h2>
           </div>

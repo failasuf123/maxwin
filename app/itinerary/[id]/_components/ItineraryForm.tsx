@@ -52,6 +52,7 @@ import { MdPlace, MdHotel } from "react-icons/md";
 interface ItineraryFormProps {
   onDataChange: (data: ItineraryPerDay[]) => void;
   cities: City[] | undefined;
+  initialDaysData: ItineraryPerDay[]; 
 }
 
 // Helper function to create properly typed ActivityTodo
@@ -67,12 +68,14 @@ const createActivityTodo = (id_order_todo: number): ActivityTodo => ({
 export default function ItineraryForm({
   onDataChange,
   cities,
+  initialDaysData,
 }: ItineraryFormProps) {
-  const [days, setDays] = useState<ItineraryPerDay[]>([]);
-  const [isClient, setIsClient] = useState(false);
+  const [days, setDays] = useState<ItineraryPerDay[]>(initialDaysData);
+    const [isClient, setIsClient] = useState(false);
   const [showTodoModal, setShowTodoModal] = useState(false);
   const [listCityId, setListCityId] = useState<number[]>([]);
   const [currentDayId, setCurrentDayId] = useState<number | null>(null);
+  const [totalEstimatedCost, setTotalEstimatedCost] = useState<number> (0);
 
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     dayId: number;
@@ -82,15 +85,26 @@ export default function ItineraryForm({
 
   useEffect(() => {
     setIsClient(true);
-    setDays([
-      {
-        uniqueId: uuidv4(),
-        id_order_day: 1,
-        day: 1,
-        todos: [createActivityTodo(1)],
-      },
-    ]);
   }, []);
+
+  useEffect(() => {
+    const calculateTotalCost = () => {
+      let total = 0;
+      
+      days.forEach(day => {
+        day.todos.forEach(todo => {
+          // Only include payable todos with valid cost
+          if (todo.isPayable && typeof todo.cost === 'number' && !isNaN(todo.cost)) {
+            total += todo.cost;
+          }
+        });
+      });
+      
+      setTotalEstimatedCost(total);
+    };
+
+    calculateTotalCost();
+  }, [days]); // Recalculate when days change
 
   useEffect(() => {
     if (cities) {
@@ -180,6 +194,8 @@ export default function ItineraryForm({
     );
   };
 
+  
+
   const updateActivity = (
     dayId: number,
     todoId: number,
@@ -189,6 +205,7 @@ export default function ItineraryForm({
     setDays(
       days.map((day) => {
         if (day.id_order_day !== dayId) return day;
+        
         return {
           ...day,
           todos: day.todos.map((todo) =>
@@ -294,9 +311,9 @@ export default function ItineraryForm({
 
   return (
     <>
-      <div className="w-full py-6 w-full md:w-3/4 lg:w-3/4 justify-start items-start">
+      <div className="w-full pb-24 pt-1 md:pb-6 md:pt-6 w-full md:w-3/4 lg:w-3/4 justify-start items-start">
         {/* Tombol untuk membuka/tutup semua accordion */}
-        <div className="flex justify-end md:justify-start mb-4">
+        <div className="flex justify-between items-center mb-4">
           <Button
             onClick={toggleAllAccordions}
             variant="outline"
@@ -314,6 +331,11 @@ export default function ItineraryForm({
               </>
             )}
           </Button>
+
+          <div className="flex text-[10px] md:text-sm gap-2 md:gap-3">
+            <div>Total biaya:</div>
+            <div className="font-semibold">Rp {totalEstimatedCost.toLocaleString('id-ID')}</div>
+          </div>
         </div>
 
         <DragDropContext onDragEnd={onDragEnd}>
@@ -362,12 +384,11 @@ export default function ItineraryForm({
                               <div className="flex items-center gap-2">
                                 <Popover>
                                   <PopoverTrigger asChild>
-                                    <Button
-                                      size="sm"
-                                      className="text-[10px] md:text-sm bg-gray-800 hover:bg-gray-700 text-white"
+                                    <button
+                                      className="text-[10px] md:text-sm bg-gray-800 hover:bg-gray-700 text-white rounded px-2 py-2 md:px-3 md:py-2 rounded"
                                     >
                                       + Aktivitas
-                                    </Button>
+                                    </button>
                                   </PopoverTrigger>
                                   <PopoverContent className="w-48">
                                     <div className="flex flex-col gap-1 items-start justify-start">
@@ -423,17 +444,19 @@ export default function ItineraryForm({
                                                 updateActivity={updateActivity}
                                                 confirmDelete={confirmDelete}
                                                 providedDraggableTodo={providedDraggableTodo}
-                                              />
-                                            );
-                                          } else if (todo.typeTodo === "hotel") {
-                                            return (
-                                              <HotelTodoItem
-                                                hotelTodo={todo as HotelTodo}
-                                                dayId={day.id_order_day}
-                                                todoId={todo.id_order_todo}
-                                                updateActivity={updateActivity}
-                                                confirmDelete={confirmDelete}
-                                                providedDraggableTodo={providedDraggableTodo}
+                                                todoIndex = {todoIndex}
+                                                />
+                                                );
+                                              } else if (todo.typeTodo === "hotel") {
+                                                return (
+                                                  <HotelTodoItem
+                                                  hotelTodo={todo as HotelTodo}
+                                                  dayId={day.id_order_day}
+                                                  todoId={todo.id_order_todo}
+                                                  updateActivity={updateActivity}
+                                                  confirmDelete={confirmDelete}
+                                                  providedDraggableTodo={providedDraggableTodo}
+                                                  todoIndex = {todoIndex}
                                               />
                                             );
                                           }

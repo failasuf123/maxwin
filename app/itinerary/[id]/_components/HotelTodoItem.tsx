@@ -2,11 +2,13 @@ import React from "react";
 import { GripVertical } from "lucide-react";
 import { TiDelete } from "react-icons/ti";
 import { ActivityTodo, HotelTodo } from "../_utils/typings";
+import { useRouter } from "next/navigation";
 
 interface HotelTodoItemProps {
   hotelTodo: HotelTodo;
   dayId: number;
   todoId: number;
+  todoIndex: number;
   updateActivity: (
     dayId: number,
     todoId: number,
@@ -21,11 +23,19 @@ const HotelTodoItem: React.FC<HotelTodoItemProps> = ({
   hotelTodo,
   dayId,
   todoId,
+  todoIndex,
   updateActivity,
   confirmDelete,
   providedDraggableTodo,
 }) => {
   const hasCost = hotelTodo.isPayable && hotelTodo.cost;
+
+  
+
+  const onClickPesanHotel = (hotelLink: string) => {
+    window.open(hotelLink, '_blank', 'noopener,noreferrer');
+
+  };
 
   return (
     <div
@@ -62,7 +72,7 @@ const HotelTodoItem: React.FC<HotelTodoItemProps> = ({
             <img
               src={hotelTodo.imgTodoUrl}
               alt={hotelTodo.nameTodo}
-              className="w-18 h-18 md:w-24 md:h-24 object-cover rounded-xl"
+              className="w-16 h-16 md:w-24 md:h-24 object-cover rounded-xl"
             />
           ) : (
             <div className="text-gray-400 text-2xl">🏨</div>
@@ -70,7 +80,6 @@ const HotelTodoItem: React.FC<HotelTodoItemProps> = ({
         </div>
 
         <div className="flex-1 p-1 md:p-4">
-
           <div className="w-full flex flex-row items-center justify-end gap-2">
             <div className="px-2 py-0 text-[8px] md:text-[10px] rounded-full bg-yellow-100 text-yellow-800 flex flex-row gap-2 items-center justify-center">
               <div>{"⭐".repeat(hotelTodo.starRating)}</div>
@@ -85,7 +94,13 @@ const HotelTodoItem: React.FC<HotelTodoItemProps> = ({
               </div>
             )}
           </div>
-          <div className="mb-1">
+          <div className="mb-1 flex flex-row  gap-2 items-center">
+          <div
+              className="text-[10px]  rounded-full  bg-gray-300 mb-2 flex w-4 h-4 flex  justify-center items-center text-white"
+            >
+              {todoIndex+1}
+            </div>
+
             <input
               value={hotelTodo.nameTodo}
               onChange={(e) =>
@@ -96,25 +111,25 @@ const HotelTodoItem: React.FC<HotelTodoItemProps> = ({
             />
           </div>
 
-
           <div className="">
             <textarea
               value={hotelTodo.descriptionTodo || ""}
               onChange={(e) =>
                 updateActivity(dayId, todoId, "descriptionTodo", e.target.value)
               }
-              placeholder="Tambahkan deskripsi hotel..."
-              className="w-full p-2 text-[10px] md:text-sm text-gray-600 placeholder-gray-400 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+              placeholder="Tambahkan catatan..."
+              className="w-full p-1 md:p-2 text-[10px] md:text-sm text-gray-600 placeholder-gray-400 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
               rows={2}
             />
           </div>
-          
+
           <div className="w-full items-center flex flex-row justify-end mt-1">
-            <div className="px-2 md:px-5 py-1 text-white bg-cyan-700 rounded-xl cursor-pointer hover:bg-gray-800">
+            <div
+              onClick={() =>  (onClickPesanHotel(hotelTodo.landingURL))} 
+              className="px-2 md:px-5 py-1 text-white bg-cyan-700 rounded-xl cursor-pointer hover:bg-gray-800">
               + Pesan Hotel
             </div>
           </div>
-
         </div>
       </div>
     </div>
