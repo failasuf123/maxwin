@@ -144,4 +144,14 @@ export type Itinerary = {
     category?: string;
   }
 
+  export type ActivityRecommendation = {
+    nama: string;
+    deskripsi: string;
+    akses_lokasi: string;
+    icon: string;
+    estimated_cost: number;
+    keterangan: string;
+    cityId: number;
+  }
+
   

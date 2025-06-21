@@ -46,4 +46,27 @@ Format hasil akhir harus berupa **JSON valid**, bahasa menggunakan Indonesia dan
   ]
 }
 `;
-export { cityPlaceholder, AI_PROMPT, AI_PROMPT_CITY };
+
+const AI_PROMPT_ACTIVITY = `Buatkan daftar berisi 25 hingga 40 entri yang terdiri dari aktivitas atau tempat wisata di kota {city}. Prioritaskan **tempat wisata** dibandingkan aktivitas. Jika tidak dapat memenuhi kuota minimal 25 entri dari dalam kota, tambahkan dari kota-kota tetangga terdekat yang masih berada dalam wilayah atau sekitar Kota , misalkan untuk kota Purwokerto (contoh: Banyumas, Baturraden, Purbalingga dsb). Ingat dalam konteks ini yang dicari adalah kota {city} bukan kota Purwokerto. Kota Purwokerto hanyalah contoh untuk memudahkan pemahaman anda terkait konteks dan output
+
+Setiap entri harus ditampilkan dalam format JSON dengan struktur berikut:
+
+{
+  "nama": string,                     // Nama aktivitas atau tempat wisata
+  "deskripsi": string,               // Deskripsi singkat tentang tempat atau aktivitas
+  "akses_lokasi": string,            // Cara akses dari Stasiun, Terminal, atau pusat kota (contoh: "30 menit dari Stasiun Purwokerto naik angkot jalur 3, 45 menit dari pusat kota")
+  "icon": string,                    // Pilih satu dari: ["mountain", "landscape", "water", "city", "museum", "park", "terrain"]
+  "estimated_cost": integer,         // Estimasi total biaya (dalam Rupiah, integer saja) untuk menikmati aktivitas (termasuk tiket, makan, belanja, transportasi lokal)
+  "keterangan": string               // Informasi tambahan jika ada (misalnya waktu buka, apakah cocok untuk keluarga, tips, dll)
+}
+
+Ketentuan tambahan:
+- Semua teks **harus dalam bahasa Indonesia yang natural dan mudah dipahami**.
+- Data yang diberikan **harus realistis** berdasarkan kondisi umum dan informasi publik yang tersedia.
+- Hindari pengulangan aktivitas yang serupa.
+- Untuk **aktivitas**, prioritaskan yang bersifat umum dan bisa dinikmati oleh wisatawan (bukan aktivitas harian warga lokal).
+- Jangan menampilkan data yang kosong/null untuk properti apa pun.
+
+Output langsung dalam bentuk **array JSON**, tanpa penjelasan atau tambahan teks lain di luar itu.
+`
+export { cityPlaceholder, AI_PROMPT, AI_PROMPT_CITY, AI_PROMPT_ACTIVITY };

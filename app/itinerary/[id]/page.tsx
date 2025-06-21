@@ -111,18 +111,7 @@ function CreateItineraryPage() {
     console.log(daysData);
   };
 
-  // Fungsi untuk menghitung total biaya (opsional)
-  const calculateTotalCost = (days: ItineraryDaysData): number => {
-    return days.reduce((total, day) => {
-      const dayCost = day.todos.reduce((dayTotal, todo) => {
-        if (todo.isPayable && todo.cost) {
-          return dayTotal + todo.cost;
-        }
-        return dayTotal;
-      }, 0);
-      return total + dayCost;
-    }, 0);
-  };
+
 
   return (
     <div className="w-full min-h-screen relative">

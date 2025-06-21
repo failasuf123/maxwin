@@ -12,6 +12,7 @@ import {
   Plus,
   ChevronDown,
   ChevronUp,
+  MapPin,
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { TiDelete } from "react-icons/ti";
@@ -22,6 +23,7 @@ import {
   ItineraryPerDay,
   HotelTodo,
   HotelAgodaAPI,
+  ActivityRecommendation,
 } from "../_utils/typings";
 import {
   Popover,
@@ -47,13 +49,120 @@ import { AnimatePresence, motion } from "framer-motion";
 import Hotel from "./hotel/Hotel";
 import ActivityTodoItem from "./ActivityTodoItem";
 import HotelTodoItem from "./HotelTodoItem";
-import { MdPlace, MdHotel } from "react-icons/md";
+import { MdPlace, MdHotel, MdMenu, MdClose } from "react-icons/md";
+import { AI_PROMPT_ACTIVITY } from "@/app/constants/option";
+import { chatSession } from "@/app/service/AIModelCityActivity";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "@/app/service/firebaseConfig";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 interface ItineraryFormProps {
   onDataChange: (data: ItineraryPerDay[]) => void;
   cities: City[] | undefined;
-  initialDaysData: ItineraryPerDay[]; 
+  initialDaysData: ItineraryPerDay[];
 }
+
+// Tipe khusus untuk mengatasi masalah konflik tipe data
+type FixedActivityRecommendation = Omit<ActivityRecommendation, 'cityId'> & {
+  cityId: number;
+  uniqueId: string;
+};
+
+const dataActivityRecommendation = async (cityList: City[]) => {
+  const cityIds = cityList.map((city) => city.cityId.toString());
+
+  const q = query(
+    collection(db, "CityActivity"),
+    where("__name__", "in", cityIds)
+  );
+
+  const querySnapshot = await getDocs(q);
+
+  const existingDocs = new Map<string, any>();
+  querySnapshot.forEach((docSnap) => {
+    existingDocs.set(docSnap.id, docSnap.data());
+  });
+
+  const allParsedData: FixedActivityRecommendation[] = [];
+
+  for (const city of cityList) {
+    const cityId = city.cityId.toString();
+
+    if (existingDocs.has(cityId)) {
+      console.log(`✅ Data sudah ada untuk ${city.cityName}`);
+
+      const firestoreData = existingDocs.get(cityId);
+
+      try {
+        const parsedData: any[] = JSON.parse(firestoreData.data);
+        
+        // Konversi data ke tipe yang benar
+        const fixedData = parsedData.map(activity => ({
+          ...activity,
+          cityId: parseInt(cityId), // Konversi ke number
+          uniqueId: uuidv4()
+        }));
+        
+        allParsedData.push(...fixedData);
+      } catch (err) {
+        console.error("[Firestore] Failed to parse cached data:", err);
+        const newData = await aiActivityPrompt(city.cityName, cityId);
+        if (newData) {
+          allParsedData.push(...newData);
+        }
+      }
+    } else {
+      console.log(
+        `⚠️ Data belum ada untuk ${city.cityName}, generate pakai AI...`
+      );
+      const newData = await aiActivityPrompt(city.cityName, cityId);
+      if (newData) {
+        const newDataWithId = newData.map(activity => ({
+          ...activity,
+          uniqueId: uuidv4() 
+        }));
+        allParsedData.push(...newData);
+      }
+    }
+  }
+
+  return allParsedData;
+};
+
+const aiActivityPrompt = async (cityName: string, cityId: string) => {
+  const PROMPT_ACTIVITY_CITY = AI_PROMPT_ACTIVITY.replace("{city}", cityName);
+  const result = await chatSession.sendMessage(PROMPT_ACTIVITY_CITY);
+  const data_result = result?.response.text();
+
+  if (!data_result) {
+    console.error("No response from AI");
+    return null;
+  }
+
+  console.log(`Hasil untuk ${cityName}:`, data_result);
+
+  try {
+    const parsedData: any[] = JSON.parse(data_result);
+    
+    // Konversi data ke tipe yang benar
+    const activitiesWithCityId = parsedData.map(activity => ({
+      ...activity,
+      cityId: parseInt(cityId) // Konversi ke number
+    }));
+
+    await setDoc(doc(db, "CityActivity", cityId), {
+      cityId: cityId,
+      city: cityName,
+      data: data_result,
+      createdAt: new Date(),
+    });
+
+    return activitiesWithCityId;
+  } catch (err) {
+    console.error("Failed to parse AI response:", err);
+    return null;
+  }
+};
 
 // Helper function to create properly typed ActivityTodo
 const createActivityTodo = (id_order_todo: number): ActivityTodo => ({
@@ -65,46 +174,269 @@ const createActivityTodo = (id_order_todo: number): ActivityTodo => ({
   descriptionTodo: "",
 });
 
+// Komponen Modal Rekomendasi
+interface ActivityRecommendationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  recommendations: FixedActivityRecommendation[];
+  cities: City[];
+  days: ItineraryPerDay[];
+  onAddActivity: (dayId: number, activity: FixedActivityRecommendation) => void;
+}
+
+interface ActivityRecommendationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  recommendations: FixedActivityRecommendation[];
+  cities: City[];
+  days: ItineraryPerDay[];
+  onAddActivity: (dayId: number, activity: FixedActivityRecommendation) => void;
+}
+
+const ActivityRecommendationModal: React.FC<ActivityRecommendationModalProps> = ({
+  isOpen,
+  onClose,
+  recommendations,
+  cities,
+  days,
+  onAddActivity,
+}) => {
+  const [selectedCityFilter, setSelectedCityFilter] = useState<number | "all">(
+    "all"
+  );
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    // Periksa ukuran layar saat komponen dimount dan saat resize
+    const checkIfDesktop = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+
+    checkIfDesktop(); // Set initial value
+    window.addEventListener('resize', checkIfDesktop);
+    
+    return () => window.removeEventListener('resize', checkIfDesktop);
+  }, []);
+
+  if (!isOpen) return null;
+
+  // Filter aktivitas berdasarkan kota
+  const filteredActivities =
+    selectedCityFilter === "all"
+      ? recommendations
+      : recommendations.filter((a) => a.cityId === selectedCityFilter);
+
+  return (
+    <AnimatePresence>
+      {/* Overlay background */}
+      <motion.div
+        className="fixed inset-0 z-50 bg-black bg-opacity-50"
+        onClick={onClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+      ></motion.div>
+
+      {/* Modal content */}
+      <motion.div
+        className={`fixed z-50 bg-white ${
+          isDesktop 
+            ? "top-0 right-0 h-full w-full md:w-1/2 lg:w-1/3" // Desktop: di kanan, lebar 1/3
+            : "bottom-0 left-0 right-0 h-4/5" // Mobile: dari bawah
+        }`}
+        initial={
+          isDesktop
+            ? { x: "100%" }
+            : { y: "100%" }
+        }
+        animate={
+          isDesktop
+            ? { x: 0 }
+            : { y: 0 }
+        }
+        exit={
+          isDesktop
+            ? { x: "100%" }
+            : { y: "100%" }
+        }
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
+        <div className="h-full flex flex-col">
+          <div className="p-4 border-b flex justify-between items-center">
+            <h2 className="text-xl font-bold">Rekomendasi Aktivitas</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 text-lg"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Filter Kota */}
+          <div className="p-4 border-b">
+            <label className="mr-3">Filter Kota:</label>
+            <select
+              value={selectedCityFilter}
+              onChange={(e) =>
+                setSelectedCityFilter(
+                  e.target.value === "all" ? "all" : parseInt(e.target.value)
+                )
+              }
+              className="border rounded px-3 py-1"
+            >
+              <option value="all">Semua Kota</option>
+              {cities.map((city) => (
+                <option key={city.cityId} value={city.cityId}>
+                  {city.cityName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Daftar Aktivitas - Scrollable */}
+          <div className="flex-1 overflow-y-auto p-4">
+            {filteredActivities.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">
+                Tidak ada rekomendasi untuk kota yang dipilih
+              </p>
+            ) : (
+              <div className={`space-y-4 ${isDesktop ? "" : "grid grid-cols-1 md:grid-cols-2 gap-4"}`}>
+                {filteredActivities.map((activity) => (
+                  <div
+                    key={activity.uniqueId}
+                    className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${
+                      isDesktop ? "w-full" : ""
+                    }`}
+                  >
+                    <div className="flex justify-between">
+                      <h3 className="font-bold text-lg">{activity.nama}</h3>
+                      <span className="bg-gray-100 px-2 py-1 rounded text-sm">
+                        Rp {activity.estimated_cost.toLocaleString("id-ID")}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-2">
+                      {activity.deskripsi}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      {activity.keterangan}
+                    </p>
+                    <div className="mt-4 flex items-center justify-between">
+                      <div className="text-xs text-gray-500 flex items-center">
+                        <MapPin size={14} className="mr-1" />
+                        {cities.find((c) => c.cityId === activity.cityId)
+                          ?.cityName || "Unknown City"}
+                      </div>
+                      <div className="flex items-center">
+                        <select
+                          className="border rounded px-2 py-1 text-sm mr-2"
+                          defaultValue=""
+                          data-activity={`${activity.cityId}-${activity.nama}`}
+                        >
+                          <option value="" disabled>
+                            Pilih Hari
+                          </option>
+                          {days.map((day) => (
+                            <option
+                              key={day.uniqueId}
+                              value={day.id_order_day}
+                            >
+                              Hari {day.day}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => {
+                            const select = document.querySelector(
+                              `select[data-activity="${activity.cityId}-${activity.nama}"]`
+                            ) as HTMLSelectElement;
+                            if (select && select.value) {
+                              onAddActivity(
+                                parseInt(select.value),
+                                activity
+                              );
+                            }
+                          }}
+                          className="bg-gray-800 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm"
+                        >
+                          Tambah
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 export default function ItineraryForm({
   onDataChange,
   cities,
   initialDaysData,
 }: ItineraryFormProps) {
   const [days, setDays] = useState<ItineraryPerDay[]>(initialDaysData);
-    const [isClient, setIsClient] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const [showTodoModal, setShowTodoModal] = useState(false);
   const [listCityId, setListCityId] = useState<number[]>([]);
   const [currentDayId, setCurrentDayId] = useState<number | null>(null);
-  const [totalEstimatedCost, setTotalEstimatedCost] = useState<number> (0);
-
+  const [totalEstimatedCost, setTotalEstimatedCost] = useState<number>(0);
+  const [activityRecommendations, setActivityRecommendations] = useState<
+    FixedActivityRecommendation[]
+  >([]);
+  const [showRecommendationModal, setShowRecommendationModal] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     dayId: number;
     todoId: number;
   } | null>(null);
   const [accordionState, setAccordionState] = useState<string[]>([]);
+  const [isNavOpen, setIsNavOpen] = useState(true);
+
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  // Load rekomendasi ketika cities berubah
+  useEffect(() => {
+    const loadRecommendations = async () => {
+      if (cities && cities.length > 0) {
+        const data = await dataActivityRecommendation(cities);
+        if (data) {
+          setActivityRecommendations(data);
+        }
+      }
+    };
+
+    loadRecommendations();
+  }, [cities]);
+
   useEffect(() => {
     const calculateTotalCost = () => {
       let total = 0;
-      
-      days.forEach(day => {
-        day.todos.forEach(todo => {
+
+      days.forEach((day) => {
+        day.todos.forEach((todo) => {
           // Only include payable todos with valid cost
-          if (todo.isPayable && typeof todo.cost === 'number' && !isNaN(todo.cost)) {
+          if (
+            todo.isPayable &&
+            typeof todo.cost === "number" &&
+            !isNaN(todo.cost)
+          ) {
             total += todo.cost;
           }
         });
       });
-      
+
       setTotalEstimatedCost(total);
     };
 
     calculateTotalCost();
-  }, [days]); // Recalculate when days change
+  }, [days]);
 
   useEffect(() => {
     if (cities) {
@@ -194,8 +526,6 @@ export default function ItineraryForm({
     );
   };
 
-  
-
   const updateActivity = (
     dayId: number,
     todoId: number,
@@ -205,7 +535,7 @@ export default function ItineraryForm({
     setDays(
       days.map((day) => {
         if (day.id_order_day !== dayId) return day;
-        
+
         return {
           ...day,
           todos: day.todos.map((todo) =>
@@ -305,6 +635,41 @@ export default function ItineraryForm({
     }
   };
 
+  const addActivityFromRecommendation = (
+    dayId: number,
+    activity: FixedActivityRecommendation
+  ) => {
+    setDays(
+      days.map((day) => {
+        if (day.id_order_day !== dayId) return day;
+
+        const nextTodoId =
+          day.todos.length > 0
+            ? Math.max(...day.todos.map((t) => t.id_order_todo)) + 1
+            : 1;
+
+        // Gabungkan deskripsi, akses lokasi, dan keterangan
+        const fullDescription = `${activity.deskripsi}\n\nAkses Lokasi: ${activity.akses_lokasi}\n\nKeterangan: ${activity.keterangan}`;
+
+        const newActivity: ActivityTodo = {
+          id_order_todo: nextTodoId,
+          uniqueId: uuidv4(),
+          nameTodo: activity.nama,
+          typeTodo: "activity",
+          isPayable: activity.estimated_cost > 0,
+          cost: activity.estimated_cost,
+          descriptionTodo: fullDescription,
+          location: activity.akses_lokasi,
+        };
+
+        return {
+          ...day,
+          todos: [...day.todos, newActivity],
+        };
+      })
+    );
+  };
+
   if (!isClient) {
     return null;
   }
@@ -312,31 +677,46 @@ export default function ItineraryForm({
   return (
     <>
       <div className="w-full pb-24 pt-1 md:pb-6 md:pt-6 w-full md:w-3/4 lg:w-3/4 justify-start items-start">
-        {/* Tombol untuk membuka/tutup semua accordion */}
-        <div className="flex justify-between items-center mb-4">
+        {/* Tombol untuk membuka/tutup semua accordion dan tombol rekomendasi */}
+        <div className="flex justify-between items-center  w-full text-[9px] md:text-base">
           <Button
             onClick={toggleAllAccordions}
             variant="outline"
-            className="flex items-center gap-2"
+            className="flex items-center gap-1"
           >
             {accordionState.length === days.length ? (
               <>
-                <ChevronUp size={16} />
+                <ChevronUp size={14} />
                 <span>Tutup Semua Hari</span>
               </>
             ) : (
               <>
-                <ChevronDown size={16} />
+                <ChevronDown size={14} />
                 <span>Buka Semua Hari</span>
               </>
             )}
           </Button>
 
-          <div className="flex text-[10px] md:text-sm gap-2 md:gap-3">
-            <div>Total biaya:</div>
-            <div className="font-semibold">Rp {totalEstimatedCost.toLocaleString('id-ID')}</div>
-          </div>
+            <Button
+              onClick={() => setShowRecommendationModal(true)}
+              disabled={!cities || cities.length === 0}
+              className="flex items-center gap-1"
+              variant="outline"
+            >
+              <MapPin size={14} className="" />
+              Rekomendasi
+            </Button>
         </div>
+          {!cities || cities.length === 0 ? (
+            <div className="w-full mt-1 flex flex-row items-center justify-end">
+              <p className="text-[8px] md:text-[10px] text-gray-600 mr-1">* Pilih kota untuk membuka</p>
+
+            </div>
+          ): (
+            <div></div>
+          )}
+
+        <hr className="w-full bg-gray-200 my-2"/>
 
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="itinerary-days" type="day">
@@ -384,9 +764,7 @@ export default function ItineraryForm({
                               <div className="flex items-center gap-2">
                                 <Popover>
                                   <PopoverTrigger asChild>
-                                    <button
-                                      className="text-[10px] md:text-sm bg-gray-800 hover:bg-gray-700 text-white rounded px-2 py-2 md:px-3 md:py-2 rounded"
-                                    >
+                                    <button className="text-[10px] md:text-sm bg-gray-800 hover:bg-gray-700 text-white rounded px-2 py-2 md:px-3 md:py-2 rounded-lg">
                                       + Aktivitas
                                     </button>
                                   </PopoverTrigger>
@@ -438,25 +816,31 @@ export default function ItineraryForm({
                                           if (todo.typeTodo === "activity") {
                                             return (
                                               <ActivityTodoItem
-                                                activityTodo={todo as ActivityTodo}
+                                                activityTodo={
+                                                  todo as ActivityTodo
+                                                }
                                                 dayId={day.id_order_day}
                                                 todoId={todo.id_order_todo}
                                                 updateActivity={updateActivity}
                                                 confirmDelete={confirmDelete}
-                                                providedDraggableTodo={providedDraggableTodo}
-                                                todoIndex = {todoIndex}
-                                                />
-                                                );
-                                              } else if (todo.typeTodo === "hotel") {
-                                                return (
-                                                  <HotelTodoItem
-                                                  hotelTodo={todo as HotelTodo}
-                                                  dayId={day.id_order_day}
-                                                  todoId={todo.id_order_todo}
-                                                  updateActivity={updateActivity}
-                                                  confirmDelete={confirmDelete}
-                                                  providedDraggableTodo={providedDraggableTodo}
-                                                  todoIndex = {todoIndex}
+                                                providedDraggableTodo={
+                                                  providedDraggableTodo
+                                                }
+                                                todoIndex={todoIndex}
+                                              />
+                                            );
+                                          } else if (todo.typeTodo === "hotel") {
+                                            return (
+                                              <HotelTodoItem
+                                                hotelTodo={todo as HotelTodo}
+                                                dayId={day.id_order_day}
+                                                todoId={todo.id_order_todo}
+                                                updateActivity={updateActivity}
+                                                confirmDelete={confirmDelete}
+                                                providedDraggableTodo={
+                                                  providedDraggableTodo
+                                                }
+                                                todoIndex={todoIndex}
                                               />
                                             );
                                           }
@@ -545,6 +929,16 @@ export default function ItineraryForm({
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Modal Rekomendasi Aktivitas */}
+      <ActivityRecommendationModal
+        isOpen={showRecommendationModal}
+        onClose={() => setShowRecommendationModal(false)}
+        recommendations={activityRecommendations}
+        cities={cities || []}
+        days={days}
+        onAddActivity={addActivityFromRecommendation}
+      />
 
       {showTodoModal && (
         <>
