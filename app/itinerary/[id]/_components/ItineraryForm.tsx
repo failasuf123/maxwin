@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { TiDelete } from "react-icons/ti";
+import { MdOutlineDeleteForever } from "react-icons/md";
 import { FaArrowLeft } from "react-icons/fa6";
 import {
   ActivityTodo,
@@ -49,12 +50,18 @@ import { AnimatePresence, motion } from "framer-motion";
 import Hotel from "./hotel/Hotel";
 import ActivityTodoItem from "./ActivityTodoItem";
 import HotelTodoItem from "./HotelTodoItem";
-import { MdPlace, MdHotel, MdMenu, MdClose } from "react-icons/md";
+import { MdPlace, MdHotel } from "react-icons/md";
 import { AI_PROMPT_ACTIVITY } from "@/app/constants/option";
 import { chatSession } from "@/app/service/AIModelCityActivity";
-import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/app/service/firebaseConfig";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  setDoc,
+} from "firebase/firestore";
 
 interface ItineraryFormProps {
   onDataChange: (data: ItineraryPerDay[]) => void;
@@ -63,7 +70,7 @@ interface ItineraryFormProps {
 }
 
 // Tipe khusus untuk mengatasi masalah konflik tipe data
-type FixedActivityRecommendation = Omit<ActivityRecommendation, 'cityId'> & {
+type FixedActivityRecommendation = Omit<ActivityRecommendation, "cityId"> & {
   cityId: number;
   uniqueId: string;
 };
@@ -95,14 +102,14 @@ const dataActivityRecommendation = async (cityList: City[]) => {
 
       try {
         const parsedData: any[] = JSON.parse(firestoreData.data);
-        
+
         // Konversi data ke tipe yang benar
-        const fixedData = parsedData.map(activity => ({
+        const fixedData = parsedData.map((activity) => ({
           ...activity,
           cityId: parseInt(cityId), // Konversi ke number
-          uniqueId: uuidv4()
+          uniqueId: activity.uniqueId || uuidv4(),
         }));
-        
+
         allParsedData.push(...fixedData);
       } catch (err) {
         console.error("[Firestore] Failed to parse cached data:", err);
@@ -117,9 +124,9 @@ const dataActivityRecommendation = async (cityList: City[]) => {
       );
       const newData = await aiActivityPrompt(city.cityName, cityId);
       if (newData) {
-        const newDataWithId = newData.map(activity => ({
+        const newDataWithId = newData.map((activity) => ({
           ...activity,
-          uniqueId: uuidv4() 
+          uniqueId: uuidv4(),
         }));
         allParsedData.push(...newData);
       }
@@ -143,11 +150,12 @@ const aiActivityPrompt = async (cityName: string, cityId: string) => {
 
   try {
     const parsedData: any[] = JSON.parse(data_result);
-    
+
     // Konversi data ke tipe yang benar
-    const activitiesWithCityId = parsedData.map(activity => ({
+    const activitiesWithCityId = parsedData.map((activity) => ({
       ...activity,
-      cityId: parseInt(cityId) // Konversi ke number
+      cityId: parseInt(cityId), // Konversi ke number
+      uniqueId: uuidv4(),
     }));
 
     await setDoc(doc(db, "CityActivity", cityId), {
@@ -193,14 +201,9 @@ interface ActivityRecommendationModalProps {
   onAddActivity: (dayId: number, activity: FixedActivityRecommendation) => void;
 }
 
-const ActivityRecommendationModal: React.FC<ActivityRecommendationModalProps> = ({
-  isOpen,
-  onClose,
-  recommendations,
-  cities,
-  days,
-  onAddActivity,
-}) => {
+const ActivityRecommendationModal: React.FC<
+  ActivityRecommendationModalProps
+> = ({ isOpen, onClose, recommendations, cities, days, onAddActivity }) => {
   const [selectedCityFilter, setSelectedCityFilter] = useState<number | "all">(
     "all"
   );
@@ -213,9 +216,9 @@ const ActivityRecommendationModal: React.FC<ActivityRecommendationModalProps> = 
     };
 
     checkIfDesktop(); // Set initial value
-    window.addEventListener('resize', checkIfDesktop);
-    
-    return () => window.removeEventListener('resize', checkIfDesktop);
+    window.addEventListener("resize", checkIfDesktop);
+
+    return () => window.removeEventListener("resize", checkIfDesktop);
   }, []);
 
   if (!isOpen) return null;
@@ -241,25 +244,13 @@ const ActivityRecommendationModal: React.FC<ActivityRecommendationModalProps> = 
       {/* Modal content */}
       <motion.div
         className={`fixed z-50 bg-white ${
-          isDesktop 
+          isDesktop
             ? "top-0 right-0 h-full w-full md:w-1/2 lg:w-1/3" // Desktop: di kanan, lebar 1/3
             : "bottom-0 left-0 right-0 h-4/5" // Mobile: dari bawah
         }`}
-        initial={
-          isDesktop
-            ? { x: "100%" }
-            : { y: "100%" }
-        }
-        animate={
-          isDesktop
-            ? { x: 0 }
-            : { y: 0 }
-        }
-        exit={
-          isDesktop
-            ? { x: "100%" }
-            : { y: "100%" }
-        }
+        initial={isDesktop ? { x: "100%" } : { y: "100%" }}
+        animate={isDesktop ? { x: 0 } : { y: 0 }}
+        exit={isDesktop ? { x: "100%" } : { y: "100%" }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         <div className="h-full flex flex-col">
@@ -301,7 +292,11 @@ const ActivityRecommendationModal: React.FC<ActivityRecommendationModalProps> = 
                 Tidak ada rekomendasi untuk kota yang dipilih
               </p>
             ) : (
-              <div className={`space-y-4 ${isDesktop ? "" : "grid grid-cols-1 md:grid-cols-2 gap-4"}`}>
+              <div
+                className={`space-y-4 ${
+                  isDesktop ? "" : "grid grid-cols-1 md:grid-cols-2 gap-4"
+                }`}
+              >
                 {filteredActivities.map((activity) => (
                   <div
                     key={activity.uniqueId}
@@ -337,10 +332,7 @@ const ActivityRecommendationModal: React.FC<ActivityRecommendationModalProps> = 
                             Pilih Hari
                           </option>
                           {days.map((day) => (
-                            <option
-                              key={day.uniqueId}
-                              value={day.id_order_day}
-                            >
+                            <option key={day.uniqueId} value={day.id_order_day}>
                               Hari {day.day}
                             </option>
                           ))}
@@ -351,10 +343,7 @@ const ActivityRecommendationModal: React.FC<ActivityRecommendationModalProps> = 
                               `select[data-activity="${activity.cityId}-${activity.nama}"]`
                             ) as HTMLSelectElement;
                             if (select && select.value) {
-                              onAddActivity(
-                                parseInt(select.value),
-                                activity
-                              );
+                              onAddActivity(parseInt(select.value), activity);
                             }
                           }}
                           className="bg-gray-800 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm"
@@ -384,7 +373,9 @@ export default function ItineraryForm({
   const [showTodoModal, setShowTodoModal] = useState(false);
   const [listCityId, setListCityId] = useState<number[]>([]);
   const [currentDayId, setCurrentDayId] = useState<number | null>(null);
-  const [totalEstimatedCost, setTotalEstimatedCost] = useState<number>(0);
+  const [deleteDayConfirmation, setDeleteDayConfirmation] = useState<
+    number | null
+  >(null);
   const [activityRecommendations, setActivityRecommendations] = useState<
     FixedActivityRecommendation[]
   >([]);
@@ -395,7 +386,6 @@ export default function ItineraryForm({
   } | null>(null);
   const [accordionState, setAccordionState] = useState<string[]>([]);
   const [isNavOpen, setIsNavOpen] = useState(true);
-
 
   useEffect(() => {
     setIsClient(true);
@@ -414,29 +404,6 @@ export default function ItineraryForm({
 
     loadRecommendations();
   }, [cities]);
-
-  useEffect(() => {
-    const calculateTotalCost = () => {
-      let total = 0;
-
-      days.forEach((day) => {
-        day.todos.forEach((todo) => {
-          // Only include payable todos with valid cost
-          if (
-            todo.isPayable &&
-            typeof todo.cost === "number" &&
-            !isNaN(todo.cost)
-          ) {
-            total += todo.cost;
-          }
-        });
-      });
-
-      setTotalEstimatedCost(total);
-    };
-
-    calculateTotalCost();
-  }, [days]);
 
   useEffect(() => {
     if (cities) {
@@ -460,6 +427,29 @@ export default function ItineraryForm({
     } else {
       // Jika ada yang tertutup, buka semua
       setAccordionState(days.map((day) => day.uniqueId));
+    }
+  };
+
+  const removeDay = (dayId: number) => {
+    // Filter hari yang akan dihapus
+    const updatedDays = days.filter((day) => day.id_order_day !== dayId);
+
+    // Update nomor urut hari dan id_order_day
+    const reorderedDays = updatedDays.map((day, index) => ({
+      ...day,
+      id_order_day: index + 1, // Update id_order_day agar berurutan
+      day: index + 1, // Update nomor hari agar berurutan
+    }));
+
+    setDays(reorderedDays);
+    setDeleteDayConfirmation(null); // Tutup modal konfirmasi
+
+    // Update accordion state
+    const deletedDay = days.find((d) => d.id_order_day === dayId);
+    if (deletedDay) {
+      setAccordionState((prev) =>
+        prev.filter((id) => id !== deletedDay.uniqueId)
+      );
     }
   };
 
@@ -503,8 +493,8 @@ export default function ItineraryForm({
 
           uniqueId: uuidv4(),
           typeTodo: "hotel",
-          checkInTime: "14:00",
-          checkOutTime: "12:00",
+          time_start: "14:00",
+          time_end: "23:59",
 
           hotelId: hotel.hotelId,
           currency: hotel.currency,
@@ -529,7 +519,8 @@ export default function ItineraryForm({
   const updateActivity = (
     dayId: number,
     todoId: number,
-    field: keyof ActivityTodo,
+    // field: keyof ActivityTodo,
+    field: string,
     value: string | boolean | number
   ) => {
     setDays(
@@ -697,26 +688,27 @@ export default function ItineraryForm({
             )}
           </Button>
 
-            <Button
-              onClick={() => setShowRecommendationModal(true)}
-              disabled={!cities || cities.length === 0}
-              className="flex items-center gap-1"
-              variant="outline"
-            >
-              <MapPin size={14} className="" />
-              Rekomendasi
-            </Button>
+          <Button
+            onClick={() => setShowRecommendationModal(true)}
+            disabled={!cities || cities.length === 0}
+            className="flex items-center gap-1"
+            variant="outline"
+          >
+            <MapPin size={14} className="" />
+            Rekomendasi
+          </Button>
         </div>
-          {!cities || cities.length === 0 ? (
-            <div className="w-full mt-1 flex flex-row items-center justify-end">
-              <p className="text-[8px] md:text-[10px] text-gray-600 mr-1">* Pilih kota untuk membuka</p>
+        {!cities || cities.length === 0 ? (
+          <div className="w-full mt-1 flex flex-row items-center justify-end">
+            <p className="text-[8px] md:text-[10px] text-gray-600 mr-1">
+              * Pilih kota untuk membuka
+            </p>
+          </div>
+        ) : (
+          <div></div>
+        )}
 
-            </div>
-          ): (
-            <div></div>
-          )}
-
-        <hr className="w-full bg-gray-200 my-2"/>
+        <hr className="w-full bg-gray-200 my-2" />
 
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="itinerary-days" type="day">
@@ -749,9 +741,18 @@ export default function ItineraryForm({
                             className="border-0"
                           >
                             <div className="flex justify-between items-center p-3 md:p-4 border-b bg-gray-50 rounded-t-lg">
-                              <div className="flex justify-start items-center gap-3">
+                              <div className="flex justify-start items-center gap-1">
                                 <div {...providedDraggableDay.dragHandleProps}>
                                   <GripVertical className="text-gray-400 cursor-grab hover:text-gray-600 transition-colors" />
+                                </div>
+                                <div
+                                  className="text-red-300 text-xl ml-2 cursor-pointer hover:text-red-400"
+                                  onClick={(e) => {
+                                    e.stopPropagation(); 
+                                    setDeleteDayConfirmation(day.id_order_day);
+                                  }}
+                                >
+                                  <MdOutlineDeleteForever />
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <h3 className="text-base md:text-lg font-semibold text-gray-800">
@@ -829,7 +830,9 @@ export default function ItineraryForm({
                                                 todoIndex={todoIndex}
                                               />
                                             );
-                                          } else if (todo.typeTodo === "hotel") {
+                                          } else if (
+                                            todo.typeTodo === "hotel"
+                                          ) {
                                             return (
                                               <HotelTodoItem
                                                 hotelTodo={todo as HotelTodo}
@@ -928,6 +931,39 @@ export default function ItineraryForm({
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <Dialog
+          open={deleteDayConfirmation !== null}
+          onOpenChange={(open) => !open && setDeleteDayConfirmation(null)}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Konfirmasi Hapus Hari</DialogTitle>
+              <DialogDescription>
+                Apakah Anda yakin ingin menghapus hari ini? Semua aktivitas di dalamnya akan dihapus. 
+                Tindakan ini tidak dapat dibatalkan.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setDeleteDayConfirmation(null)}
+              >
+                Batal
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (deleteDayConfirmation !== null) {
+                    removeDay(deleteDayConfirmation);
+                  }
+                }}
+              >
+                Hapus
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Modal Rekomendasi Aktivitas */}
@@ -961,20 +997,10 @@ export default function ItineraryForm({
                   : "inset-x-0 bottom-0 h-screen"
               }`}
               initial={
-                window.innerWidth >= 1024
-                  ? { x: "100%" }
-                  : { y: "100%" }
+                window.innerWidth >= 1024 ? { x: "100%" } : { y: "100%" }
               }
-              animate={
-                window.innerWidth >= 1024
-                  ? { x: 0 }
-                  : { y: 0 }
-              }
-              exit={
-                window.innerWidth >= 1024
-                  ? { x: "100%" }
-                  : { y: "100%" }
-              }
+              animate={window.innerWidth >= 1024 ? { x: 0 } : { y: 0 }}
+              exit={window.innerWidth >= 1024 ? { x: "100%" } : { y: "100%" }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               <div className="relative flex flex-col h-full justify-start items-start px-4 my-2">

@@ -75,7 +75,7 @@ export function NavUser({
       localStorage.getItem("user")
   
       localStorage.setItem("user", JSON.stringify(response.data));
-      const userDataGet = response.data;
+      const userDataGet = response.data;  
       const userId = userDataGet.id;
       const username = userDataGet.name;
       console.log(

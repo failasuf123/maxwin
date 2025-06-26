@@ -2,13 +2,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import { db } from "@/app/service/firebaseConfig";
 import { doc, getDoc } from "@firebase/firestore";
-import HeaderUpper from "@/components/myexperience-trip/HeaderUpper";
-import ContentItinerary from "@/components/myexperience-trip/ContentItinerary";
-import FooterButton from "@/components/myexperience-trip/FooterButton";
-import { useToast } from "@/hooks/use-toast";
-import { ToastAction } from "@/components/ui/toast";
-import { cn } from "@/lib/utils";
 import LoadingAnimationBlack from "@/components/LoadingAnimationBlack";
+import { useToast } from "@/hooks/use-toast";
+import { useParams } from "next/navigation";
+import HeaderUpper from "./_components/HeaderUpper";
+import ContentItinerary from "./_components/ContentItinerary";
 
 interface TripData {
   title: string;
@@ -16,57 +14,54 @@ interface TripData {
   [key: string]: any;
 }
 
-interface PageProps {
-  params: Promise<{
-    tripid: string;
-  }>;
-}
-
-
-const Page: React.FC<PageProps> = ({ params }) => {
-  const { tripid } = React.use(params);
+function page() {
+  const params = useParams();
+  const id = params.tripid as string;
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [trip, setTrip] = useState<TripData | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true); 
   const { toast } = useToast();
 
   useEffect(() => {
-    if (tripid) {
+    if (id) {
       getTripData();
     }
-  }, [tripid]);
-  
+  }, [id]);
+
   const getTripData = async () => {
     setIsLoading(true); // Tampilkan spinner
-  
+
     try {
-      const docRef = doc(db, "Trips", tripid);
+      const docRef = doc(db, "Itinerary", id);
       const docSnap = await getDoc(docRef);
-  
+
       if (docSnap.exists()) {
         const data = docSnap.data();
-  
+
         // Ambil userId dari trip
-        const userId = data.userId;
-  
+        const userId = data.userOwner;
+
         let userData: { username: string; userPicture: string } = {
           username: "anonim",
           userPicture: "/default-picture.png",
         };
-  
+
         if (userId) {
           // Query ke Users untuk mendapatkan usern  ame & userPicture
           const userRef = doc(db, "Users", userId);
           const userSnap = await getDoc(userRef);
-  
+
           if (userSnap.exists()) {
-            const userDoc = userSnap.data() as { username?: string; userPicture?: string };
+            const userDoc = userSnap.data() as {
+              username?: string;
+              userPicture?: string;
+            };
             userData = {
               username: userDoc.username ?? "anonim",
               userPicture: userDoc.userPicture ?? "/default-picture.png",
             };
           }
         }
-  
+
         // Gabungkan hasil trip dengan data user
         const tripData: TripData = {
           title: data.title || "Tanpa Judul",
@@ -75,7 +70,7 @@ const Page: React.FC<PageProps> = ({ params }) => {
           username: userData.username,
           userPicture: userData.userPicture,
         };
-  
+        console.log(tripData)
         setTrip(tripData);
       } else {
         console.error("No Document");
@@ -94,10 +89,10 @@ const Page: React.FC<PageProps> = ({ params }) => {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <div className="p-5 pt-10 md:p-10 md:px-28 lg:px-36 xl:px-52 relative">
-      {isLoading && ( 
+      {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-50">
           <div className="flex items-center space-x-2 text-lg">
             <div>
@@ -106,11 +101,12 @@ const Page: React.FC<PageProps> = ({ params }) => {
           </div>
         </div>
       )}
-      <HeaderUpper trip={trip} />
-      <FooterButton id={tripid} trip={trip} />
-      {!isLoading && <ContentItinerary trip={trip as any} />}
+            <HeaderUpper trip={trip} />
+            {!isLoading && <ContentItinerary trip={trip as any} />}
+
+
     </div>
   );
-};
+}
 
-export default Page;
+export default page;

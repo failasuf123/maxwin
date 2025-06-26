@@ -3,6 +3,8 @@ import { GripVertical, Clock } from "lucide-react";
 import { TbPigMoney } from "react-icons/tb";
 import { FaRegClock } from "react-icons/fa6";
 import { TiDelete } from "react-icons/ti";
+import { LuImagePlus } from "react-icons/lu";
+import { UploadDropzone } from "@/app/utils/uploadthing";
 import {
   Popover,
   PopoverContent,
@@ -60,6 +62,17 @@ const ActivityTodoItem: React.FC<ActivityTodoItemProps> = ({
             <GripVertical />
           </div>
         </div>
+
+        {activityTodo.imgTodoUrl && (
+          <div className="flex flex-col justify-evenly items-center justify-center  bg-white">
+            <img
+              src={activityTodo.imgTodoUrl}
+              alt={activityTodo.nameTodo}
+              className="w-16 h-16 md:w-24 md:h-24 object-cover rounded-xl"
+            />
+          </div>
+        )}
+
         <div className="flex-1 p-1 md:p-4">
           <div className="flex flex-wrap mb-3 gap-3 justify-end">
             <Popover>
@@ -152,6 +165,50 @@ const ActivityTodoItem: React.FC<ActivityTodoItemProps> = ({
                 </div>
               </PopoverContent>
             </Popover>
+
+            <Popover>
+              <PopoverTrigger>
+                <div className="ml-auto text-gray-800 text-[10px] px-2 md:px-3 py-1 md:py-2 bg-white border border-gray-800 hover:border-dashed rounded-full cursor-pointer flex flex-row gap-1 items-center">
+                  <LuImagePlus className="text-sm text-gray-800" />
+                </div>
+              </PopoverTrigger>
+              <PopoverContent>
+                {!activityTodo.imgTodoUrl ? (
+                  <UploadDropzone
+                    endpoint="imageUploader"
+                    onClientUploadComplete={(res) => {
+                      if (res && res.length > 0) {
+                        // handleImageChange(res[0].url);
+                        updateActivity(dayId, todoId, "imgTodoUrl", res[0].url);
+                      }
+                    }}
+                    onUploadError={(error: Error) => {
+                      console.error("Upload error:", error.message);
+                      alert(`Upload failed: ${error.message}`);
+                    }}
+                    appearance={{
+                      container:
+                        "border-2 border-dashed border-blue-400 cursor-pointer",
+                      uploadIcon: "text-blue-500",
+                      label: "text-blue-600 font-medium",
+                      button:
+                        "bg-blue-600 text-white px-4 py-2 rounded-md mt-2 ut-ready:bg-blue-600 ut-uploading:bg-blue-400",
+                      allowedContent: "text-gray-500 text-sm",
+                    }}
+                  />
+                ) : (
+                  <div className="flex flex-col w-full items-center justify-center gap-2">
+                    <div 
+                      onClick = {() => updateActivity(dayId, todoId, "imgTodoUrl", "")}
+                      className="bg-red-600 w-full text-white hover:bg-red-500 cursor-pointer items-center text-center rounded-xl py-1">
+                        Hapus Gambar
+                        </div>
+                    <p className="text-gray-500 text-[9px] md:text-[10px]">*gambar yang dihapus tidak dapat dipulihkan</p>
+
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
           </div>
 
           {(hasTime || hasCost) && (
@@ -178,10 +235,8 @@ const ActivityTodoItem: React.FC<ActivityTodoItemProps> = ({
           )}
 
           <div className="mb-2 flex gap-2 items-center">
-            <div
-              className="text-[10px]  rounded-full  bg-gray-300 mb-2 flex w-4 h-4 flex  justify-center items-center text-white"
-            >
-              {todoIndex+1}
+            <div className="text-[10px]  rounded-full  bg-gray-300 mb-2 flex w-4 h-4 flex  justify-center items-center text-white">
+              {todoIndex + 1}
             </div>
 
             <input

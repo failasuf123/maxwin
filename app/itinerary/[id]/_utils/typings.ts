@@ -3,6 +3,7 @@ export type Itinerary = {
     title: string;
     userOwner: string;
     userAccess?: string[];
+    isPublic: boolean;
     totalCost: number;
     description?: string;
     createdAt: Date;
@@ -44,8 +45,10 @@ export type Itinerary = {
   export type HotelTodo = BaseTodo & {
     uniqueId: string;
     typeTodo: "hotel";
-    checkInTime: string;
-    checkOutTime:string;
+    // checkInTime: string;
+    // checkOutTime:string;
+    time_start?: string;
+    time_end?: string;
     //Penting: Mulai kebawah menyesuaikan parameter dari API AGODA
     hotelId: number;
     currency: string; 
@@ -89,7 +92,7 @@ export type Itinerary = {
   
   export type TransportationTodo = BaseTodo & {
     uniqueId?: string;
-    typeTodo: "transportation";
+    typeTodo: "Transportasi";
     departureTime?: string;
     arrivalTime?: string;
     range: string;
@@ -100,7 +103,7 @@ export type Itinerary = {
   
   export type Todo = HotelTodo | ActivityTodo | TransportationTodo;
   
-  export type TodoType = "hotel" | "activity" | "transportation"  | "Makan & minum" 
+  export type TodoType = "hotel" | "activity" | "Transportasi"  | "Makan & minum" 
   | "Belanja" 
 
   | "Gaya hidup" 

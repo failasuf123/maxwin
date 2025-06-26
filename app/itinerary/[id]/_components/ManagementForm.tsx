@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { TableBudget } from "./management/TableBudget";
 import { BudgetItem, City, ExpendingItem, ItineraryPerDay } from "../_utils/typings";
 import { TableCostEstimation } from "./management/TableCostEstimation";
@@ -101,12 +101,13 @@ function ManagementForm({
         } else if (todo.typeTodo === "hotel") {
           categories["Hotel"].amount += todo.cost;
           categories["Hotel"].count++;
-        } else if (todo.typeTodo === "transportation") {
+        } else if (todo.typeTodo === "Transportasi") {
           categories["Transportasi"].amount += todo.cost;
           categories["Transportasi"].count++;
         }
       });
     });
+
 
     // Hitung pengeluaran dari estimasi biaya
     costData.forEach(item => {
@@ -125,7 +126,7 @@ function ManagementForm({
 
     return categories;
   }, [daysData, costData]);
-
+  
   // Format angka ke format Rupiah
   const formatRupiah = (amount: number) => {
     return amount.toLocaleString("id-ID");

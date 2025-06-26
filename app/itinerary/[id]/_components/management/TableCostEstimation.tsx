@@ -330,7 +330,7 @@ export function TableCostEstimation({ costData, setCostData, daysData }: TableCo
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="Makan & minum">Makan & minum</option>
-                  <option value="transportation">Transportasi</option>
+                  <option value="Transportasi">Transportasi</option>
                   <option value="Belanja">Belanja</option>
                   <option value="Gaya hidup">Gaya hidup</option>
                   <option value="Cadangan">Cadangan</option>
