@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import NavBar from "@/components/navbar/NavBar";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -51,6 +52,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_AUTH_CLIENT_ID;
+  const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
 
   return (
     <html lang="en">
@@ -58,6 +61,21 @@ export default function RootLayout({
         <link rel="icon" href="/malib-logo-circle.png" />
         <meta name="agd-partner-manual-verification" />
       </head>
+
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${GA_MEASUREMENT_ID}', {
+            page_path: window.location.pathname,
+          });
+        `}
+      </Script>
 
       <GoogleOAuthProvider clientId={clientId || ""}>
         <body className={inter.className}>
