@@ -473,7 +473,7 @@ export default function ItineraryForm({
     );
   };
 
-  const addHotelToDay = (dayId: number, hotel: HotelAgodaAPI) => {
+  const addHotelToDay = (dayId: number, hotel: HotelAgodaAPI, checkinDate: string, checkoutDate: string) => {
     setDays((prevDays) =>
       prevDays.map((day) => {
         if (day.id_order_day !== dayId) return day;
@@ -487,9 +487,13 @@ export default function ItineraryForm({
           id_order_todo: nextTodoId,
           nameTodo: hotel.hotelName,
           descriptionTodo: `Hotel bintang ${hotel.starRating} dengan rating ${hotel.reviewScore}`,
-          isPayable: true,
+          isPayable:   true,
           cost: hotel.dailyRate,
           imgTodoUrl: hotel.imageURL,
+          city: hotel.cityName,
+          checkinDate: checkinDate, // Gunakan nilai dari parameter
+          checkoutDate: checkoutDate, // Gunakan nilai dari parameter
+          isPaid: false,
 
           uniqueId: uuidv4(),
           typeTodo: "hotel",
@@ -516,22 +520,66 @@ export default function ItineraryForm({
     );
   };
 
-  const updateActivity = (
+  // const updateActivity = (
+  //   dayId: number,
+  //   todoId: number,
+  //   // field: keyof ActivityTodo,
+  //   field: string,
+  //   value: string | boolean | number
+  // ) => {
+  //   setDays(
+  //     days.map((day) => {
+  //       if (day.id_order_day !== dayId) return day;
+
+  //       return {
+  //         ...day,
+  //         todos: day.todos.map((todo) =>
+  //           todo.id_order_todo === todoId ? { ...todo, [field]: value } : todo
+  //         ),
+  //       };
+  //     })
+  //   );
+  // };
+
+// Di dalam ItineraryForm component
+const updateActivity = (
+  dayId: number,
+  todoId: number,
+  field: string,
+  value: string | boolean | number
+) => {
+  // Gunakan functional update untuk menghindari stale state
+  setDays(prevDays => 
+    prevDays.map(day => {
+      if (day.id_order_day !== dayId) return day;
+
+      return {
+        ...day,
+        todos: day.todos.map(todo => 
+          todo.id_order_todo === todoId ? { ...todo, [field]: value } : todo
+        ),
+      };
+    })
+  );
+};
+
+  const updateHotelTodo = (
     dayId: number,
     todoId: number,
-    // field: keyof ActivityTodo,
-    field: string,
-    value: string | boolean | number
+    updates: Partial<HotelTodo>
   ) => {
-    setDays(
-      days.map((day) => {
+    setDays(prevDays => 
+      prevDays.map(day => {
         if (day.id_order_day !== dayId) return day;
-
+  
         return {
           ...day,
-          todos: day.todos.map((todo) =>
-            todo.id_order_todo === todoId ? { ...todo, [field]: value } : todo
-          ),
+          todos: day.todos.map(todo => {
+            if (todo.id_order_todo === todoId && todo.typeTodo === "hotel") {
+              return { ...todo, ...updates } as HotelTodo;
+            }
+            return todo;
+          }),
         };
       })
     );
@@ -1016,13 +1064,13 @@ export default function ItineraryForm({
                 <hr className="w-full bg-gray-200 mt-2" />
 
                 <Hotel
-                  city=""
+                  cityList={cities}
                   cityId={listCityId}
                   startDate=""
                   endDate=""
-                  onHotelSelect={(hotel: HotelAgodaAPI) => {
+                  onHotelSelect={(hotel: HotelAgodaAPI, checkinDate, checkoutDate) => {
                     if (currentDayId) {
-                      addHotelToDay(currentDayId, hotel);
+                      addHotelToDay(currentDayId, hotel, checkinDate, checkoutDate);
                     }
                     setShowTodoModal(false);
                   }}

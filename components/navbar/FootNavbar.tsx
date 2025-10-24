@@ -10,6 +10,9 @@ import {
 } from "react-icons/fi";
 import { RiAddCircleFill } from "react-icons/ri";
 
+import { GiLoveLetter } from "react-icons/gi";
+
+
 const FooterNavbar = () => {
   const pathname = usePathname();
 

@@ -45,41 +45,27 @@ const ActivityTodoItem: React.FC<ActivityTodoItemProps> = ({
       {...providedDraggableTodo.draggableProps}
       className="bg-white rounded-lg overflow-hidden shadow-xs hover:shadow-sm transition-shadow"
     >
-      <div className="flex border-t border-gray-200">
-        <div className="flex flex-col justify-evenly items-center justify-center pr-3 md:px-3 bg-white">
-          <div className="flex items-center justify-center ml-1">
-            <div
-              onClick={() => confirmDelete(dayId, todoId)}
-              className="text-xl px-0 py-0 bg-red-200 text-red-700 rounded-full hover:cursor-pointer hover:bg-red-300 hover:text-white"
-            >
-              <TiDelete />
+      <div className="flex flex-col items-center  border-t border-gray-200">
+        <div className="flex flex-row items-center justify-between pr-3 pl-8 md:pl-10 pt-2 w-full">
+          {hasTime && (
+            <div className="w-full mb-2 flex flex-row items-center justify-between">
+              {hasTime && (
+                <div className="px-2 scale-90 py-0 md:py-1  text-[8px] md:text-[10px] rounded-full bg-gray-800 text-white flex flex-row gap-1 items-center justify-center">
+                  <FaRegClock />
+                  <div>{activityTodo.time_start || "00:00"}</div>
+                  <div>-</div>
+                  <div>{activityTodo.time_end || "00:00"}</div>
+                </div>
+              )}
             </div>
-          </div>
-          <div
-            {...providedDraggableTodo.dragHandleProps}
-            className="text-gray-400 hover:text-gray-600 cursor-grab"
-          >
-            <GripVertical />
-          </div>
-        </div>
-
-        {activityTodo.imgTodoUrl && (
-          <div className="flex flex-col justify-evenly items-center justify-center  bg-white">
-            <img
-              src={activityTodo.imgTodoUrl}
-              alt={activityTodo.nameTodo}
-              className="w-16 h-16 md:w-24 md:h-24 object-cover rounded-xl"
-            />
-          </div>
-        )}
-
-        <div className="flex-1 p-1 md:p-4">
-          <div className="flex flex-wrap mb-3 gap-3 justify-end">
+          )}
+          <div className="flex  gap-3 justify-end w-full">
             <Popover>
               <PopoverTrigger>
                 <div className="ml-auto text-gray-800 text-[10px] px-2 md:px-3 py-0 md:py-1 bg-white border border-gray-800 hover:border-dashed rounded-full cursor-pointer flex flex-row gap-1 items-center">
                   <Clock className="w-3 h-3 text-gray-800 items-center" />
-                  <p className="hidden md:block">Masukan Waktu</p>
+                  <p className="hidden lg:block">Masukan Waktu</p>
+                  <p className="hidden md:block lg:hidden">Waktu</p>
                   <p className="md:hidden text-sm">+</p>
                 </div>
               </PopoverTrigger>
@@ -115,7 +101,8 @@ const ActivityTodoItem: React.FC<ActivityTodoItemProps> = ({
               <PopoverTrigger>
                 <div className="ml-auto text-gray-800 text-[10px] px-2 md:px-3 py-0 md:py-1 bg-white border border-gray-800 hover:border-dashed rounded-full cursor-pointer flex flex-row gap-1 items-center">
                   <TbPigMoney className="text-sm text-gray-800" />
-                  <p className="hidden md:block">Estimasi Biaya</p>
+                  <p className="hidden lg:block">Estimasi Biaya</p>
+                  <p className="hidden md:block lg:hidden">Biaya</p>
                   <p className="md:hidden text-sm">+</p>
                 </div>
               </PopoverTrigger>
@@ -198,41 +185,55 @@ const ActivityTodoItem: React.FC<ActivityTodoItemProps> = ({
                   />
                 ) : (
                   <div className="flex flex-col w-full items-center justify-center gap-2">
-                    <div 
-                      onClick = {() => updateActivity(dayId, todoId, "imgTodoUrl", "")}
-                      className="bg-red-600 w-full text-white hover:bg-red-500 cursor-pointer items-center text-center rounded-xl py-1">
-                        Hapus Gambar
-                        </div>
-                    <p className="text-gray-500 text-[9px] md:text-[10px]">*gambar yang dihapus tidak dapat dipulihkan</p>
-
+                    <div
+                      onClick={() =>
+                        updateActivity(dayId, todoId, "imgTodoUrl", "")
+                      }
+                      className="bg-red-600 w-full text-white hover:bg-red-500 cursor-pointer items-center text-center rounded-xl py-1"
+                    >
+                      Hapus Gambar
+                    </div>
+                    <p className="text-gray-500 text-[9px] md:text-[10px]">
+                      *gambar yang dihapus tidak dapat dipulihkan
+                    </p>
                   </div>
                 )}
               </PopoverContent>
             </Popover>
           </div>
+        </div>
+      </div>
 
-          {(hasTime || hasCost) && (
-            <div className="w-full mb-2 flex flex-row items-center justify-between">
-              {hasTime && (
-                <div className="px-2  text-[8px] md:text-[10px] rounded-full bg-gray-800 text-white flex flex-row gap-1 items-center justify-center">
-                  <FaRegClock />
-                  <div>{activityTodo.time_start || "00:00"}</div>
-                  <div>-</div>
-                  <div>{activityTodo.time_end || "00:00"}</div>
-                </div>
-              )}
-              {hasCost && (
-                <div className="px-2  text-[8px] md:text-[10px] rounded-full bg-green-100 text-green-800 flex flex-row gap-1 items-center justify-center">
-                  <div>Rp</div>
-                  <div>
-                    {new Intl.NumberFormat("id-ID").format(
-                      activityTodo.cost || 0
-                    )}
-                  </div>
-                </div>
-              )}
+      <div className="flex ">
+        <div className="flex flex-col justify-evenly items-center justify-center pr-3 md:px-3 bg-white">
+          <div className="flex items-center justify-center ml-1">
+            <div
+              onClick={() => confirmDelete(dayId, todoId)}
+              className="text-xl px-0 py-0 bg-red-200 text-red-700 rounded-full hover:cursor-pointer hover:bg-red-300 hover:text-white"
+            >
+              <TiDelete />
             </div>
-          )}
+          </div>
+          <div
+            {...providedDraggableTodo.dragHandleProps}
+            className="text-gray-400 hover:text-gray-600 cursor-grab"
+          >
+            <GripVertical />
+          </div>
+        </div>
+
+        {activityTodo.imgTodoUrl && (
+          <div className="flex flex-col justify-evenly items-center justify-center  bg-white">
+            <img
+              src={activityTodo.imgTodoUrl}
+              alt={activityTodo.nameTodo}
+              className="w-16 h-16 md:w-24 md:h-24 object-cover rounded-xl"
+            />
+          </div>
+        )}
+
+        <div className="flex-1 p-1 md:p-4">
+          {/* end */}
 
           <div className="mb-2 flex gap-2 items-center">
             <div className="text-[10px]  rounded-full  bg-gray-300 mb-2 flex w-4 h-4 flex  justify-center items-center text-white">
@@ -248,6 +249,20 @@ const ActivityTodoItem: React.FC<ActivityTodoItemProps> = ({
               className="w-full text-xs md:text-base font-medium text-gray-800 placeholder-gray-400 border-b border-gray-200 pb-2 focus:outline-none focus:border-blue-500"
             />
           </div>
+
+          <div className="w-full flex flex-wrap justify-start gap-3 md:gap-4 my-2">
+            {hasCost && (
+              <div className="px-2  text-[8px] md:text-[10px] rounded-full bg-green-100 text-green-800 flex flex-row gap-1 items-center justify-center">
+                <div>Rp</div>
+                <div>
+                  {new Intl.NumberFormat("id-ID").format(
+                    activityTodo.cost || 0
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="">
             <textarea
               value={activityTodo.descriptionTodo || ""}

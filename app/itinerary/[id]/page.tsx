@@ -6,7 +6,9 @@ import {
   Itinerary,
   City,
   BudgetItem,
+  HotelTodo,
   ExpendingItem,
+  PayableItem,
 } from "@/app/itinerary/[id]/_utils/typings";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import HeaderForm from "./_components/HeaderForm";
@@ -123,8 +125,6 @@ function CreateItineraryPage() {
     }
   }, [id, type]); // Gunakan id dan type sebagai dependency
 
-
-
   const checkItineraryIdExist = async (id: string) => {
     const docRef = doc(db, "Itinerary", id);
     const docSnap = await getDoc(docRef);
@@ -135,18 +135,20 @@ function CreateItineraryPage() {
     }
   };
 
-  const fetchItineraryData = async (id: string, userIdParam: string | undefined) => {
+  const fetchItineraryData = async (
+    id: string,
+    userIdParam: string | undefined
+  ) => {
     try {
       const docRef = doc(db, "Itinerary", id);
       const docSnap = await getDoc(docRef);
-      console.log("TESTT")
-      console.log(docSnap.data())
+      console.log(docSnap.data());
 
       if (docSnap.exists()) {
         const data = docSnap.data() as Itinerary;
 
-        if (data.userOwner !== userIdParam){
-          router.push("/")
+        if (data.userOwner !== userIdParam) {
+          router.push("/");
         }
 
         // Set states from Firestore data
@@ -201,12 +203,76 @@ function CreateItineraryPage() {
     setDaysData(newData);
   }, []);
 
+  // const handleSaveItinerary = async () => {
+  //   const budgetingData = {
+  //     budget: budgetData,
+  //     expend: costData,
+  //   };
+
+  //   const completeItineraryData: Partial<Itinerary> = {
+  //     ...headerData,
+  //     itineraries: daysData,
+  //     budgeting: budgetingData,
+  //     userOwner: currentUserId,
+  //     isPublic: statePublic,
+  //   };
+
+  //   try {
+  //     await setDoc(doc(db, "Itinerary", itineraryId), {
+  //       ...completeItineraryData,
+  //       id: itineraryId,
+  //     });
+
+  //     alert(`Itinerary "${completeItineraryData.title}" saved successfully!`);
+  //     console.log(completeItineraryData);
+
+  //     try {
+  //       // 1. Ekstrak hotel payable dari itinerary
+  //       const payableHotels: HotelTodo[] = [];
+  //       daysData.forEach((day) => {
+  //         day.todos.forEach((todo) => {
+  //           if (todo.typeTodo === "hotel" && todo.isPayable) {
+  //             payableHotels.push(todo as HotelTodo);
+  //           }
+  //         });
+  //       });
+
+  //       // 2. Referensi ke dokumen Payable
+  //       const bucketDocRef = doc(db, "Bucket", currentUserId);
+
+  //       await setDoc(bucketDocRef, {id: currentUserId})
+  //       const payableDocRef = doc(bucketDocRef, "Payable", itineraryId);
+
+  //       // 3. Simpan/update data Payable
+  //       await setDoc(
+  //         payableDocRef,
+  //         {
+  //           itineraryId: itineraryId,
+  //           data: payableHotels,
+  //           title: headerData.title ?? "Itinerary Tanpa Judul",
+  //           lastUpdate:  new Date(),
+
+  //         }
+  //       ); // Gunakan merge untuk mempertahankan Paid
+
+  //       console.log("Payable updated successfully");
+  //     } catch (payableError) {
+  //       console.error("Error updating Payable:", payableError);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error saving itinerary:", error);
+  //     alert("Failed to save itinerary");
+  //   }
+  // };
+
   const handleSaveItinerary = async () => {
+    // 1. Siapkan data budgeting
     const budgetingData = {
       budget: budgetData,
       expend: costData,
     };
-
+  
+    // 2. Siapkan data itinerary lengkap
     const completeItineraryData: Partial<Itinerary> = {
       ...headerData,
       itineraries: daysData,
@@ -214,16 +280,75 @@ function CreateItineraryPage() {
       userOwner: currentUserId,
       isPublic: statePublic,
     };
-
-
+  
     try {
+      // 3. Simpan itinerary utama ke Firestore
       await setDoc(doc(db, "Itinerary", itineraryId), {
         ...completeItineraryData,
         id: itineraryId,
       });
-
+  
       alert(`Itinerary "${completeItineraryData.title}" saved successfully!`);
-      // Redirect or show success message
+      
+      // 4. Proses untuk Payable Bucket
+      try {
+        // Ekstrak semua hotel payable dari itinerary
+        const payableHotels: HotelTodo[] = [];
+        daysData.forEach((day) => {
+          day.todos.forEach((todo) => {
+            if (todo.typeTodo === "hotel" && todo.isPayable) {
+              // Tambahkan hotel dengan isPaid default false
+              payableHotels.push({
+                ...todo,
+                isPaid: false, // Default untuk hotel baru
+              } as HotelTodo);
+            }
+          });
+        });
+  
+        // Setup referensi dokumen Payable
+        const bucketDocRef = doc(db, "Bucket", currentUserId);
+        await setDoc(bucketDocRef, { id: currentUserId }); // Buat dokumen Bucket jika belum ada
+        const payableDocRef = doc(bucketDocRef, "Payable", itineraryId);
+  
+        // Ambil data Payable yang sudah ada jika ada
+        const existingPayableSnap = await getDoc(payableDocRef);
+        let existingPayableData: PayableItem | null = null;
+        
+        if (existingPayableSnap.exists()) {
+          existingPayableData = existingPayableSnap.data() as PayableItem;
+        }
+  
+        // Gabungkan dengan status pembayaran yang sudah ada
+        const updatedPayableHotels = payableHotels.map((newHotel) => {
+          // Cari hotel yang sama di data lama
+          const existingHotel = existingPayableData?.data.find(
+            (h) => "uniqueId" in h && h.uniqueId === newHotel.uniqueId
+          ) as HotelTodo | undefined;
+  
+          return {
+            ...newHotel,
+            // Pertahankan status pembayaran jika sudah ada
+            isPaid: existingHotel ? existingHotel.isPaid : false,
+          };
+        });
+  
+        // Simpan/update data Payable
+        await setDoc(
+          payableDocRef,
+          {
+            itineraryId: itineraryId,
+            data: updatedPayableHotels,
+            title: headerData.title ?? "Itinerary Tanpa Judul",
+            lastUpdate: new Date(),
+          },
+          { merge: true } // Pertahankan field yang tidak diubah
+        );
+  
+        console.log("Payable updated successfully");
+      } catch (payableError) {
+        console.error("Error updating Payable:", payableError);
+      }
     } catch (error) {
       console.error("Error saving itinerary:", error);
       alert("Failed to save itinerary");
@@ -262,17 +387,25 @@ function CreateItineraryPage() {
               <button
                 type="button"
                 onClick={handleSaveItinerary}
-                className="px-4 py-2 bg-gray-800 hover:bg-cyan-700 text-white font-semibold rounded-lg shadow-md transition-colors"
+                className="px-4 py-2 bg-gray-800 hover:bg-cyan-700 text-white font-semibold rounded-lg shadow-md transition-colors md:hidden"
                 disabled={daysData.length === 0}
               >
-                Save Itinerary
+                Simpan
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveItinerary}
+                className="px-4 py-2 bg-gray-800 hover:bg-cyan-700 text-white font-semibold rounded-lg shadow-md transition-colors hidden md:block"
+                disabled={daysData.length === 0}
+              >
+                Simpan Itinerary
               </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="flex w-full flex-col p-2 px-5 md:px-36 lg:px-44 xl:px-52 2xl:px-96">
+      <div className="flex w-full flex-col p-2 px-5 md:px-16 lg:px-44 xl:px-52 2xl:px-96">
         <HeaderForm
           initialData={headerData}
           onDataChange={handleHeaderDataChange}

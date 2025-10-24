@@ -1,9 +1,9 @@
 // components/HotelCard.tsx
-"use client"; // Asumsikan ini masih diperlukan seperti pada contoh pertama
+"use client";
 
 import React from "react";
-import { FaStar as FaStarIcon } from "react-icons/fa"; // Menggunakan ikon dari react-icons
-import { MdLocalOffer } from "react-icons/md"; // Contoh ikon untuk diskon
+import { FaStar as FaStarIcon } from "react-icons/fa";
+import { MdLocalOffer } from "react-icons/md";
 
 interface Hotel {
   hotelId: number;
@@ -20,6 +20,7 @@ interface Hotel {
   discountPercentage: number;
   includeBreakfast: boolean;
   freeWifi: boolean;
+  cityName?: string; 
 }
 
 // Helper untuk format mata uang
@@ -34,23 +35,43 @@ const formatCurrency = (amount: number, currencyCode: string = "IDR") => {
 
 interface HotelCardProps {
   hotel: Hotel;
-  onAddToItinerary?: (hotel: Hotel) => void;
-
+  checkinDate: string; 
+  checkoutDate: string; 
+  onAddToItinerary?: (
+    hotel: Hotel,
+    checkinDate: string,
+    checkoutDate: string
+  ) => void;
 }
 
-const HotelCard: React.FC<HotelCardProps> = ({ hotel, onAddToItinerary }) => {
+const HotelCard: React.FC<HotelCardProps> = ({ hotel, checkinDate, checkoutDate, onAddToItinerary }) => {
   return (
-    <div className="flex flex-col h-[380px] w-full overflow-hidden rounded-lg  group cursor-pointer ">
+    <div className="flex flex-col h-[380px] w-full overflow-hidden rounded-lg group cursor-pointer shadow-md hover:shadow-lg transition-shadow duration-300">
       {/* Bagian Gambar */}
       <div className="relative h-2/5 w-full">
         <img
-          src={hotel.imageURL || "/default-hotel.jpeg"} // Fallback jika imageURL tidak ada
+          src={hotel.imageURL || "/default-hotel.jpeg"}
           alt={hotel.hotelName}
-          className="h-full w-full object-cover" // Tidak perlu rounded-lg di sini karena parent sudah rounded
+          className="h-full w-full object-cover"
         />
 
-        {/* Overlay Bintang Rating di gambar */}
-        <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-md text-xs flex items-center gap-1 group-hover:bg-cyan-500 group-hover:text-white transition-colors duration-300">
+        {/* Overlay Nama Kota - Pojok Kiri Atas */}
+        {hotel.cityName && (
+          <div className="absolute top-2 left-2 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-xs font-medium z-10">
+            {hotel.cityName}
+          </div>
+        )}
+
+        {/* Overlay Diskon di gambar - Kanan Atas */}
+        {hotel.discountPercentage > 0 && (
+          <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-1 z-10">
+            <MdLocalOffer size={12} />
+            <span>{hotel.discountPercentage}% OFF</span>
+          </div>
+        )}
+
+        {/* Overlay Bintang Rating di gambar - Kanan Bawah */}
+        <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-md text-xs flex items-center gap-1 group-hover:bg-cyan-500 group-hover:text-white transition-colors duration-300 z-10">
           {hotel.starRating > 0 && (
             <>
               <span>{hotel.starRating.toFixed(1)}</span>
@@ -59,26 +80,19 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onAddToItinerary }) => {
           )}
         </div>
 
-        {/* Overlay Diskon di gambar */}
-        {hotel.discountPercentage > 0 && (
-          <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1">
-            <MdLocalOffer size={12} />
-            <span>{hotel.discountPercentage}% OFF</span>
-          </div>
-        )}
-         {/* Agoda Logo/Placeholder - Sesuai style original card */}
-         <div className="absolute bottom-2 left-2 p-0.5 bg-white rounded-md bg-opacity-80 group-hover:bg-opacity-100 transition-opacity duration-300 flex items-center justify-center">
+        {/* Agoda Logo - Kiri Bawah */}
+        <div className="absolute bottom-2 left-2 p-0.5 bg-white rounded-md bg-opacity-80 group-hover:bg-opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
           <img
-            src={"/agoda-logo.svg"} // Placeholder logo, ganti jika perlu
-            className="h-6 w-6 md:h-7 md:w-7 rounded" // h-6 w-6 (default), h-7 w-7 (medium screen)
+            src={"/agoda-logo.svg"}
+            className="h-6 w-6 md:h-7 md:w-7 rounded"
             alt="platform-logo"
-            style={{ objectFit: "contain" }} // Menambahkan object-fit untuk memastikan logo tidak terdistorsi jika aspek rasio aslinya tidak persegi
+            style={{ objectFit: "contain" }}
           />
         </div>
       </div>
 
       {/* Bagian Konten Tekstual */}
-      <div className="flex flex-col justify-between flex-grow p-3 overflow-hidden">
+      <div className="flex flex-col justify-between flex-grow p-3 overflow-hidden bg-white">
         <div>
           <h2
             className="text-gray-800 font-semibold w-full text-ellipsis overflow-hidden line-clamp-2 text-sm md:text-base text-start mb-1 group-hover:text-cyan-600 transition-colors duration-300"
@@ -94,16 +108,8 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onAddToItinerary }) => {
                 {hotel.reviewScore.toFixed(1)}
               </span>
               <span>({hotel.reviewCount} reviews)</span>
-              {/* Bisa tambahkan ikon bintang kecil di sini jika mau */}
             </div>
           )}
-
-          {/* Tipe Kamar (jika ada dan ingin ditampilkan) */}
-          {/* {hotel.roomTypeName && (
-            <p className="text-xs text-gray-400 line-clamp-1 mb-1">
-              {hotel.roomTypeName}
-            </p>
-          )} */}
 
           {/* Harga */}
           <div className="my-2">
@@ -118,7 +124,7 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onAddToItinerary }) => {
             </p>
           </div>
 
-          {/* Fasilitas (Breakfast & WiFi) */}
+          {/* Fasilitas */}
           <div className="mt-1 flex flex-wrap gap-1.5 text-[10px] md:text-xs mb-2">
             {hotel.includeBreakfast && (
               <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
@@ -133,10 +139,9 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onAddToItinerary }) => {
           </div>
         </div>
         
-        {/* Tombol Pesan Sekarang */}
-
+        {/* Tombol Tambahkan Ke Trip */}
         <div 
-          onClick={() => {onAddToItinerary && onAddToItinerary(hotel) ; console.log(hotel)}}
+          onClick={() => {onAddToItinerary && onAddToItinerary(hotel, checkinDate, checkoutDate)}}
           className="mt-auto block w-full text-center px-2 py-2 md:px-3 md:py-2 bg-cyan-500 text-white font-semibold rounded-md hover:bg-cyan-600 focus:ring-2 focus:ring-cyan-300 focus:outline-none transition-colors duration-300 text-xs md:text-sm">
           Tambahkan Ke Trip
         </div>

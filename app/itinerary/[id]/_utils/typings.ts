@@ -18,6 +18,14 @@ export type Itinerary = {
       expend: ExpendingItem[];
     };
   };
+
+  export interface PayableItem {
+    id: string;
+    itineraryId: string;
+    title: string;
+    lastUpdate: any;  // Firestore Timestamp
+    data: BaseTodo[];
+  }
   
   export type ItineraryPerDay = {
     uniqueId: string;
@@ -45,11 +53,13 @@ export type Itinerary = {
   export type HotelTodo = BaseTodo & {
     uniqueId: string;
     typeTodo: "hotel";
-    // checkInTime: string;
-    // checkOutTime:string;
+    checkinDate: string;  
+    checkoutDate: string; 
+    city?:string;
     time_start?: string;
     time_end?: string;
-    //Penting: Mulai kebawah menyesuaikan parameter dari API AGODA
+    isPaid: boolean;
+    //Penting! Jangan di Hapus: Mulai dari sini kebawah menyesuaikan parameter dari API AGODA 
     hotelId: number;
     currency: string; 
     landingURL: string;
@@ -65,6 +75,8 @@ export type Itinerary = {
 
   export type HotelAgodaAPI = {
     hotelId: number;
+    cityId?: number;
+    cityName?:string;
     hotelName: string;
     dailyRate: number;
     currency: string; 
@@ -78,6 +90,7 @@ export type Itinerary = {
     discountPercentage: number;
     includeBreakfast: boolean;
     freeWifi: boolean;
+
   }
   
 

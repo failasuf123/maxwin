@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { useEffect, useState } from 'react'
-import { FaFilter, FaSearch } from 'react-icons/fa';
+import React, { useEffect, useState } from 'react';
+import { FaFilter, FaSearch, FaExclamationTriangle } from 'react-icons/fa';
 
 interface FilterHotelProps {
   onFilter: (filters: any) => void;
@@ -19,8 +19,8 @@ function FilterHotel({
 }: FilterHotelProps) {
     const [city, setCity] = useState<string>(initialCityName || "");
     const [cityId, setCityId] = useState<number[] | null>(initialCityId || null);
-    const [minPrice, setMinPrice] = useState<number | null>(null);
-    const [maxPrice, setMaxPrice] = useState<number | null>(null);
+    const [minPrice, setMinPrice] = useState<number>(200000);
+    const [maxPrice, setMaxPrice] = useState<number>(2000000);
     const [discountOnly, setDiscountOnly] = useState<boolean>(false);
     const [minStarRating, setMinStarRating] = useState<number | null>(null);
     const [minReviewScore, setMinReviewScore] = useState<number | null>(null);
@@ -30,6 +30,9 @@ function FilterHotel({
     const [filteredCities, setFilteredCities] = useState<any[]>([]);
     const [checkInDate, setCheckInDate] = useState<string>(initialStartDate);
     const [checkOutDate, setCheckOutDate] = useState<string>(initialEndDate);
+    
+    // State untuk error harga
+    const [priceError, setPriceError] = useState<string | null>(null);
 
     useEffect(() => {
       fetch("/city_list.json")
@@ -60,10 +63,19 @@ function FilterHotel({
       setIsAccordionOpen(!isAccordionOpen);
     };
 
-    const handleSearch = () => {
+    // Validasi harga sebelum melakukan filter
+    const validateAndSearch = () => {
       if (!cityId) {
         alert("Silakan pilih kota terlebih dahulu");
         return;
+      }
+
+      // Validasi harga
+      if (minPrice > maxPrice) {
+        setPriceError("Harga minimum tidak boleh lebih besar dari harga maksimum");
+        return;
+      } else {
+        setPriceError(null);
       }
 
       onFilter({
@@ -71,12 +83,41 @@ function FilterHotel({
         cityName: city,
         checkInDate,
         checkOutDate,
-        minPrice,
-        maxPrice,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
         discountOnly,
         minStarRating,
         minReviewScore
       });
+    };
+
+    // Format angka menjadi mata uang Rupiah
+    const formatCurrency = (amount: number) => {
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0,
+      }).format(amount);
+    };
+
+    // Handler untuk perubahan minPrice dengan validasi
+    const handleMinPriceChange = (value: number) => {
+      setMinPrice(value);
+      if (value > maxPrice) {
+        setPriceError("Harga minimum tidak boleh lebih besar dari harga maksimum");
+      } else {
+        setPriceError(null);
+      }
+    };
+
+    // Handler untuk perubahan maxPrice dengan validasi
+    const handleMaxPriceChange = (value: number) => {
+      setMaxPrice(value);
+      if (value < minPrice) {
+        setPriceError("Harga maksimum tidak boleh lebih kecil dari harga minimum");
+      } else {
+        setPriceError(null);
+      }
     };
 
     return (
@@ -108,15 +149,13 @@ function FilterHotel({
           </div>
           <div 
             className="flex flex-row gap-2 rounded-xl px-3 py-3  bg-gray-800 hover:bg-cyan-500 items-center text-white font-semibold cursor-pointer text-center justify-center"
-            onClick={handleSearch}
+            onClick={validateAndSearch}
           >
             <FaSearch  />
             <span className="hidden md:block">Cari</span>
-          
           </div>
         </div>
 
-  
         <hr className="w-full bg-gray-600 my-2" />
         
         {/* Filter panel */}
@@ -132,72 +171,124 @@ function FilterHotel({
               >
                 <div className="mt-4">
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Rentang Harga (per malam)
                     </label>
-                    <div className="flex gap-2">
+                    
+                    {/* Pesan error */}
+                    {priceError && (
+                      <div className="mb-3 p-2 bg-red-100 text-red-700 rounded-md flex items-center gap-2">
+                        <FaExclamationTriangle className="text-red-600" />
+                        <span className="text-sm">{priceError}</span>
+                      </div>
+                    )}
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">
+                          Harga Minimum
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="range"
+                            min="0"
+                            max="5000000"
+                            step="100000"
+                            value={minPrice}
+                            onChange={(e) => handleMinPriceChange(Number(e.target.value))}
+                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                          />
+                          <span className="text-sm font-medium min-w-[120px] text-right">
+                            {formatCurrency(minPrice)}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">
+                          Harga Maksimum
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="range"
+                            min="0"
+                            max="5000000"
+                            step="100000"
+                            value={maxPrice}
+                            onChange={(e) => handleMaxPriceChange(Number(e.target.value))}
+                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                          />
+                          <span className="text-sm font-medium min-w-[120px] text-right">
+                            {formatCurrency(maxPrice)}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>Min: {formatCurrency(0)}</span>
+                        <span>Max: {formatCurrency(5000000)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Filter lainnya dengan tampilan yang lebih baik */}
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                    <label className="flex items-center cursor-pointer">
+                      <span className="mr-3 text-sm text-gray-700">
+                        Mau tampilkan Hotel yang Diskon aja?
+                      </span>
                       <input
-                        type="number"
-                        placeholder="Harga Minimum"
-                        className="w-full p-2 border rounded-md"
-                        value={minPrice || ""}
-                        onChange={(e) => setMinPrice(Number(e.target.value))}
+                        type="checkbox"
+                        className="form-checkbox h-4 w-4 text-cyan-600 transition duration-150 ease-in-out"
+                        checked={discountOnly}
+                        onChange={(e) => setDiscountOnly(e.target.checked)}
                       />
-                      <input
-                        type="number"
-                        placeholder="Harga Maksimum"
-                        className="w-full p-2 border rounded-md"
-                        value={maxPrice || ""}
-                        onChange={(e) => setMaxPrice(Number(e.target.value))}
-                      />
+                    </label>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Minimal hotel bintang berapa?
+                    </label>
+                    <div className="grid grid-cols-5 gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          className={`py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                            minStarRating === star
+                              ? 'bg-cyan-600 text-white'
+                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          }`}
+                          onClick={() => setMinStarRating(minStarRating === star ? null : star)}
+                        >
+                          {star} ★
+                        </button>
+                      ))}
                     </div>
                   </div>
 
                   <div className="mb-4">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        className="mr-2"
-                        checked={discountOnly}
-                        onChange={(e) => setDiscountOnly(e.target.checked)}
-                      />
-                      <span className="text-sm text-gray-700">
-                        Tampilkan Hotel dengan Diskon Saja
-                      </span>
-                    </label>
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Rating Bintang Minimum
-                    </label>
-                    <select
-                      className="w-full p-2 border rounded-md"
-                      value={minStarRating || ""}
-                      onChange={(e) => setMinStarRating(Number(e.target.value))}
-                    >
-                      <option value="">Pilih Rating</option>
-                      <option value="1">1 Bintang</option>
-                      <option value="2">2 Bintang</option>
-                      <option value="3">3 Bintang</option>
-                      <option value="4">4 Bintang</option>
-                      <option value="5">5 Bintang</option>
-                    </select>
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Skor Ulasan Minimum
                     </label>
-                    <input
-                      type="number"
-                      placeholder="Skor Ulasan (1-10)"
-                      className="w-full p-2 border rounded-md"
-                      value={minReviewScore || ""}
-                      onChange={(e) => setMinReviewScore(Number(e.target.value))}
-                      min="1"
-                      max="10"
-                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="range"
+                        min="0"
+                        max="10"
+                        step="0.5"
+                        value={minReviewScore || 0}
+                        onChange={(e) => setMinReviewScore(Number(e.target.value))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                      <span className="text-sm font-medium bg-cyan-100 text-cyan-800 py-1 px-3 rounded-full min-w-[60px] text-center">
+                        {minReviewScore || 0}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>0</span>
+                      <span>10</span>
+                    </div>
                   </div>
                 </div>
                 <hr className="w-full bg-gray-600 my-3" />
@@ -209,4 +300,4 @@ function FilterHotel({
     );
 }
 
-export default FilterHotel
+export default FilterHotel;
